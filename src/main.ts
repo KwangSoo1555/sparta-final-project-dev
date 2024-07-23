@@ -37,4 +37,4 @@ async function bootstrap() {
     console.error(error);
   }
 }
-bootstrap();
+bootstrap()
