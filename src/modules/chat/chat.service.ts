@@ -53,7 +53,7 @@ export class ChatService {
     const newChat = this.chatsRepository.create({
       senderId: userId,
       receiverId: receiverId,
-      chatRoomsId: +chatRoomId,
+      chatRoomsId: chatRoomId,
       content: content,
     });
 
@@ -134,7 +134,7 @@ export class ChatService {
           qb.where("chat_room.user1Id = :userId AND chat_room.user2Id = :receiverId", {
             userId,
             receiverId,
-          }).orWhere("chat_room.user1Id = :receiverId AND chat_room.user2Id = : userId", {
+          }).orWhere("chat_room.user1Id = :receiverId AND chat_room.user2Id = :userId", {
             userId,
             receiverId,
           });
