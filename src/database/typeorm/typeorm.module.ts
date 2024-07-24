@@ -5,12 +5,9 @@ import { TypeOrmConfig } from "./typeorm.config";
 
 @Module({
   imports: [
-    NestTypeOrmModule.forRootAsync({
-      useClass: TypeOrmConfig,
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
+    NestTypeOrmModule.forRootAsync({ useClass: TypeOrmConfig }),
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
+  exports: [TypeOrmModule],
 })
 export class TypeOrmModule {}
