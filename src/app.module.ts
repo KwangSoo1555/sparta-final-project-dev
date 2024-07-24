@@ -4,11 +4,13 @@ import { TypeOrmModule } from './database/typeorm/typeorm.module';
 
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule,
+    JobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
