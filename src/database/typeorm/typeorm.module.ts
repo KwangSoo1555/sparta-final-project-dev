@@ -8,6 +8,6 @@ import { TypeOrmConfig } from "./typeorm.config";
     NestTypeOrmModule.forRootAsync({ useClass: TypeOrmConfig }),
     ConfigModule.forRoot({ isGlobal: true }),
   ],
-  exports: [TypeOrmModule],
+  exports: [NestTypeOrmModule],
 })
 export class TypeOrmModule {}

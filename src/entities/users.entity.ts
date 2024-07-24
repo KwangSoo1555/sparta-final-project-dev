@@ -44,7 +44,7 @@ export class UsersEntity {
 
   @IsEnum(SocialProviders)
   @Column({ type: "enum", enum: SocialProviders, default: SocialProviders.LOCAL })
-  providers: SocialProviders;
+  provider: SocialProviders;
 
   @Column({
     name: "img_url",
