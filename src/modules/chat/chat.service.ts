@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Brackets, Repository } from "typeorm";
 import { UsersEntity } from "src/entities/users.entity";
@@ -79,7 +79,13 @@ export class ChatService {
   }
 
   // 채팅 로그 조회
-  async findChatLog(chatRoomId: number) {
+  async findChatLog(userId: number, chatRoomId: number) {
+    const checkUser = this.findAllChatRooms(userId);
+
+    if (!checkUser) {
+      throw new UnauthorizedException("이 채팅방에 접근 권한이 없습니다.");
+    }
+
     const chatLogs = this.chatsRepository
       .createQueryBuilder("chats")
       .select(["chats.id", "chats.senderId", "chats.content", "chats.createdAt"])

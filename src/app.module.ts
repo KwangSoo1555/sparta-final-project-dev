@@ -10,7 +10,7 @@ import { UsersModule } from "./modules/users/users.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
-import { ChatModule } from "./chat/chat.module";
+import { ChatModule } from "./modules/chat/chat.module";
 
 @Module({
   imports: [
