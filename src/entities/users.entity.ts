@@ -21,7 +21,6 @@ import { NoticesEntity } from "./notices.entity";
 
 import { SocialProviders } from "../common/customs/types/enum-social-providers";
 import { UserRoles } from "../common/customs/types/enum-user-roles";
-import { NotificationsEntity } from "./notifications.entity";
 
 @Entity("users")
 export class UsersEntity {
@@ -73,7 +72,7 @@ export class UsersEntity {
   reported: ReportsEntity[];
 
   @OneToMany(() => NoticesEntity, (notices) => notices.user)
-  notices: NotificationsEntity[];
+  notices: NoticesEntity[];
 
   @OneToMany(() => ChatsEntity, (chats) => chats.chatSender)
   chatsSender: ChatsEntity[];
