@@ -15,8 +15,8 @@ import { EmailVerificationService } from "src/modules/auth/common/email/email.se
 
 import { UsersEntity } from "src/entities/users.entity";
 import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
-import { UserLocalSignUpDto } from "src/modules/auth/local/auth-local.dto/sign-up.dto";
-import { UserLocalSignInDto } from "src/modules/auth/local/auth-local.dto/sign-in.dto";
+import { UserLocalSignUpDto } from "./local.dto/sign-up.dto";
+import { UserLocalSignInDto } from "./local.dto/sign-in.dto";
 import { MESSAGES } from "src/common/constants/message.constant";
 import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
 
@@ -122,22 +122,6 @@ export class UserLocalService {
     return {
       accessToken,
       refreshToken,
-    };
-  }
-
-  async logOut(userId: number) {
-    await this.refreshTokenRepository.update(
-      { userId },
-      { refreshToken: null },
-      // accessToken expires
-    );
-
-    // 유저가 로그아웃 하면 유저의 모든 access token 만료
-    // 왜냐? 유저가 로그아웃 하면 access token 도 expire 해야 하기 때문
-    // 그렇지 않으면 유저가 로그아웃 한 후에도 crud 가 가능하기 때문
-
-    return {
-      message: MESSAGES.AUTH.SIGN_OUT.SUCCEED,
     };
   }
 }
