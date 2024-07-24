@@ -10,6 +10,7 @@ import { EmailModule } from "./modules/auth/common/email/email.module";
 import { JwtModule } from "./modules/auth/common/jwt/jwt.module";
 import { UserSignOutModule } from "./modules/auth/common/sign-out/sign-out.module";
 import { UsersModule } from "./modules/users/users.module";
+import { FindAccountModule } from './modules/auth/common/find-account/find-account.module';
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
@@ -26,6 +27,7 @@ import { AppController } from "./app.controller";
     JwtModule,
     UserSignOutModule,
     UsersModule,
+    FindAccountModule,
   ],
   controllers: [AppController],
   providers: [AppService],
