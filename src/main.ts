@@ -28,7 +28,13 @@ async function bootstrap() {
     .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api", app, document);
+  SwaggerModule.setup("api", app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // 새로고침 시에도 JWT 유지하기
+      tagsSorter: 'alpha', // API 그룹 정렬을 알파벳 순으로
+      operationsSorter: 'alpha', // API 그룹 내 정렬을 알파벳 순으로
+    },
+  });
 
   app.setGlobalPrefix("api/v1");
   app.enableCors();
