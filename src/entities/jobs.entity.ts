@@ -22,7 +22,7 @@ export class JobsEntity {
   ownerId: number;
 
   @Column()
-  title: number;
+  title: String;
 
   @Column()
   content: String;
@@ -38,6 +38,12 @@ export class JobsEntity {
 
   @Column()
   category: String;
+
+  @Column()
+  expiredYn: boolean;
+  
+  @Column()
+  matchedYn: boolean;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
