@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from "@nestjs/common";
 import { NoticesService } from "./notices.service";
 import { CreateNoticeDto } from "./dto/create-notice.dto";
 import { UpdateNoticeDto } from "./dto/update-notice.dto";
-import { ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { UsersEntity } from "src/entities/users.entity";
+import { JwtAccessGuards } from "../auth/common/jwt/jwt-strategy.service";
+import { Roles } from "src/common/customs/decorator/roles.decorator";
+import { UserRoles } from "src/common/customs/types/enum-user-roles";
+import { RolesGuard } from "src/common/customs/guards/roles.guard";
 
 @ApiTags("공지사항")
 @Controller("notices")
@@ -14,16 +30,21 @@ export class NoticesController {
    * @param createNoticeDto
    * @returns
    */
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuards, RolesGuard)
+  @Roles(UserRoles.ADMIN)
   @Post()
-  async createNotice(@Body() noticeData: CreateNoticeDto) {
-    const userId = 1;
+  async createNotice(
+    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @Body() noticeData: CreateNoticeDto,
+  ) {
     return this.noticesService.createNewNotice(userId, noticeData);
   }
 
   /**
    * 공지사항 목록 조회
-   * @param page 페이지 번호
-   * @param limit 페이지당 항목 수
+   * @param page
+   * @param limit
    * @returns
    */
   @ApiQuery({ name: "page", required: false, type: Number, description: "페이지 번호", example: 1 })
@@ -44,21 +65,43 @@ export class NoticesController {
 
   /**
    * 공지사항 상세 조회
-   * @param id
+   * @param noticeId
    * @returns
    */
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.noticesService.findOne(+id);
+  @Get(":noticeId")
+  async getNoticeDetail(@Param("noticeId") noticeId: number) {
+    return this.noticesService.getNoticeDetail(noticeId);
   }
 
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateNoticeDto: UpdateNoticeDto) {
-    return this.noticesService.update(+id, updateNoticeDto);
+  /**
+   * 공지사항 수정
+   * @param param
+   * @param noticeId
+   * @param updateNoticeDto
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuards, RolesGuard)
+  @Roles(UserRoles.ADMIN)
+  @Patch(":noticeId")
+  async updateNotice(
+    @Param("noticeId") noticeId: number,
+    @Body() updateNoticeDto: UpdateNoticeDto,
+  ) {
+    return this.noticesService.updateNotice(noticeId, updateNoticeDto);
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.noticesService.remove(+id);
+  /**
+   * 공지사항 삭제
+   * @param noticeId
+   * @returns
+   */
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuards, RolesGuard)
+  @Roles(UserRoles.ADMIN)
+  @Delete(":noticeId")
+  async removeNotice(@Param("noticeId") noticeId: number) {
+    await this.noticesService.removeNotice(noticeId);
+    return { message: "공지사항이 정상적으로 삭제 되었습니다." };
   }
 }

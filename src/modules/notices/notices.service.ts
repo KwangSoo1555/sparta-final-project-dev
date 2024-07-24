@@ -1,36 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import { CreateNoticeDto } from './dto/create-notice.dto';
-import { UpdateNoticeDto } from './dto/update-notice.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { NoticesEntity } from 'src/entities/notices.entity';
-import { Repository } from 'typeorm';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { CreateNoticeDto } from "./dto/create-notice.dto";
+import { UpdateNoticeDto } from "./dto/update-notice.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { NoticesEntity } from "src/entities/notices.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class NoticesService {
   constructor(
     @InjectRepository(NoticesEntity)
     private readonly noticeRepository: Repository<NoticesEntity>,
-  ){}
+  ) {}
 
-  async createNewNotice(userId: number, noticeDetails: CreateNoticeDto) {
+  // 공지사항 생성
+  async createNewNotice(userId: number, noticeDetails: CreateNoticeDto): Promise<NoticesEntity> {
     const newNotice = this.noticeRepository.create({
       ...noticeDetails,
-      userId: userId
+      userId,
     });
-    
-    const createdNotice = await this.noticeRepository.save(newNotice);
-    console.log('새로 생성된 공지사항:', createdNotice);
-    
-    return createdNotice;
+
+    return this.noticeRepository.save(newNotice);
   }
-  
+
+  // 공지사항 목록 조회
   async getNotices(page: number, limit: number) {
     const offset = (page - 1) * limit;
 
     const [notices, totalNotices] = await this.noticeRepository.findAndCount({
       skip: offset,
       take: limit,
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
 
     const totalPages = Math.ceil(totalNotices / limit);
@@ -46,15 +45,41 @@ export class NoticesService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notice`;
+  // 공지사항 상세 조회
+  async getNoticeDetail(noticeId: number): Promise<NoticesEntity> {
+    this.validateId(noticeId);
+    return this.findOneBy(noticeId);
   }
 
-  update(id: number, updateNoticeDto: UpdateNoticeDto) {
-    return `This action updates a #${id} notice`;
+  // 공지사항 업데이트
+  async updateNotice(noticeId: number, updateNoticeDto: UpdateNoticeDto): Promise<NoticesEntity> {
+    this.validateId(noticeId);
+    await this.findOneBy(noticeId);
+
+    await this.noticeRepository.update(noticeId, updateNoticeDto);
+    return this.findOneBy(noticeId);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} notice`;
+  // 공지사항 삭제
+  async removeNotice(noticeId: number) {
+    this.validateId(noticeId);
+    await this.findOneBy(noticeId);
+    return this.noticeRepository.delete(noticeId);
+  }
+
+  // ID 유효성 검사 함수
+  private validateId(id: number ){
+    if (Number.isNaN(id) || id <= 0) {
+      throw new NotFoundException('유효한 noticeId를 제공해주세요.');
+    }
+  }
+
+  // 공지사항 ID 조회
+  private async findOneBy(noticeId: number): Promise<NoticesEntity> {
+    const noticeDetail = await this.noticeRepository.findOneBy({ id: noticeId });
+    if (!noticeDetail) {
+      throw new NotFoundException("공지사항을 찾을 수 없습니다.");
+    }
+    return noticeDetail;
   }
 }
