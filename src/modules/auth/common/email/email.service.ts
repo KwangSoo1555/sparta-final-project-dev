@@ -4,7 +4,7 @@ import { Redis } from "ioredis";
 import { Injectable, HttpStatus, Inject } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { EmailVerificationDto } from "./auth-common-email.dto/email-verification.dto";
+import { EmailVerificationDto } from "./email.dto/email-verification.dto"
 import { MESSAGES } from "src/common/constants/message.constant";
 import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
 

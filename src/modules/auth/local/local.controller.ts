@@ -1,8 +1,9 @@
 import { Controller, Post, Body, UsePipes, ValidationPipe, Ip, Headers } from "@nestjs/common";
 
 import { UserLocalService } from "./local.service";
-import { UserLocalSignUpDto } from "src/modules/auth/local/auth-local.dto/sign-up.dto";
-import { UserLocalSignInDto } from "src/modules/auth/local/auth-local.dto/sign-in.dto";
+
+import { UserLocalSignUpDto } from "./local.dto/sign-up.dto";
+import { UserLocalSignInDto } from "./local.dto/sign-in.dto";
 
 @Controller("auth/local")
 export class UserLocalController {
