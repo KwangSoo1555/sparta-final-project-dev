@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  HttpStatus,
 } from "@nestjs/common";
 import { NoticesService } from "./notices.service";
 import { CreateNoticeDto } from "./dto/create-notice.dto";
@@ -35,10 +36,15 @@ export class NoticesController {
   @Roles(UserRoles.ADMIN)
   @Post()
   async createNotice(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, 'id'> },
     @Body() noticeData: CreateNoticeDto,
   ) {
-    return this.noticesService.createNewNotice(userId, noticeData);
+    const newNotice = await this.noticesService.createNewNotice(userId, noticeData);
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: '공지사항이 성공적으로 생성되었습니다.',
+      data: newNotice,
+    };
   }
 
   /**
@@ -56,11 +62,17 @@ export class NoticesController {
     example: 20,
   })
   @Get()
-  async getNotices(@Query("page") page: number, @Query("limit") limit: number) {
+  async getNotices(@Query('page') page: number, @Query('limit') limit: number) {
     page = page && page > 0 ? page : 1;
     limit = limit && limit > 0 ? limit : 20;
 
-    return this.noticesService.getNotices(page, limit);
+    const { data, meta } = await this.noticesService.getNotices(page, limit);
+    return {
+      statusCode: HttpStatus.OK,
+      message: '공지사항 목록이 성공적으로 조회되었습니다.',
+      data,
+      meta,
+    };
   }
 
   /**
@@ -69,10 +81,14 @@ export class NoticesController {
    * @returns
    */
   @Get(":noticeId")
-  async getNoticeDetail(@Param("noticeId") noticeId: number) {
-    return this.noticesService.getNoticeDetail(noticeId);
+  async getNoticeDetail(@Param('noticeId') noticeId: number) {
+    const notice = await this.noticesService.getNoticeDetail(noticeId);
+    return {
+      statusCode: HttpStatus.OK,
+      message: '공지사항이 성공적으로 조회되었습니다.',
+      data: notice,
+    };
   }
-
   /**
    * 공지사항 수정
    * @param param
@@ -88,7 +104,12 @@ export class NoticesController {
     @Param("noticeId") noticeId: number,
     @Body() updateNoticeDto: UpdateNoticeDto,
   ) {
-    return this.noticesService.updateNotice(noticeId, updateNoticeDto);
+    const updatedNotice = await this.noticesService.updateNotice(noticeId, updateNoticeDto);
+    return {
+      statusCode: HttpStatus.OK,
+      message: '공지사항이 정상적으로 업데이트되었습니다.',
+      data: updatedNotice,
+    };
   }
 
   /**
@@ -102,6 +123,6 @@ export class NoticesController {
   @Delete(":noticeId")
   async removeNotice(@Param("noticeId") noticeId: number) {
     await this.noticesService.removeNotice(noticeId);
-    return { message: "공지사항이 정상적으로 삭제 되었습니다." };
+    return { statusCode: HttpStatus.OK, message: "공지사항이 정상적으로 삭제 되었습니다." };
   }
 }
