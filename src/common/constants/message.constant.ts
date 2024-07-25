@@ -155,6 +155,24 @@ export const MESSAGES = {
       INIT_SOCKET_IO_SERVER:"Socket.IO 서버가 초기화되었습니다.",
       CONNECT_TO_CLIENT:`클라이언트가 연결되었습니다:`,
       INCONNECT_TO_CLIENT:`클라이언트가 연결이 해제되었습니다:`,
-    }
+    },
+    JOBS: {
+      CREATE: {
+        CREATE_SUCCEED: "성공적으로 생성되었습니다.",
+      },
+      READ: {
+        READ_SUCCEED: "성공적으로 삭제되었습니다.",
+        NOT_VERIFY: "조회 권한이 없습니다."
+      },
+      UPDATE: {
+        UPDATE_SUCCEED: "성공적으로 수정되었습니다.",
+        NOT_VERIFY: "수정 권한이 없습니다.",
+      },
+      DELETE: {
+        DELETE_SUCCEED: "성공적으로 삭제되었습니다.",
+        NOT_VERIFY: "삭제 권한이 없습니다."
+      },
+      NOT_EXISTS: "존재하지 않는 내용입니다.",
+    },
   };
   
