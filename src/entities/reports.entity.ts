@@ -9,7 +9,8 @@ import {
 } from "typeorm";
 
 import { UsersEntity } from "./users.entity";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { ReportReason } from "../common/customs/types/enum-report-reason";
 
 @Entity("reports")
 export class ReportsEntity {
@@ -23,11 +24,12 @@ export class ReportsEntity {
   reportedId: number;
 
   /**
-   * @example "불쾌감을 주는 행위"
+   * @example '불쾌감을 주는 행위'
    */
   @IsString()
   @IsNotEmpty({ message: "신고 사유를 작성 해주세요." })
-  @Column()
+  @IsEnum(ReportReason, {message: '올바른 신고 사유를 선택해주세요.'})
+  @Column({type: 'enum', enum: ReportReason, default: ReportReason.OTHER})
   reason: string;
 
   /**
