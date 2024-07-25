@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Brackets, Repository } from "typeorm";
 import { UsersEntity } from "src/entities/users.entity";
@@ -29,7 +29,7 @@ export class ChatService {
     // 받는 사람이 존재하는지 확인
     const receiver = await this.findReceiverById(receiverId);
     if (!receiver) {
-      throw new Error("받는 사람이 존재하지 않습니다.");
+      throw new NotFoundException("받는 사람이 존재하지 않습니다.");
     }
 
     // 채팅 룸 존재하는지 검색
@@ -57,13 +57,16 @@ export class ChatService {
       content: content,
     });
 
-    return this.chatsRepository.save(newChat);
+    await this.chatsRepository.save(newChat);
+
+    return newChat;
   }
 
   // 채팅룸 목록 조회
   async findAllChatRooms(userId: number) {
     const chatRoom = this.chatRoomsRepository
       .createQueryBuilder("chat_room")
+      .select("chat_room.id")
       .where(
         new Brackets((qb) => {
           qb.where("chat_room.user1Id = :userId", {
@@ -106,19 +109,28 @@ export class ChatService {
     updateChatDto: UpdateChatDto,
   ) {
     const chat = await this.findChatById(chatId);
-    if (chat.chatRoomsId !== chatRoomId || chat.senderId !== userId) {
-      throw new Error("뭔가 뭔가 이상함");
+
+    if (chat.chatRoomsId !== +chatRoomId) {
+      throw new UnauthorizedException("채팅룸 매치 안됨");
+    }
+
+    if (chat.senderId !== userId) {
+      throw new UnauthorizedException("사용자 id 매치 안됨");
     }
 
     const { content } = updateChatDto;
 
-    return this.chatsRepository.update({ id: chatId }, { content });
+    await this.chatsRepository.update({ id: chatId }, { content });
+
+    const updatedChat = await this.findChatById(chatId);
+
+    return updatedChat;
   }
 
   // 채팅삭제
   async deleteChat(userId: number, chatRoomId: number, chatId: number) {
     const chat = await this.findChatById(chatId);
-    if (chat.chatRoomsId !== chatRoomId || chat.senderId !== userId) {
+    if (chat.chatRoomsId !== +chatRoomId || chat.senderId !== userId) {
       throw new Error("뭔가 뭔가 이상함");
     }
 

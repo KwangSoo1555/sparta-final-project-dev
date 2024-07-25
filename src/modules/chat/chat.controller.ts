@@ -17,79 +17,78 @@ import { UsersEntity } from "src/entities/users.entity";
 import { UpdateChatDto } from "./dto/update-chat.dto";
 
 @UseGuards(JwtAccessGuards)
-@Controller("/chat-rooms")
+@Controller("chat-rooms")
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
+
+  // 채팅로그 조회 api
+  @Get("chatlog/:chat_rooms_id")
+  async findChatLogs(
+    @RequestJwt() { user: { id: userId } },
+    @Param("chat_rooms_id")
+    chatRoomId: number,
+  ) {
+    const findChatLogs = await this.chatService.findChatLog(userId, chatRoomId);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "성공적으로 채팅방에 입장",
+      data: findChatLogs,
+    };
+  }
 
   // 채팅및 채팅룸 생성 api
   @Post()
   async createChat(@RequestJwt() { user: { id: userId } }, @Body() createChatDto: CreateChatDto) {
-    const createChat = this.chatService.createChat(userId, createChatDto);
+    const createChat = await this.chatService.createChat(userId, createChatDto);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: "채팅을 성공적으로 보냈습니다.",
-      createChat,
+      data: createChat,
     };
   }
 
   // 채팅룸 목록 조회 api
   @Get()
-  async findAllChatRooms(@RequestJwt() user: UsersEntity) {
-    const findAllChatRooms = this.chatService.findAllChatRooms(user.id);
+  async findAllChatRooms(@RequestJwt() { user: { id: userId } }) {
+    const findAllChatRooms = await this.chatService.findAllChatRooms(userId);
     return {
       statusCode: HttpStatus.OK,
       message: "채팅룸 목록 조회 성공",
-      findAllChatRooms,
-    };
-  }
-
-  // 채팅로그 조회 api
-  @Get(":/chat-rooms-id")
-  async findChatLogs(
-    @RequestJwt() user: UsersEntity,
-    @Param("chatRoomId")
-    chatRoomId: number,
-  ) {
-    const findChatLogs = this.chatService.findChatLog(user.id, chatRoomId);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: "성공적으로 채팅방에 입장",
-      findChatLogs,
+      data: findAllChatRooms,
     };
   }
 
   // 채팅 수정 api
-  @Patch("/:chat-rooms-id/chats/:chat-id")
+  @Patch("/:chat_rooms_id/chats/:chat_id")
   async updateChat(
-    @RequestJwt() user: UsersEntity,
-    @Param("chatRoomId") chatRoomId: number,
-    @Param("chatId") chatId: number,
+    @RequestJwt() { user: { id: userId } },
+    @Param("chat_rooms_id") chatRoomId: number,
+    @Param("chat_id") chatId: number,
     @Body() updateChatDto: UpdateChatDto,
   ) {
-    const updateChat = this.chatService.updateChat(user.id, chatRoomId, chatId, updateChatDto);
+    const updateChat = await this.chatService.updateChat(userId, chatRoomId, chatId, updateChatDto);
 
     return {
       statusCode: HttpStatus.OK,
       message: "채팅 수정 성공",
-      updateChat,
+      data: updateChat,
     };
   }
 
   // 채팅 삭제 api
-  @Delete("/:chat-rooms-id/chats/:chat-id")
+  @Delete("/:chat_rooms_id/chats/:chat_id")
   async deleteChat(
-    @RequestJwt() user: UsersEntity,
-    @Param("chatRoomId") chatRoomId: number,
-    @Param("chatId") chatId: number,
+    @RequestJwt() { user: { id: userId } },
+    @Param("chat_rooms_id") chatRoomId: number,
+    @Param("chat_id") chatId: number,
   ) {
-    const deleteChat = this.chatService.deleteChat(user.id, chatRoomId, chatId);
+    const deleteChat = await this.chatService.deleteChat(userId, chatRoomId, chatId);
 
     return {
       statusCode: HttpStatus.OK,
       message: "채팅 삭제 성공",
-      deleteChat,
     };
   }
 }
