@@ -18,21 +18,21 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  
+
   const config = new DocumentBuilder()
     .setTitle("Cats example")
     .setDescription("The cats API description")
     .setVersion("1.0")
     .addTag("cats")
-    .addServer('api/v1')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .addServer("api/v1")
+    .addBearerAuth({ type: "http", scheme: "bearer", bearerFormat: "JWT" })
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api", app, document, {
     swaggerOptions: {
       persistAuthorization: true, // 새로고침 시에도 JWT 유지하기
-      tagsSorter: 'alpha', // API 그룹 정렬을 알파벳 순으로
-      operationsSorter: 'alpha', // API 그룹 내 정렬을 알파벳 순으로
+      tagsSorter: "alpha", // API 그룹 정렬을 알파벳 순으로
+      operationsSorter: "alpha", // API 그룹 내 정렬을 알파벳 순으로
     },
   });
 
@@ -54,4 +54,4 @@ async function bootstrap() {
     console.error(error);
   }
 }
-bootstrap()
+bootstrap();
