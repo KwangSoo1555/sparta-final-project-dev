@@ -5,11 +5,11 @@ import { JobsService } from './jobs.service';
 import { JobsController } from './jobs.controller';
 
 import { JobsEntity } from 'src/entities/jobs.entity'
-import { JobsMatchingEntity } from 'src/entities/jobs-matching.entity'
+import { UsersEntity } from 'src/entities/users.entity'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([JobsEntity, JobsMatchingEntity]),
+    TypeOrmModule.forFeature([JobsEntity, UsersEntity]),
   ],
   controllers: [JobsController],
   providers: [JobsService],

@@ -39,10 +39,10 @@ export class JobsEntity {
   @Column()
   category: String;
 
-  @Column()
+  @Column({ type: 'boolean' })
   expiredYn: boolean;
   
-  @Column()
+  @Column({ type: 'boolean' })
   matchedYn: boolean;
 
   @CreateDateColumn({ name: "created_at" })

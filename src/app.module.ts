@@ -4,7 +4,7 @@ import { TypeOrmModule } from "./database/typeorm/typeorm.module";
 import { RedisModule } from "./database/redis/redis.module";
 
 
-import { JobsModule } from './jobs/jobs.module';
+import { JobsModule } from './modules/jobs/jobs.module';
 import { UserLocalModule } from "./modules/auth/local/local.module";
 import { EmailModule } from "./modules/auth/common/email/email.module";
 import { JwtModule } from "./modules/auth/common/jwt/jwt.module";
