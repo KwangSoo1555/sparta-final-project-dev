@@ -10,6 +10,7 @@ import { JwtModule } from "./modules/auth/common/jwt/jwt.module";
 import { UserSignOutModule } from "./modules/auth/common/sign-out/sign-out.module";
 import { UsersModule } from "./modules/users/users.module";
 import { FindAccountModule } from "./modules/auth/common/find-account/find-account.module";
+import { JobMatchingModule } from "./modules/job-matching/job-matching.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
@@ -33,6 +34,7 @@ import { ChatModule } from "./modules/chat/chat.module";
     FindAccountModule,
     NoticesModule,
     ReportsModule,
+    JobMatchingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
