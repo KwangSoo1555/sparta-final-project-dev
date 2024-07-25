@@ -10,6 +10,8 @@ import { UsersModule } from "./modules/users/users.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
+import { NotificationsModule } from './notifications/notifications.module';
+import { MotificationsController } from './motifications/motifications.controller';
 
 @Module({
   imports: [
@@ -20,8 +22,9 @@ import { AppController } from "./app.controller";
     JwtModule,
     UserLocalModule,
     UsersModule,
+    NotificationsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, MotificationsController],
   providers: [AppService],
 })
 export class AppModule {}
