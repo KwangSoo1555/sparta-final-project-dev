@@ -29,6 +29,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     JwtModule,
     UserSignOutModule,
     UsersModule,
+    FindAccountModule,
     NoticesModule,
     ReportsModule
   ],
