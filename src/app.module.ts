@@ -14,6 +14,8 @@ import { FindAccountModule } from './modules/auth/common/find-account/find-accou
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
+import { NoticesModule } from "./modules/notices/notices.module";
+import { ReportsModule } from './modules/reports/reports.module';
 
 
 @Module({
@@ -28,6 +30,8 @@ import { AppController } from "./app.controller";
     UserSignOutModule,
     UsersModule,
     FindAccountModule,
+    NoticesModule,
+    ReportsModule
   ],
   controllers: [AppController],
   providers: [AppService],
