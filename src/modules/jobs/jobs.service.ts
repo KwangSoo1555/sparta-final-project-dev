@@ -3,10 +3,10 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { MESSAGES } from 'src/common/constants/message.constant'
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 
-import { MESSAGES } from 'src/common/constants/message.constant'
 import { JobsEntity } from 'src/entities/jobs.entity'
 import { UsersEntity  } from 'src/entities/users.entity'
 
@@ -31,18 +31,34 @@ export class JobsService {
       throw new NotFoundException(MESSAGES.USERS.COMMON.NOT_FOUND);
     }
 
-    const data = await this.jobsRepository.save({
-      ownerId : userId,
-      title, 
-      content, 
-      photoUrl, 
-      price, 
-      address, 
-      category,
-      expiredYn : false,
-      matchedYn : false
-    });
-    return data;
+    if(photoUrl != ""){
+      const data = await this.jobsRepository.save({
+        ownerId : userId,
+        title, 
+        content, 
+        photoUrl, 
+        price, 
+        address, 
+        category,
+        expiredYn : false,
+        matchedYn : false
+      });
+
+      return data;
+    }else{
+      const data = await this.jobsRepository.save({
+        ownerId : userId,
+        title, 
+        content, 
+        price, 
+        address, 
+        category,
+        expiredYn : false,
+        matchedYn : false
+      });
+
+      return data;
+    }
   }
 
   async findAll() {

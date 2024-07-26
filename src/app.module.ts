@@ -9,14 +9,14 @@ import { JwtModule } from "./modules/auth/common/jwt/jwt.module";
 import { UserSignOutModule } from "./modules/auth/common/sign-out/sign-out.module";
 import { FindPwModule } from "./modules/auth/common/find-pw/find-pw.module";
 import { UsersModule } from "./modules/users/users.module";
-import { JobsModule } from './modules/jobs/jobs.module';
+import { JobsModule } from "./modules/jobs/jobs.module";
+import { JobMatchingModule } from "./modules/job-matching/job-matching.module";
 import { ChatModule } from "./modules/chat/chat.module";
 import { NoticesModule } from "./modules/notices/notices.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
-
 
 @Module({
   imports: [
@@ -33,6 +33,7 @@ import { AppController } from "./app.controller";
     ChatModule,
     NoticesModule,
     ReportsModule,
+    JobMatchingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
