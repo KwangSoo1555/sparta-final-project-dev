@@ -56,7 +56,7 @@ export class UserLocalService {
     // 소셜 회원가입이 아닌 로컬 회원가입 처리
     else {
       // 이메일 인증 코드 확인
-      const sendedEmailCode = await this.emailVerificationService.getCode(email);
+      const sendedEmailCode = await this.emailVerificationService.getVerificationCode(email);
       const isExpired = await this.emailVerificationService.isExpired(email);
       if (!sendedEmailCode || isExpired || sendedEmailCode !== verificationCode)
         throw new BadRequestException(MESSAGES.AUTH.SIGN_UP.EMAIL.VERIFICATION_CODE.INCONSISTENT);
@@ -83,14 +83,14 @@ export class UserLocalService {
     }
   }
 
-  async logIn(logInDto: UserLocalSignInDto, ip: string, userAgent: string) {
-    const user = await this.checkUserForAuth({ email: logInDto.email });
+  async signIn(signInDto: UserLocalSignInDto, ip: string, userAgent: string) {
+    const user = await this.checkUserForAuth({ email: signInDto.email });
 
     // 유저 존재 여부 확인
     if (!user) throw new NotFoundException(MESSAGES.AUTH.LOG_IN.LOCAL.EMAIL.NOT_FOUND);
 
     // 비밀번호 일치 여부 확인
-    const isPasswordMatch = await bcrypt.compare(logInDto.password, user.password);
+    const isPasswordMatch = await bcrypt.compare(signInDto.password, user.password);
     if (!isPasswordMatch)
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.LOCAL.PASSWORD.INCONSISTENT);
 
