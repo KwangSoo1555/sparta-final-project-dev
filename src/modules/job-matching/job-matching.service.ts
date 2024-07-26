@@ -17,8 +17,35 @@ export class JobMatchingService {
     @InjectRepository(UsersEntity) private UserRepository: Repository<UsersEntity>,
   ) {}
 
-  create(customerId : number, jobsId : number) {
-    return 'This action adds a new jobMatching';
+  async create(customerId : number, jobsId : number) {
+    const verifyUserbyId = await this.UserRepository.findOne({
+      where: {
+        id : customerId
+      },
+    })
+    if (_.isNil(verifyUserbyId)) {
+      throw new NotFoundException(MESSAGES.USERS.COMMON.NOT_FOUND);
+    }
+
+    const verifyJobbyId = await this.jobsRepository.findOne({
+      where: {
+        id : jobsId,
+        deletedAt : null
+      },
+    })
+    if (_.isNil(verifyJobbyId)) {
+      throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
+    }
+
+    const data = await this.jobsMatchingRepository.save({
+      customerId,
+      jobsId,
+      matchedYn : false,
+      rejectedYn : false,
+    })
+
+    return data;
+
   }
 
   async findAll(userId : number) {
