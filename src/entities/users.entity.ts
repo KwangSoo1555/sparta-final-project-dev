@@ -8,7 +8,7 @@ import {
   OneToOne,
   OneToMany,
 } from "typeorm";
-import { IsEnum } from "class-validator";
+import { IsEnum, IsNotEmpty, IsString } from "class-validator";
 
 import { RefreshTokensEntity } from "./refresh-tokens.entity";
 import { JobsEntity } from "./jobs.entity";
@@ -27,6 +27,11 @@ export class UsersEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * @example user1@example.com
+   */
+  @IsString()
+  @IsNotEmpty()
   @Column({ unique: true })
   email: string;
 
