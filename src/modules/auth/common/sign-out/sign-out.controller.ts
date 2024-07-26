@@ -9,9 +9,9 @@ import { RequestJwt } from "src/common/customs/decorator/jwt-request";
 export class UserSignOutController {
   constructor(private userSignOutService: UserSignOutService) {}
 
-  @Patch("log-out")
+  @Patch("sign-out")
   @UseGuards(JwtRefreshGuards)
-  logOut(@RequestJwt() { user: { id: userId } }) {
-    return this.userSignOutService.logOut(userId);
+  signOut(@RequestJwt() { user: { id: userId } }) {
+    return this.userSignOutService.signOut(userId);
   }
 }

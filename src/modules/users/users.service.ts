@@ -83,4 +83,8 @@ export class UsersService {
 
     return updatedUser;
   }
+
+  async quitUser(userId: number) {
+    await this.userRepository.update({ id: userId }, { deletedAt: new Date() });
+  }
 }

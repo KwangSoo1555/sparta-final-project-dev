@@ -8,7 +8,6 @@ import {
   OneToOne,
   OneToMany,
 } from "typeorm";
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
 
 import { RefreshTokensEntity } from "./refresh-tokens.entity";
 import { JobsEntity } from "./jobs.entity";
@@ -30,8 +29,6 @@ export class UsersEntity {
   /**
    * @example user1@example.com
    */
-  @IsString()
-  @IsNotEmpty()
   @Column({ unique: true })
   email: string;
 
@@ -47,7 +44,6 @@ export class UsersEntity {
   @Column({ name: "social_id", default: null })
   socialId: string;
 
-  @IsEnum(SocialProviders)
   @Column({ type: "enum", enum: SocialProviders, default: SocialProviders.LOCAL })
   provider: SocialProviders;
 

@@ -12,13 +12,25 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get("me")
-  getUsers(@RequestJwt() { user: { id: userId } }) {
+  getUsers(
+    @RequestJwt() { user: { id: userId } }
+  ) {
     return this.usersService.getUsers(userId);
   }
 
   @Patch("me")
   @UsePipes(ValidationPipe)
-  updateUser(@RequestJwt() { user: { id: userId } }, @Body() updateUserDto: UsersUpdateDto) {
+  updateUser(
+    @RequestJwt() { user: { id: userId } },
+    @Body() updateUserDto: UsersUpdateDto,
+  ) {
     return this.usersService.updateUser(userId, updateUserDto);
+  }
+
+  @Patch("quit")
+  quitUser(
+    @RequestJwt() { user: { id: userId } }
+  ) {
+    return this.usersService.quitUser(userId);
   }
 }
