@@ -25,9 +25,6 @@ export class ChatSeeder implements Seeder {
           receiverId: receiver.id,
           chatRoomsId: chatRoom.id,
           content: faker.lorem.sentence(),
-          chatSender: sender,
-          chatReciever: receiver,
-          chatRoomsEntity: chatRoom,
           createdAt: faker.date.past(),
         });
 
