@@ -4,8 +4,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { MESSAGES } from 'src/common/constants/message.constant'
-import { CreateJobMatchingDto } from './dto/create-job-matching.dto';
-import { UpdateJobMatchingDto } from './dto/update-job-matching.dto';
 
 import { JobsMatchingEntity } from 'src/entities/jobs-matching.entity'
 import { JobsEntity } from 'src/entities/jobs.entity'
@@ -19,23 +17,70 @@ export class JobMatchingService {
     @InjectRepository(UsersEntity) private UserRepository: Repository<UsersEntity>,
   ) {}
 
-  create(createJobMatchingDto: CreateJobMatchingDto) {
+  create(customerId : number, jobsId : number) {
     return 'This action adds a new jobMatching';
   }
 
-  findAll() {
-    return `This action returns all jobMatching`;
+  async findAll(userId : number) {
+    const data = await this.jobsMatchingRepository.find({
+      where: {
+        customerId : userId,
+        deletedAt : null,
+      },
+    })
+
+    return data;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} jobMatching`;
+  async findOne(matchingId: number) {
+    const data = await this.jobsMatchingRepository.findOne({
+      where: {
+        id : matchingId,
+      },
+    })
+
+    return data;
   }
 
-  update(id: number, updateJobMatchingDto: UpdateJobMatchingDto) {
-    return `This action updates a #${id} jobMatching`;
+  async updateMatchYn(customerId: number, matchingId: number) {
+    const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
+    if (_.isNil(matching)) {
+      throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
+    }
+    if (matching.customerId !== customerId) {
+      throw new BadRequestException(MESSAGES.JOBMATCH.MATCHING.NOT_VERIFY);
+    }
+
+    return await this.jobsMatchingRepository.update({ id : matchingId }, 
+      {
+        matchedYn : true,
+      });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} jobMatching`;
+  async updateRejectYn(customerId: number, matchingId: number) {
+    const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
+    if (_.isNil(matching)) {
+      throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
+    }
+    if (matching.customerId !== customerId) {
+      throw new BadRequestException(MESSAGES.JOBMATCH.REJECT.NOT_VERIFY);
+    }
+
+    return await this.jobsMatchingRepository.update({ id : matchingId }, 
+      {
+        rejectedYn : true,
+      });
+  }
+
+  async remove(customerId: number, matchingId: number) {
+    const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
+    if (_.isNil(matching)) {
+      throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
+    }
+    if (matching.customerId !== customerId) {
+      throw new BadRequestException(MESSAGES.JOBMATCH.DELETE.NOT_VERIFY);
+    }
+
+    return await this.jobsMatchingRepository.softRemove({ id : matchingId });
   }
 }

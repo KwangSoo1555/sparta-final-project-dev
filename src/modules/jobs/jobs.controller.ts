@@ -27,12 +27,12 @@ export class JobsController {
   /**
    * job 생성
    * @param createJobDto
-   * @param user
+   * @param userId
    * @returns
    */
   @Post()
-  create(@Body() createJobDto: CreateJobDto, @RequestJwt() { user: { id: userId } }) {
-    const createJob = this.jobsService.create(createJobDto, userId);
+  async create(@Body() createJobDto: CreateJobDto, @RequestJwt() { user: { id: userId } }) {
+    const createJob = await this.jobsService.create(createJobDto, userId);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -46,8 +46,8 @@ export class JobsController {
    * @returns
    */
   @Get()
-  findAll() {
-    const jobs = this.jobsService.findAll();
+  async findAll() {
+    const jobs = await this.jobsService.findAll();
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -62,8 +62,8 @@ export class JobsController {
    * @returns
    */
   @Get(":jobsId")
-  findOne(@Param("jobsId") jobsId: string) {
-    const job = this.jobsService.findOne(+jobsId);
+  async findOne(@Param("jobsId") jobsId: string) {
+    const job = await this.jobsService.findOne(+jobsId);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -75,17 +75,17 @@ export class JobsController {
   /**
    * job 수정
    * @param jobsId
-   * @param user
+   * @param userId
    * @param updateJobDto
    * @returns
    */
   @Patch(":jobsId")
-  update(
+  async update(
     @Param("jobsId") jobsId: string,
     @RequestJwt() { user: { id: userId } },
     @Body() updateJobDto: UpdateJobDto,
   ) {
-    const updateJob = this.jobsService.update(userId, +jobsId, updateJobDto);
+    const updateJob = await this.jobsService.update(userId, +jobsId, updateJobDto);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -97,12 +97,12 @@ export class JobsController {
   /**
    * job 삭제
    * @param jobsId
-   * @param user
+   * @param userId
    * @returns
    */
   @Delete(":jobsId")
-  remove(@Param("jobsId") jobsId: string, @RequestJwt() { user: { id: userId } }) {
-    const deleteJob = this.jobsService.remove(userId, +jobsId);
+  async remove(@Param("jobsId") jobsId: string, @RequestJwt() { user: { id: userId } }) {
+    const deleteJob = await this.jobsService.remove(userId, +jobsId);
 
     return {
       statusCode: HttpStatus.CREATED,
