@@ -1,19 +1,28 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
 import { JwtAccessGuards } from "src/modules/auth/common/jwt/jwt-strategy.service";
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RequestJwt } from "src/common/customs/decorator/jwt-request";
 import { MESSAGES } from 'src/common/constants/message.constant'
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 
+@ApiTags('jobs')
+@ApiBearerAuth()
 @UseGuards(JwtAccessGuards)
 @Controller('jobs')
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
+  /**
+   * job 생성
+   * @param createJobDto
+   * @param userId
+   * @returns
+   */
   @Post()
-  create(@Body() createJobDto: CreateJobDto, @RequestJwt() { user: { id: userId }}) {
-    const createJob = this.jobsService.create(createJobDto,userId);
+  async create(@Body() createJobDto: CreateJobDto, @RequestJwt() { user: { id: userId }}) {
+    const createJob = await this.jobsService.create(createJobDto,userId);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -22,9 +31,13 @@ export class JobsController {
     };
   }
 
+  /**
+   * job 목록 조회
+   * @returns
+   */
   @Get()
-  findAll() {
-    const jobs =  this.jobsService.findAll();
+  async findAll() {
+    const jobs =  await this.jobsService.findAll();
     
     return {
       statusCode: HttpStatus.CREATED,
@@ -33,9 +46,14 @@ export class JobsController {
     };
   }
 
+  /**
+   * job 상세 조회
+   * @param jobsId
+   * @returns
+   */
   @Get(':jobsId')
-  findOne(@Param('jobsId') jobsId: string) {
-    const job = this.jobsService.findOne(+jobsId);
+  async findOne(@Param('jobsId') jobsId: string) {
+    const job = await this.jobsService.findOne(+jobsId);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -44,9 +62,16 @@ export class JobsController {
     };
   }
 
+  /**
+   * job 수정
+   * @param jobsId
+   * @param userId
+   * @param updateJobDto
+   * @returns
+   */
   @Patch(':jobsId')
-  update(@Param('jobsId') jobId: string, @RequestJwt() { user: { id: userId }}, @Body() updateJobDto: UpdateJobDto) {
-    const updateJob = this.jobsService.update(userId, +jobId, updateJobDto);
+  async update(@Param('jobsId') jobsId: string, @RequestJwt() { user: { id: userId }}, @Body() updateJobDto: UpdateJobDto) {
+    const updateJob = await this.jobsService.update(userId, +jobsId, updateJobDto);
 
     return {
       statusCode: HttpStatus.CREATED,
@@ -55,9 +80,49 @@ export class JobsController {
     };
   }
 
+  /**
+   * job matching 여부 수정
+   * @param jobsId
+   * @param userId
+   * @returns
+   */
+  @Patch('matching/:jobsId')
+  async updateJobYn(@Param('jobsId') jobsId: string, @RequestJwt() { user: { id: userId }}) {
+    const updateJob = await this.jobsService.updateJobYn(userId, +jobsId);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: MESSAGES.JOBS.MATCHING.MATCHING_SUCCEED,
+      updateJob
+    };
+  }
+
+  /**
+   * job cancel 여부 수정
+   * @param jobsId
+   * @param userId
+   * @returns
+   */
+  @Patch('cancel/:jobsId')
+  async updateJobCancelYn(@Param('jobsId') jobsId: string, @RequestJwt() { user: { id: userId }}) {
+    const updateJob = await this.jobsService.updateJobCancelYn(userId, +jobsId);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: MESSAGES.JOBS.CANCEL.CANCEL_SUCCEED,
+      updateJob
+    };
+  }
+  
+  /**
+   * job 삭제
+   * @param jobsId
+   * @param userId
+   * @returns
+   */
   @Delete(':jobsId')
-  remove(@Param('jobsId') jobsId: string, @RequestJwt() { user: { id: userId }}) {
-    const deleteJob = this.jobsService.remove(userId, +jobsId);
+  async remove(@Param('jobsId') jobsId: string, @RequestJwt() { user: { id: userId }}) {
+    const deleteJob = await this.jobsService.remove(userId, +jobsId);
 
     return {
       statusCode: HttpStatus.CREATED,

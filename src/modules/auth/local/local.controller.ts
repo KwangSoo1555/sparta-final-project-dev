@@ -15,13 +15,13 @@ export class UserLocalController {
     return this.userLocalService.signUp(signUpDto);
   }
 
-  @Post("log-in")
+  @Post("sign-in")
   @UsePipes(ValidationPipe)
-  logIn(
+  signIn(
     @Ip() ip: string,
     @Headers("User-Agent") userAgent: string,
-    @Body() logInDto: UserLocalSignInDto,
+    @Body() signInDto: UserLocalSignInDto,
   ) {
-    return this.userLocalService.logIn(logInDto, ip, userAgent);
+    return this.userLocalService.signIn(signInDto, ip, userAgent);
   }
 }

@@ -20,10 +20,9 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle("Cats example")
-    .setDescription("The cats API description")
+    .setTitle("잡일")
+    .setDescription("final-project : 일일 잡일 대행 구인 서비스")
     .setVersion("1.0")
-    .addTag("cats")
     .addServer("api/v1")
     .addBearerAuth({ type: "http", scheme: "bearer", bearerFormat: "JWT" })
     .build();
