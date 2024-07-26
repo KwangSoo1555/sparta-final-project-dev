@@ -72,10 +72,10 @@ export class JobsService {
     return data;
   }
 
-  async findOne(id: number) {
+  async findOne(jobsId: number) {
     const data = await this.jobsRepository.findOne({
       where: {
-        id
+        id : jobsId,
       },
     })
 
@@ -92,6 +92,36 @@ export class JobsService {
     }
 
     return await this.jobsRepository.update({ id : jobsId }, updateJobDto);
+  }
+
+  async updateJobYn(ownerId: number, jobsId: number) {
+    const jobs = await this.jobsRepository.findOneBy({ id : jobsId });
+    if (_.isNil(jobs)) {
+      throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
+    }
+    if (jobs.ownerId !== ownerId) {
+      throw new BadRequestException(MESSAGES.JOBS.MATCHING.NOT_VERIFY);
+    }
+
+    return await this.jobsRepository.update({ id : jobsId }, 
+      {
+        matchedYn : true,
+      });
+  }
+
+  async updateJobCancelYn(ownerId: number, jobsId: number) {
+    const jobs = await this.jobsRepository.findOneBy({ id : jobsId });
+    if (_.isNil(jobs)) {
+      throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
+    }
+    if (jobs.ownerId !== ownerId) {
+      throw new BadRequestException(MESSAGES.JOBS.CANCEL.NOT_VERIFY);
+    }
+
+    return await this.jobsRepository.update({ id : jobsId }, 
+      {
+        expiredYn : true,
+      });
   }
 
   async remove(ownerId: number, jobsId: number) {
