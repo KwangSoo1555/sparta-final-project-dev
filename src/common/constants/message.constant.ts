@@ -161,7 +161,7 @@ export const MESSAGES = {
         CREATE_SUCCEED: "성공적으로 생성되었습니다.",
       },
       READ: {
-        READ_SUCCEED: "성공적으로 삭제되었습니다.",
+        READ_SUCCEED: "성공적으로 조회되었습니다.",
         NOT_VERIFY: "조회 권한이 없습니다."
       },
       UPDATE: {
@@ -171,6 +171,36 @@ export const MESSAGES = {
       DELETE: {
         DELETE_SUCCEED: "성공적으로 삭제되었습니다.",
         NOT_VERIFY: "삭제 권한이 없습니다."
+      },
+      MATCHING: {
+        MATCHING_SUCCEED: "성공적으로 매칭되었습니다.",
+        NOT_VERIFY: "매칭 권한이 없습니다."
+      },
+      CANCEL: {
+        CANCEL_SUCCEED: "성공적으로 취소되었습니다.",
+        NOT_VERIFY: "취소 권한이 없습니다."
+      },
+      NOT_EXISTS: "존재하지 않는 내용입니다.",
+    },
+    JOBMATCH: {
+      CREATE: {
+        CREATE_SUCCEED: "성공적으로 신청되었습니다.",
+      },
+      READ: {
+        READ_SUCCEED: "성공적으로 조회되었습니다.",
+        NOT_VERIFY: "조회 권한이 없습니다."
+      },
+      DELETE: {
+        DELETE_SUCCEED: "성공적으로 삭제되었습니다.",
+        NOT_VERIFY: "삭제 권한이 없습니다."
+      },
+      MATCHING: {
+        MATCHING_SUCCEED: "성공적으로 매칭되었습니다.",
+        NOT_VERIFY: "매칭 권한이 없습니다."
+      },
+      REJECT: {
+        REJECT_SUCCEED: "성공적으로 거정되었습니다.",
+        NOT_VERIFY: "거절 권한이 없습니다."
       },
       NOT_EXISTS: "존재하지 않는 내용입니다.",
     },
