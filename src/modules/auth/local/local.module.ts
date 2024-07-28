@@ -1,7 +1,6 @@
 import { Module, forwardRef } from "@nestjs/common";
 import { TypeOrmModule as NestTypeOrmModule } from "@nestjs/typeorm";
-import { EmailModule } from "../common/email/email.module";
-import { JwtModule } from "../common/jwt/jwt.module";
+import { AuthCommonModule } from "../common/common.module";
 
 import { UserLocalService } from "./local.service";
 import { UserLocalController } from "./local.controller";
@@ -12,11 +11,10 @@ import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
 @Module({
   imports: [
     NestTypeOrmModule.forFeature([UsersEntity, RefreshTokensEntity]),
-    EmailModule,
-    forwardRef(() => JwtModule),
+    forwardRef(() => AuthCommonModule),
   ],
   controllers: [UserLocalController],
   providers: [UserLocalService],
   exports: [UserLocalService],
 })
-export class UserLocalModule {}
+export class UserLocalModule { }

@@ -11,12 +11,12 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { ConfigService } from "@nestjs/config";
-import { EmailVerificationService } from "src/modules/auth/common/email/email.service";
+import { AuthCommonService } from "../common/common.service";
 
 import { UsersEntity } from "src/entities/users.entity";
 import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
-import { UserLocalSignUpDto } from "./local.dto/sign-up.dto";
-import { UserLocalSignInDto } from "./local.dto/sign-in.dto";
+import { UserLocalSignUpDto } from "./dto/sign-up.dto";
+import { UserLocalSignInDto } from "./dto/sign-in.dto";
 import { MESSAGES } from "src/common/constants/message.constant";
 import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
 
@@ -25,11 +25,11 @@ export class UserLocalService {
   constructor(
     @InjectRepository(UsersEntity)
     private readonly userRepository: Repository<UsersEntity>,
-    private readonly emailVerificationService: EmailVerificationService,
     private readonly configService: ConfigService,
     @InjectRepository(RefreshTokensEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokensEntity>,
-  ) {}
+    private readonly authCommonService: AuthCommonService,
+  ) { }
 
   async checkUserForAuth(params: { email?: string; id?: number }) {
     return this.userRepository.findOne({ where: { ...params } });
@@ -39,7 +39,7 @@ export class UserLocalService {
     const { email, password, verificationCode, provider, socialId } = signUpDto;
 
     // 소셜 회원가입 처리
-    if (provider && socialId) {
+    if (socialId) {
       const existingUser = await this.checkUserForAuth({ email });
       if (existingUser) throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
 
@@ -56,8 +56,8 @@ export class UserLocalService {
     // 소셜 회원가입이 아닌 로컬 회원가입 처리
     else {
       // 이메일 인증 코드 확인
-      const sendedEmailCode = await this.emailVerificationService.getVerificationCode(email);
-      const isExpired = await this.emailVerificationService.isExpired(email);
+      const sendedEmailCode = await this.authCommonService.getVerificationCode(email);
+      const isExpired = await this.authCommonService.isExpired(email);
       if (!sendedEmailCode || isExpired || sendedEmailCode !== verificationCode)
         throw new BadRequestException(MESSAGES.AUTH.SIGN_UP.EMAIL.VERIFICATION_CODE.INCONSISTENT);
 

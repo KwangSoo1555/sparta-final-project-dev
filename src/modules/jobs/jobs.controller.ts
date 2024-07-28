@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
-import { JwtAccessGuards } from "src/modules/auth/common/jwt/jwt-strategy.service";
+import { JwtAccessGuards } from "src/modules/auth/common/jwt-strategy";
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { MESSAGES } from 'src/common/constants/message.constant'
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';

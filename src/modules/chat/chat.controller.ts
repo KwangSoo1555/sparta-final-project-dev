@@ -11,8 +11,8 @@ import {
 } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
-import { JwtAccessGuards } from "../auth/common/jwt/jwt-strategy.service";
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { JwtAccessGuards } from "../auth/common/jwt-strategy";
+import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { UsersEntity } from "src/entities/users.entity";
 import { UpdateChatDto } from "./dto/update-chat.dto";
 

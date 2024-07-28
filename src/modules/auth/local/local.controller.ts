@@ -2,12 +2,12 @@ import { Controller, Post, Body, UsePipes, ValidationPipe, Ip, Headers } from "@
 
 import { UserLocalService } from "./local.service";
 
-import { UserLocalSignUpDto } from "./local.dto/sign-up.dto";
-import { UserLocalSignInDto } from "./local.dto/sign-in.dto";
+import { UserLocalSignUpDto } from "./dto/sign-up.dto";
+import { UserLocalSignInDto } from "./dto/sign-in.dto";
 
 @Controller("auth/local")
 export class UserLocalController {
-  constructor(private userLocalService: UserLocalService) {}
+  constructor(private userLocalService: UserLocalService) { }
 
   @Post("sign-up")
   @UsePipes(ValidationPipe)

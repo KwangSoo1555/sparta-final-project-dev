@@ -3,13 +3,9 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "./database/typeorm/typeorm.module";
 import { RedisModule } from "./database/redis/redis.module";
 
-import { EmailModule } from "./modules/auth/common/email/email.module";
+import { AuthCommonModule } from "./modules/auth/common/common.module";
 import { UserLocalModule } from "./modules/auth/local/local.module";
-import { GooglePassportModule } from "./modules/auth/social/google/google-passport.module";
-import { NaverPassportModule } from "./modules/auth/social/naver/naver-passport.module";
-import { JwtModule } from "./modules/auth/common/jwt/jwt.module";
-import { UserSignOutModule } from "./modules/auth/common/sign-out/sign-out.module";
-import { FindPwModule } from "./modules/auth/common/find-pw/find-pw.module";
+import { SocialPassportModule } from "./modules/auth/social/social-passport.module";
 import { UsersModule } from "./modules/users/users.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { JobMatchingModule } from "./modules/job-matching/job-matching.module";
@@ -25,13 +21,9 @@ import { AppController } from "./app.controller";
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule,
     RedisModule,
-    EmailModule,
+    AuthCommonModule,
     UserLocalModule,
-    GooglePassportModule,
-    NaverPassportModule,
-    JwtModule,
-    UserSignOutModule,
-    FindPwModule,
+    SocialPassportModule,
     UsersModule,
     JobsModule,
     ChatModule,
