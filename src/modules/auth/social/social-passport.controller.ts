@@ -13,7 +13,7 @@ export class SocialPassportController {
   @Get('google')
   @UseGuards(AuthGuard("google"))
   async googleAuth(@Request() req: ExpressRequest) {
-    console.log(req)
+    console.log("Google Auth Request:", req); // 콘솔 로그 추가
   }
 
   @Get("google/callback")
@@ -22,7 +22,7 @@ export class SocialPassportController {
     @Request() request: ExpressRequest,
     @Response() response: ExpressResponse
   ): Promise<ExpressResponse | void> {
-    console.log(request)
+    console.log("Google Auth Callback Request:", request); // 콘솔 로그 추가
     return await this.socialPassportService.googleLogin(request, response);
   }
 

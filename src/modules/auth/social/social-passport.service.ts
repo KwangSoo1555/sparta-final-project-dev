@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { UserLocalService } from "src/modules/auth/local/local.service";
 import { Response } from "express";
+
+import { UserLocalService } from "src/modules/auth/local/local.service";
 
 import { MESSAGES } from "src/common/constants/message.constant";
 
@@ -12,7 +13,7 @@ export class SocialPassportService {
 
   async googleLogin(req: any, res: Response<any>): Promise<Response | void> {
     try {
-      console.log(req)
+      console.log("Google Login Request:", req); // 콘솔 로그 추가
       const { user } = req.user;
 
       // 유저 중복 검사 후 존재하지 않는 유저면 회원가입
@@ -31,6 +32,7 @@ export class SocialPassportService {
 
       return res.json(tokens);
     } catch (error) {
+      console.log("Google Login Error:", error); // 콘솔 로그 추가
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.GOOGLE.EMAIL);
     }
   }

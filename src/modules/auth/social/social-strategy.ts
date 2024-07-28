@@ -22,6 +22,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
   async validate(
     profile: Profile
   ): Promise<UsersEntity | string> {
+    console.log("Google Profile:", profile); // 콘솔 로그 추가
     const {
       provider: oauthProvider,
       id: oauthId,
@@ -54,6 +55,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, "naver") {
   }
 
   async validate(profile: Profile, done: VerifyCallback): Promise<any> {
+    console.log("Naver Profile:", profile); // 콘솔 로그 추가
     const user_email = profile._json.email;
 
     const user = await this.userLocalService.checkUserForAuth({ email: user_email });
