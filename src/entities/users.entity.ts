@@ -18,8 +18,8 @@ import { ReportsEntity } from "./reports.entity";
 import { BlacklistsEntity } from "./blacklists.entity";
 import { NoticesEntity } from "./notices.entity";
 
-import { SocialProviders } from "../common/customs/types/enum-social-providers";
-import { UserRoles } from "../common/customs/types/enum-user-roles";
+import { SocialProviders } from "../common/customs/enums/enum-social-providers";
+import { UserRoles } from "../common/customs/enums/enum-user-roles";
 
 @Entity("users")
 export class UsersEntity {

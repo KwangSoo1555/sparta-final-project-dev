@@ -1,19 +1,18 @@
-import { Module, forwardRef } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { TypeOrmModule as NestTypeOrmModule } from "@nestjs/typeorm";
 import { JwtModule as NestJwtModule } from "@nestjs/jwt";
-import { AccessTokenStrategy, RefreshTokenStrategy } from "./jwt-strategy.service";
-
-import { UserLocalModule } from "src/modules/auth/local/local.module";
-
 import { ConfigService } from "@nestjs/config";
+import { AccessTokenStrategy, RefreshTokenStrategy } from "./strategies/jwt-strategy";
 
-import { JwtService } from "./jwt.service";
-import { JwtController } from "./jwt.controller";
+import { AuthService } from "./auth.service";
+import { AuthController } from "./auth.controller";
 
+import { UsersEntity } from "src/entities/users.entity";
 import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
 
 @Module({
   imports: [
+    NestTypeOrmModule.forFeature([UsersEntity, RefreshTokensEntity]),
     NestJwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>("ACCESS_TOKEN_SECRET"),
@@ -27,10 +26,9 @@ import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
       inject: [ConfigService],
     }),
     NestTypeOrmModule.forFeature([RefreshTokensEntity]),
-    forwardRef(() => UserLocalModule),
   ],
-  controllers: [JwtController],
-  providers: [JwtService, AccessTokenStrategy, RefreshTokenStrategy],
-  exports: [AccessTokenStrategy, RefreshTokenStrategy],
+  controllers: [AuthController],
+  providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
+  exports: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
 })
-export class JwtModule {}
+export class AuthModule {}
