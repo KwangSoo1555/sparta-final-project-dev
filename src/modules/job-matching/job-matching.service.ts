@@ -23,7 +23,7 @@ export class JobMatchingService {
         id : customerId
       },
     })
-    if (_.isNil(verifyUserbyId)) {
+    if (verifyUserbyId === undefined || verifyUserbyId === null) {
       throw new NotFoundException(MESSAGES.USERS.COMMON.NOT_FOUND);
     }
 
@@ -33,13 +33,13 @@ export class JobMatchingService {
         deletedAt : null
       },
     })
-    if (_.isNil(verifyJobbyId)) {
+    if (verifyJobbyId === undefined || verifyJobbyId === null) {
       throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
     }
 
     const data = await this.jobsMatchingRepository.save({
       customerId,
-      jobsId,
+      jobId : jobsId,
       matchedYn : false,
       rejectedYn : false,
     })
@@ -71,7 +71,7 @@ export class JobMatchingService {
 
   async updateMatchYn(customerId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
-    if (_.isNil(matching)) {
+    if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
     if (matching.customerId !== customerId) {
@@ -86,7 +86,7 @@ export class JobMatchingService {
 
   async updateRejectYn(customerId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
-    if (_.isNil(matching)) {
+    if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
     if (matching.customerId !== customerId) {
@@ -101,7 +101,7 @@ export class JobMatchingService {
 
   async remove(customerId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
-    if (_.isNil(matching)) {
+    if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
     if (matching.customerId !== customerId) {
