@@ -27,7 +27,7 @@ export class JobsService {
       },
     })
 
-    if (_.isNil(verifyUserbyId)) {
+    if (verifyUserbyId === undefined || verifyUserbyId === null) {
       throw new NotFoundException(MESSAGES.USERS.COMMON.NOT_FOUND);
     }
 
@@ -84,7 +84,7 @@ export class JobsService {
 
   async update(ownerId: number, jobsId: number, updateJobDto: UpdateJobDto) {
     const jobs = await this.jobsRepository.findOneBy({ id : jobsId });
-    if (_.isNil(jobs)) {
+    if (jobs === undefined || jobs === null) {
       throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
     }
     if (jobs.ownerId !== ownerId) {
@@ -96,7 +96,7 @@ export class JobsService {
 
   async updateJobYn(ownerId: number, jobsId: number) {
     const jobs = await this.jobsRepository.findOneBy({ id : jobsId });
-    if (_.isNil(jobs)) {
+    if (jobs === undefined || jobs === null) {
       throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
     }
     if (jobs.ownerId !== ownerId) {
@@ -111,7 +111,7 @@ export class JobsService {
 
   async updateJobCancelYn(ownerId: number, jobsId: number) {
     const jobs = await this.jobsRepository.findOneBy({ id : jobsId });
-    if (_.isNil(jobs)) {
+    if (jobs === undefined || jobs === null) {
       throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
     }
     if (jobs.ownerId !== ownerId) {
@@ -126,7 +126,7 @@ export class JobsService {
 
   async remove(ownerId: number, jobsId: number) {
     const jobs = await this.jobsRepository.findOneBy({ id : jobsId });
-    if (_.isNil(jobs)) {
+    if (jobs === undefined || jobs === null) {
       throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
     }
     if (jobs.ownerId !== ownerId) {
