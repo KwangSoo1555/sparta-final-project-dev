@@ -138,4 +138,18 @@ export const MESSAGES = {
     },
     NOT_EXISTS: "존재하지 않는 내용입니다.",
   },
+  BLACKLIST: {
+    CREATE: {
+      CREATE_SUCCEED: "성공적으로 등록되었습니다.",
+    },
+    READ: {
+      READ_SUCCEED: "성공적으로 조회되었습니다.",
+      NOT_VERIFY: "조회 권한이 없습니다.",
+    },
+    DELETE: {
+      DELETE_SUCCEED: "성공적으로 삭제되었습니다.",
+      NOT_VERIFY: "삭제 권한이 없습니다.",
+    },
+    NOT_EXISTS: "존재하지 않는 내용입니다.",
+  },
 };
