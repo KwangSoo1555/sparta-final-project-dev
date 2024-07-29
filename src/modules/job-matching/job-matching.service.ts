@@ -14,11 +14,11 @@ export class JobMatchingService {
   constructor(
     @InjectRepository(JobsMatchingEntity) private jobsMatchingRepository: Repository<JobsMatchingEntity>,
     @InjectRepository(JobsEntity) private jobsRepository: Repository<JobsEntity>,
-    @InjectRepository(UsersEntity) private UserRepository: Repository<UsersEntity>,
+    @InjectRepository(UsersEntity) private userRepository: Repository<UsersEntity>,
   ) {}
 
   async create(customerId : number, jobsId : number) {
-    const verifyUserbyId = await this.UserRepository.findOne({
+    const verifyUserbyId = await this.userRepository.findOne({
       where: {
         id : customerId
       },

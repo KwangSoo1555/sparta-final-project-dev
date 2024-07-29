@@ -14,11 +14,11 @@ import { NoticesService } from "./notices.service";
 import { CreateNoticeDto } from "./dto/create-notice.dto";
 import { UpdateNoticeDto } from "./dto/update-notice.dto";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { UsersEntity } from "src/entities/users.entity";
-import { JwtAccessGuards } from "../auth/common/jwt/jwt-strategy.service";
-import { Roles } from "src/common/customs/decorator/roles.decorator";
-import { UserRoles } from "src/common/customs/types/enum-user-roles";
+import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { Roles } from "src/common/customs/decorators/roles.decorator";
+import { UserRoles } from "src/common/customs/enums/enum-user-roles";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
 
 @ApiTags("공지사항")
