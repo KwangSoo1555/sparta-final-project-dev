@@ -1,5 +1,5 @@
 import { Controller, Get, Patch, UseGuards, UsePipes, ValidationPipe, Body } from "@nestjs/common";
-import { JwtAccessGuards } from "src/modules/auth/common/jwt-strategy";
+import { JwtAccessGuards } from "src/modules/auth/strategies/jwt-strategy";
 import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 
 import { UsersService } from "src/modules/users/users.service";

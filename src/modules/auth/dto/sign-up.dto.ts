@@ -10,9 +10,9 @@ import {
 } from "class-validator";
 import { Exclude } from "class-transformer";
 import { passwordMatch } from "src/common/customs/pipes/auth-validator";
-import { SocialProviders } from "src/common/customs/types/enum-social-providers";
+import { SocialProviders } from "src/common/customs/enums/enum-social-providers";
 
-export class UserLocalSignUpDto {
+export class UserSignUpDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(255)
@@ -24,13 +24,14 @@ export class UserLocalSignUpDto {
   email: string;
 
   @Exclude({ toPlainOnly: true })
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @MinLength(8)
   @MaxLength(20)
   password: string;
 
   @IsNotEmpty()
+  @IsOptional()
   @passwordMatch("password")
   passwordCheck: string;
 
@@ -43,7 +44,7 @@ export class UserLocalSignUpDto {
   @IsString()
   socialId?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   verificationCode: number;
 }

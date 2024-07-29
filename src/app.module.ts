@@ -3,9 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "./database/typeorm/typeorm.module";
 import { RedisModule } from "./database/redis/redis.module";
 
-import { AuthCommonModule } from "./modules/auth/common/common.module";
-import { UserLocalModule } from "./modules/auth/local/local.module";
-import { SocialPassportModule } from "./modules/auth/social/social-passport.module";
+import { AuthModule } from "./modules/auth/auth.module";
 import { UsersModule } from "./modules/users/users.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { JobMatchingModule } from "./modules/job-matching/job-matching.module";
@@ -21,9 +19,7 @@ import { AppController } from "./app.controller";
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule,
     RedisModule,
-    AuthCommonModule,
-    UserLocalModule,
-    SocialPassportModule,
+    AuthModule,
     UsersModule,
     JobsModule,
     ChatModule,

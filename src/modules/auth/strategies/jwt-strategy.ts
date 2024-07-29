@@ -4,7 +4,7 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { PassportStrategy, AuthGuard } from "@nestjs/passport";
 import { JwtPayload } from "jsonwebtoken";
 
-import { UserLocalService } from "src/modules/auth/local/local.service";
+import { AuthService } from "../auth.service";
 
 import { MESSAGES } from "src/common/constants/message.constant";
 
@@ -12,7 +12,7 @@ import { MESSAGES } from "src/common/constants/message.constant";
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, "accessToken") {
   constructor(
-    private userLocalService: UserLocalService,
+    private authService: AuthService,
     private configService: ConfigService,
   ) {
     super({
@@ -24,7 +24,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, "accessToken
   async validate(payload: JwtPayload) {
     const { userId } = payload;
 
-    const user = await this.userLocalService.checkUserForAuth({ id: userId });
+    const user = await this.authService.checkUserForAuth({ id: userId });
     if (!user) throw new UnauthorizedException(MESSAGES.AUTH.COMMON.JWT.INVALID);
 
     return user;
@@ -35,7 +35,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, "accessToken
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, "refreshToken") {
   constructor(
-    private userLocalService: UserLocalService,
+    private authService: AuthService,
     private configService: ConfigService,
   ) {
     super({
@@ -48,7 +48,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, "refreshTok
     //: Promise<UserAuthEntity> 함수의 타입을 명시합시다.
     const { userId } = payload;
 
-    const user = await this.userLocalService.checkUserForAuth({ id: userId });
+    const user = await this.authService.checkUserForAuth({ id: userId });
     if (!user) throw new UnauthorizedException(MESSAGES.AUTH.COMMON.JWT.INVALID);
 
     return user;
