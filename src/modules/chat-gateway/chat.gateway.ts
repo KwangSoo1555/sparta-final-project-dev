@@ -54,25 +54,34 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
-    const userId = this.getUserIdFromSocket(client);
-    if (userId) {
-      await this.redisConfig.setUserStatus(userId, "online");
-      this.connectedClients.push({ userId, client });
-      console.log(`User ${userId} connected with socket ID ${client.id}`);
-    } else {
-      console.error("Unauthorized connection attempt.");
-      client.disconnect(); // 연결 종료
+    try {
+      const userId = this.getUserIdFromSocket(client);
+      if (userId) {
+        await this.redisConfig.setUserStatus(userId, "online");
+        this.connectedClients.push({ userId, client });
+        console.log(`User ${userId} connected with socket ID ${client.id}`);
+      } else {
+        console.error("Unauthorized connection attempt. Disconnecting...");
+        client.disconnect(); // 연결 종료
+      }
+    } catch (error) {
+      console.error("Error during connection:", error);
+      client.disconnect(); // 오류 발생 시 연결 종료
     }
   }
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
-    const userId = this.getUserIdFromSocket(client);
-    if (userId) {
-      await this.redisConfig.removeUserStatus(userId);
-      this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
-      console.log(`User ${userId} disconnected`);
-    } else {
-      console.error("Unexpected disconnect without valid user ID.");
+    try {
+      const userId = this.getUserIdFromSocket(client);
+      if (userId) {
+        await this.redisConfig.removeUserStatus(userId);
+        this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
+        console.log(`User ${userId} disconnected`);
+      } else {
+        console.error("Unexpected disconnect without valid user ID.");
+      }
+    } catch (error) {
+      console.error("Error during disconnection:", error);
     }
   }
 

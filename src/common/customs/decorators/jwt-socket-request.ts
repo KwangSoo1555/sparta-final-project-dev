@@ -2,13 +2,11 @@
 
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
-export const RequestJwtBySocket = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToWs().getClient();
-    const { handshake } = request;
-    const user = handshake.user;
-    const authorization = handshake.headers["authorization"];
-    const token = authorization ? authorization.replace("Bearer ", "") : null;
-    return { user, token };
-  },
-);
+export const RequestJwtBySocket = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToWs().getClient();
+  const { handshake } = request;
+  const user = handshake.user;
+  const authorization = handshake.headers["authorization"];
+  const token = authorization ? authorization.replace("Bearer ", "") : null;
+  return { user, token };
+});
