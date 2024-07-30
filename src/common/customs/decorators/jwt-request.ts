@@ -8,6 +8,9 @@ export const RequestJwt = createParamDecorator(
     const user = request.user;
     const authorization = request.headers['authorization'];
     const token = authorization ? authorization.replace('Bearer ', '') : null;
+
+    console.log('RequestJwt - user:', user); // 디버깅 로그 추가
+    console.log('RequestJwt - token:', token); // 디버깅 로그 추가
     return { user, token };
   },
 );

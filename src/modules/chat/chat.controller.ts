@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { ChatService } from "./chat.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
-import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { JwtAccessGuards } from "src/modules/auth/strategies/jwt-strategy";
 import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { UsersEntity } from "src/entities/users.entity";
 import { UpdateChatDto } from "./dto/update-chat.dto";
@@ -55,8 +55,8 @@ export class ChatController {
     const findAllChatRooms = await this.chatService.findAllChatRooms(userId);
     return {
       statusCode: HttpStatus.OK,
-      message: "채팅룸 목록 조회 성공",
-      data: findAllChatRooms,
+      message: "카드목록 조회 성공",
+      findAllChatRooms,
     };
   }
 

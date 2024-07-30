@@ -1,12 +1,15 @@
-import { Module } from '@nestjs/common';
-import { ReportsService } from './reports.service';
-import { ReportsController } from './reports.controller';
-import { ReportsEntity } from 'src/entities/reports.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersEntity } from 'src/entities/users.entity';
+import { Module } from "@nestjs/common";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { AuthModule } from "../auth/auth.module";
+
+import { ReportsService } from "./reports.service";
+import { ReportsController } from "./reports.controller";
+
+import { UsersEntity } from "src/entities/users.entity";
+import { ReportsEntity } from "src/entities/reports.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ReportsEntity, UsersEntity])],
+  imports: [TypeOrmModule.forFeature([ReportsEntity, UsersEntity]), AuthModule],
   controllers: [ReportsController],
   providers: [ReportsService],
 })

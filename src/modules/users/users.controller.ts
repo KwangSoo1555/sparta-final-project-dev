@@ -12,9 +12,7 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get("me")
-  getUsers(
-    @RequestJwt() { user: { id: userId } }
-  ) {
+  getUsers(@RequestJwt() { user: { id: userId } }) {
     return this.usersService.getUsers(userId);
   }
 
@@ -28,9 +26,7 @@ export class UsersController {
   }
 
   @Patch("quit")
-  quitUser(
-    @RequestJwt() { user: { id: userId } }
-  ) {
+  quitUser(@RequestJwt() { user: { id: userId } }) {
     return this.usersService.quitUser(userId);
   }
 }

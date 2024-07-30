@@ -167,6 +167,6 @@ export class ReportsController {
     @Param("reportId") reportId: number,
   ) {
     await this.reportsService.deleteReport(reportId, userId);
-    return { statusCode: HttpStatus.OK, message: MESSAGES.REPORTS.DELETE.SUCCEED};
+    return { statusCode: HttpStatus.OK, message: MESSAGES.REPORTS.DELETE.SUCCEED };
   }
 }
