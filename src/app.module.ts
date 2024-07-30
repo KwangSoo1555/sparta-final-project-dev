@@ -14,6 +14,7 @@ import { BlacklistModule } from "./modules/blacklist/blacklist.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
+import { ChatGatewayModule } from "./modules/chat-gateway/chat-gateway.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AppController } from "./app.controller";
     ReportsModule,
     JobMatchingModule,
     BlacklistModule,
+    ChatGatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],

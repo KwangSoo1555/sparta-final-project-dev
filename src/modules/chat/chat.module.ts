@@ -13,5 +13,6 @@ import { ChatRoomsEntity } from "src/entities/chat-rooms.entity";
   imports: [TypeOrmModule.forFeature([ChatsEntity, UsersEntity, ChatRoomsEntity]), AuthModule],
   controllers: [ChatController],
   providers: [ChatService],
+  exports: [ChatService],
 })
 export class ChatModule {}
