@@ -3,6 +3,8 @@ import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
+import { IoAdapter } from "@nestjs/platform-socket.io";
+import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
 declare const module: any;
 
@@ -10,6 +12,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ["error", "warn"],
   });
+
+  const corsOptions: CorsOptions = {
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  };
+  app.enableCors(corsOptions);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -37,6 +46,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix("api/v1");
   app.enableCors();
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>("SERVER_PORT") || 3000;

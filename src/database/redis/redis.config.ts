@@ -27,4 +27,16 @@ export class RedisConfig {
   getClient(): Redis {
     return this.redisClient;
   }
+
+  async setUserStatus(userId: number, status: string) {
+    await this.redisClient.set(`user:${userId.toString()}:status`, status);
+  }
+
+  async getUserStatus(userId: number): Promise<string> {
+    return this.redisClient.get(`user:${userId.toString()}:status`);
+  }
+
+  async removeUserStatus(userId: number) {
+    await this.redisClient.del(`user:${userId.toString()}:status`);
+  }
 }

@@ -57,7 +57,11 @@ export class ChatService {
       content: content,
     });
 
+    console.log("+++++++++++++++test1");
+
     await this.chatsRepository.save(newChat);
+
+    console.log("+++++++++++++++++++++++++++++test2");
 
     return newChat;
   }
