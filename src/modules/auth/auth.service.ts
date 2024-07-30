@@ -230,10 +230,9 @@ export class AuthService {
     };
   }
 
-  async googleSignIn(req: any, res: any): Promise<Response | void> {
+  async socialSignIn(req: any, res: any): Promise<Response | void> {
     try {
-      console.log("Google Login Request:", req.user); // 콘솔 로그 추가
-      const { user } = req.user;
+      const user = req.user;
 
       if (!user) {
         return res.status(HttpStatus.BAD_REQUEST).json({
@@ -242,50 +241,23 @@ export class AuthService {
         });
       }
 
-      const existingUser = await this.checkUserForAuth({ email: user.email });
-      if (existingUser) {
-        throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
-      } else {
-        await this.signUp(user);
-      }
-
       const accessToken = this.createToken({ userId: user.id });
       const refreshToken = this.createToken({ userId: user.id }, true);
 
-      await this.refreshTokenStore(user.id, refreshToken, req.ip, req.Headers["user-agent"]);
+      const userAgent =
+        req.headers["user-agent"] ||
+        req.rawHeaders.find(
+          (header, index) => header.toLowerCase() === "user-agent" && req.rawHeaders[index + 1],
+        );
+      const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+
+      await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
 
       return res.json({ accessToken, refreshToken });
     } catch (error) {
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.GOOGLE.EMAIL);
     }
   }
-
-  // async naverSignIn(req: any, res: Response<any>): Promise<Response | void> {
-  //   try {
-  //     console.log("Naver Auth Callback Request:", req); // 콘솔 로그 추가
-  //     const { user } = req;
-  //     user.nickname = user.firstName + user.lastName;
-  //     delete user.lastName;
-  //     delete user.firstName;
-  //     user.type = "naver";
-
-  //     // 유저 중복 검사 후 존재하지 않는 유저면 회원가입
-  //     const existingUser = await this.checkUserForAuth({ email: user.email });
-  //     if (!existingUser) {
-  //       await this.signUp(user);
-  //     }
-
-  //     // 기존 로컬 로그인 로직 재사용
-  //     const loginDto = { email: user.email, password: user.password };
-  //     const tokens = await this.signIn(loginDto, req.ip, req.Headers["user-agent"]);
-
-  //     return res.json(tokens);
-  //   } catch (error) {
-  //     throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.NAVER.EMAIL);
-  //   }
-  // }
-
-  // async kakaoSignIn(req: any, res: Response<any>): Promise<Response | void> {}
 
   async tokenReissue(userId: number, refreshToken: string, ip: string, userAgent: string) {
     // refresh token 을 가지고 있는 유저인지 확인

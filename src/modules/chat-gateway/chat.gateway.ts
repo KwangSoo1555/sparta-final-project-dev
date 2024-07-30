@@ -9,7 +9,7 @@ import { Server, Socket } from "socket.io";
 import { ChatService } from "../chat/chat.service";
 import { Param, UseGuards } from "@nestjs/common";
 import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
-import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { RequestJwtBySocket } from "src/common/customs/decorators/jwt-socket-request"
 import { CreateChatDto } from "../chat/dto/create-chat.dto";
 import { UpdateChatDto } from "../chat/dto/update-chat.dto";
 
@@ -22,7 +22,7 @@ export class ChatGateway {
 
   @SubscribeMessage("sendChat")
   async handleChat(
-    @RequestJwt() { user: { id: userId } },
+    @RequestJwtBySocket() { user: { id: userId } },
     @MessageBody() createChatDto: CreateChatDto,
     @ConnectedSocket() client: Socket,
   ) {
@@ -33,7 +33,7 @@ export class ChatGateway {
 
   @SubscribeMessage("updateChat")
   async handleUpdateChat(
-    @RequestJwt() { user: { id: userId } },
+    @RequestJwtBySocket() { user: { id: userId } },
     @MessageBody() data: { chatRoomId: number; chatId: number; content: string },
     @ConnectedSocket() client: Socket,
   ) {
@@ -44,7 +44,7 @@ export class ChatGateway {
 
   @SubscribeMessage("deleteChat")
   async handleDeleteChat(
-    @RequestJwt() { user: { id: userId } },
+    @RequestJwtBySocket() { user: { id: userId } },
     @MessageBody() data: { chatRoomId: number; chatId: number },
     @ConnectedSocket() client: Socket,
   ) {

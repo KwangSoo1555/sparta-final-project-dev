@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { JwtAccessGuards } from "src/modules/auth/strategies/jwt-strategy";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { MESSAGES } from "src/common/constants/message.constant";
 import { JobMatchingService } from "./job-matching.service";
 
@@ -29,7 +29,7 @@ export class JobMatchingController {
    * @returns
    */
   @Post(":jobsId")
-  async create(@RequestJwt() { user: { id: userId } }, @Param("jobsId") jobsId: string) {
+  async create(@RequestJwtByHttp() { user: { id: userId } }, @Param("jobsId") jobsId: string) {
     const createMatching = await this.jobMatchingService.create(+userId, +jobsId);
 
     return {
@@ -45,7 +45,7 @@ export class JobMatchingController {
    * @returns
    */
   @Get("apply")
-  async findAllApply(@RequestJwt() { user: { id: userId } }) {
+  async findAllApply(@RequestJwtByHttp() { user: { id: userId } }) {
     const Matching = await this.jobMatchingService.findAllApply(+userId);
 
     return {
@@ -61,7 +61,7 @@ export class JobMatchingController {
    * @returns
    */
   @Get("applications")
-  async findAllApplication(@RequestJwt() { user: { id: userId } }) {
+  async findAllApplication(@RequestJwtByHttp() { user: { id: userId } }) {
     const Matching = await this.jobMatchingService.findAllApplication(+userId);
 
     return {
@@ -96,7 +96,7 @@ export class JobMatchingController {
   @Patch("accept/:matchingId")
   async updateMatchYn(
     @Param("matchingId") matchingId: string,
-    @RequestJwt() { user: { id: userId } },
+    @RequestJwtByHttp() { user: { id: userId } },
   ) {
     const Matching = await this.jobMatchingService.updateMatchYn(+userId, +matchingId);
 
@@ -116,7 +116,7 @@ export class JobMatchingController {
   @Patch("reject/:matchingId")
   async updateRejectYn(
     @Param("matchingId") matchingId: string,
-    @RequestJwt() { user: { id: userId } },
+    @RequestJwtByHttp() { user: { id: userId } },
   ) {
     const Matching = await this.jobMatchingService.updateRejectYn(+userId, +matchingId);
 
@@ -134,7 +134,10 @@ export class JobMatchingController {
    * @returns
    */
   @Delete(":matchingId")
-  async remove(@Param("matchingId") matchingId: string, @RequestJwt() { user: { id: userId } }) {
+  async remove(
+    @Param("matchingId") matchingId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const Matching = await this.jobMatchingService.remove(+userId, +matchingId);
 
     return {
