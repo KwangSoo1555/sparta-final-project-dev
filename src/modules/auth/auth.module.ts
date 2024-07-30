@@ -25,7 +25,6 @@ import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
       }),
       inject: [ConfigService],
     }),
-    NestTypeOrmModule.forFeature([RefreshTokensEntity]),
   ],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],

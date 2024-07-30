@@ -16,7 +16,7 @@ import {
 import { Request as ExpressRequest, Response as ExpressResponse } from "express";
 
 import { AuthGuard } from "@nestjs/passport";
-import { JwtRefreshGuards, JwtAccessGuards } from "./strategies/jwt-strategy";
+import { JwtAccessGuards, JwtRefreshGuards } from "./strategies/jwt-strategy";
 import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 
 import { AuthService } from "./auth.service";
@@ -124,7 +124,7 @@ export class AuthController {
   }
 
   @Patch("sign-out")
-  @UseGuards(JwtRefreshGuards)
+  @UseGuards(JwtAccessGuards)
   signOut(@RequestJwt() { user: { id: userId } }) {
     return this.authService.signOut(userId);
   }
