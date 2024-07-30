@@ -10,10 +10,11 @@ import { JobMatchingModule } from "./modules/job-matching/job-matching.module";
 import { ChatModule } from "./modules/chat/chat.module";
 import { NoticesModule } from "./modules/notices/notices.module";
 import { ReportsModule } from "./modules/reports/reports.module";
-import { BlacklistModule } from "./modules/blacklist/blacklist.module"
+import { BlacklistModule } from "./modules/blacklist/blacklist.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
+import { ChatGatewayModule } from "./modules/chat-gateway/chat-gateway.module";
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AppController } from "./app.controller";
     ReportsModule,
     JobMatchingModule,
     BlacklistModule,
+    ChatGatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],

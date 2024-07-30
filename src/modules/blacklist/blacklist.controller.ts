@@ -1,14 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
-import { JwtAccessGuards } from "src/modules/auth/common/jwt/jwt-strategy.service";
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
-import { MESSAGES } from 'src/common/constants/message.constant'
-import { BlacklistService } from './blacklist.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  HttpStatus,
+} from "@nestjs/common";
+import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { MESSAGES } from "src/common/constants/message.constant";
+import { BlacklistService } from "./blacklist.service";
 
-@ApiTags('blacklists')
+@ApiTags("blacklists")
 @ApiBearerAuth()
 @UseGuards(JwtAccessGuards)
-@Controller('blacklists')
+@Controller("blacklists")
 export class BlacklistController {
   constructor(private readonly blacklistService: BlacklistService) {}
 
@@ -19,13 +29,13 @@ export class BlacklistController {
    * @returns
    */
   @Post(":blackedId")
-  async create(@Param('blackedId') blackedId: string, @RequestJwt() { user: { id: userId }}) {
-    const blacklist = await this.blacklistService.create(+blackedId,+userId);
+  async create(@Param("blackedId") blackedId: string, @RequestJwt() { user: { id: userId } }) {
+    const blacklist = await this.blacklistService.create(+blackedId, +userId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.BLACKLIST.CREATE.CREATE_SUCCEED,
-      blacklist
+      blacklist,
     };
   }
 
@@ -35,13 +45,13 @@ export class BlacklistController {
    * @returns
    */
   @Get()
-  async findAll(@RequestJwt() { user: { id: userId }}) {
+  async findAll(@RequestJwt() { user: { id: userId } }) {
     const blacklist = await this.blacklistService.findAll(+userId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.BLACKLIST.READ.READ_SUCCEED,
-      blacklist
+      blacklist,
     };
   }
 
@@ -51,14 +61,14 @@ export class BlacklistController {
    * @param userId
    * @returns
    */
-  @Delete(':blacklistId')
-  async remove(@Param('blacklistId') blacklistId: string, @RequestJwt() { user: { id: userId }}) {
-    const blacklist = await this.blacklistService.remove(+blacklistId,+userId);
+  @Delete(":blacklistId")
+  async remove(@Param("blacklistId") blacklistId: string, @RequestJwt() { user: { id: userId } }) {
+    const blacklist = await this.blacklistService.remove(+blacklistId, +userId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.BLACKLIST.DELETE.DELETE_SUCCEED,
-      blacklist
+      blacklist,
     };
   }
 }
