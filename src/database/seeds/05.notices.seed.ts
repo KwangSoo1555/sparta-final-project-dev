@@ -3,7 +3,7 @@ import { DataSource } from "typeorm";
 import { Seeder, SeederFactoryManager } from "typeorm-extension";
 import { NoticesEntity } from "../../entities/notices.entity";
 import { UsersEntity } from "../../entities/users.entity";
-import { UserRoles } from "../../common/customs/types/enum-user-roles"
+import { UserRoles } from "../../common/customs/enums/enum-user-roles"
 
 export class NoticesSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
