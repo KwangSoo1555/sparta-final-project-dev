@@ -17,6 +17,7 @@ import { ReportsModule } from "./modules/reports/reports.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
+import { ChatGateway } from "./modules/chat-gateway/chat.gateway";
 
 @Module({
   imports: [
@@ -36,6 +37,6 @@ import { AppController } from "./app.controller";
     JobMatchingModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ChatGateway],
 })
 export class AppModule {}
