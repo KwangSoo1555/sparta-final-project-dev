@@ -20,6 +20,7 @@ import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
 import { Roles } from "src/common/customs/decorators/roles.decorator";
 import { UserRoles } from "src/common/customs/enums/enum-user-roles";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @ApiTags("공지사항")
 @Controller("notices")
@@ -36,13 +37,13 @@ export class NoticesController {
   @Roles(UserRoles.ADMIN)
   @Post()
   async createNotice(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, 'id'> },
+    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Body() noticeData: CreateNoticeDto,
   ) {
     const newNotice = await this.noticesService.createNewNotice(userId, noticeData);
     return {
       statusCode: HttpStatus.CREATED,
-      message: '공지사항이 성공적으로 생성되었습니다.',
+      message: MESSAGES.NOTICES.CREATE.SUCCESS,
       data: newNotice,
     };
   }
@@ -62,14 +63,14 @@ export class NoticesController {
     example: 20,
   })
   @Get()
-  async getNotices(@Query('page') page: number, @Query('limit') limit: number) {
+  async getNotices(@Query("page") page: number, @Query("limit") limit: number) {
     page = page && page > 0 ? page : 1;
     limit = limit && limit > 0 ? limit : 20;
 
     const { data, meta } = await this.noticesService.getNotices(page, limit);
     return {
       statusCode: HttpStatus.OK,
-      message: '공지사항 목록이 성공적으로 조회되었습니다.',
+      message: MESSAGES.NOTICES.READ.LIST_SUCCESS,
       data,
       meta,
     };
@@ -81,11 +82,11 @@ export class NoticesController {
    * @returns
    */
   @Get(":noticeId")
-  async getNoticeDetail(@Param('noticeId') noticeId: number) {
+  async getNoticeDetail(@Param("noticeId") noticeId: number) {
     const notice = await this.noticesService.getNoticeDetail(noticeId);
     return {
       statusCode: HttpStatus.OK,
-      message: '공지사항이 성공적으로 조회되었습니다.',
+      message: MESSAGES.NOTICES.READ.DETAIL_SUCCESS,
       data: notice,
     };
   }
@@ -107,7 +108,7 @@ export class NoticesController {
     const updatedNotice = await this.noticesService.updateNotice(noticeId, updateNoticeDto);
     return {
       statusCode: HttpStatus.OK,
-      message: '공지사항이 정상적으로 업데이트되었습니다.',
+      message: MESSAGES.NOTICES.UPDATE.SUCCESS,
       data: updatedNotice,
     };
   }
@@ -123,6 +124,6 @@ export class NoticesController {
   @Delete(":noticeId")
   async removeNotice(@Param("noticeId") noticeId: number) {
     await this.noticesService.removeNotice(noticeId);
-    return { statusCode: HttpStatus.OK, message: "공지사항이 정상적으로 삭제 되었습니다." };
+    return { statusCode: HttpStatus.OK, message: MESSAGES.NOTICES.DELETE.SUCCESS };
   }
 }
