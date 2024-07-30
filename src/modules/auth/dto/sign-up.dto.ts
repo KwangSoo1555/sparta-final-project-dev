@@ -28,12 +28,12 @@ export class UserSignUpDto {
   @IsString()
   @MinLength(8)
   @MaxLength(20)
-  password: string;
+  password?: string;
 
   @IsNotEmpty()
   @IsOptional()
   @passwordMatch("password")
-  passwordCheck: string;
+  passwordCheck?: string;
 
   @IsOptional()
   @IsEnum(SocialProviders)
@@ -46,5 +46,5 @@ export class UserSignUpDto {
 
   @IsOptional()
   @IsNumber()
-  verificationCode: number;
+  verificationCode?: number;
 }

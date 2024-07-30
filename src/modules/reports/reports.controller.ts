@@ -14,7 +14,7 @@ import { ReportsService } from "./reports.service";
 import { CreateReportDto } from "./dto/create-report.dto";
 import { UpdateReportDto } from "./dto/update-report.dto";
 import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
-import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { UsersEntity } from "src/entities/users.entity";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
@@ -66,7 +66,7 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Post()
   async createReport(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Body() createReportDto: CreateReportDto,
   ) {
     const createdReport = await this.reportsService.createReport(userId, createReportDto);
@@ -95,7 +95,7 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Get()
   async getReportList(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
 
     @Query("page") page: number,
     @Query("limit") limit: number,
@@ -121,7 +121,7 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Get(":reportId")
   async getReportDetail(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Param("reportId") reportId: number,
   ) {
     const reportDetail = await this.reportsService.getReportDetail(reportId, userId);
@@ -142,7 +142,7 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Patch(":reportId")
   async updateReport(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Param("reportId") reportId: number,
     @Body() updateReportDto: UpdateReportDto,
   ) {
@@ -163,7 +163,7 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Delete(":reportId")
   async deleteReport(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Param("reportId") reportId: number,
   ) {
     await this.reportsService.deleteReport(reportId, userId);

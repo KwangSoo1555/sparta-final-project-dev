@@ -14,7 +14,7 @@ import { NoticesService } from "./notices.service";
 import { CreateNoticeDto } from "./dto/create-notice.dto";
 import { UpdateNoticeDto } from "./dto/update-notice.dto";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { UsersEntity } from "src/entities/users.entity";
 import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
 import { Roles } from "src/common/customs/decorators/roles.decorator";
@@ -37,7 +37,7 @@ export class NoticesController {
   @Roles(UserRoles.ADMIN)
   @Post()
   async createNotice(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Body() noticeData: CreateNoticeDto,
   ) {
     const newNotice = await this.noticesService.createNewNotice(userId, noticeData);

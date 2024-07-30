@@ -1,9 +1,14 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule as NestTypeOrmModule } from "@nestjs/typeorm";
 import { JwtModule as NestJwtModule } from "@nestjs/jwt";
-import { ConfigService } from "@nestjs/config";
 import { AccessTokenStrategy, RefreshTokenStrategy } from "./strategies/jwt-strategy";
+import {
+  GooglePassportStrategy,
+  NaverPassportStrategy,
+  KakaoPassportStrategy,
+} from "./strategies/social-strategy";
 
+import { ConfigService } from "@nestjs/config";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 
@@ -27,7 +32,14 @@ import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
+  providers: [
+    AuthService,
+    AccessTokenStrategy,
+    RefreshTokenStrategy,
+    GooglePassportStrategy,
+    NaverPassportStrategy,
+    KakaoPassportStrategy,
+  ],
   exports: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
 })
 export class AuthModule {}

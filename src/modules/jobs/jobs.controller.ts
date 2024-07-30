@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { JwtAccessGuards } from "src/modules/auth/strategies/jwt-strategy";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
-import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { MESSAGES } from "src/common/constants/message.constant";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
@@ -31,7 +31,10 @@ export class JobsController {
    * @returns
    */
   @Post()
-  async create(@Body() createJobDto: CreateJobDto, @RequestJwt() { user: { id: userId } }) {
+  async create(
+    @Body() createJobDto: CreateJobDto,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const createJob = await this.jobsService.create(createJobDto, userId);
 
     return {
@@ -82,7 +85,7 @@ export class JobsController {
   @Patch(":jobsId")
   async update(
     @Param("jobsId") jobsId: string,
-    @RequestJwt() { user: { id: userId } },
+    @RequestJwtByHttp() { user: { id: userId } },
     @Body() updateJobDto: UpdateJobDto,
   ) {
     const updateJob = await this.jobsService.update(userId, +jobsId, updateJobDto);
@@ -101,7 +104,10 @@ export class JobsController {
    * @returns
    */
   @Patch("matching/:jobsId")
-  async updateJobYn(@Param("jobsId") jobsId: string, @RequestJwt() { user: { id: userId } }) {
+  async updateJobYn(
+    @Param("jobsId") jobsId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const updateJob = await this.jobsService.updateJobYn(userId, +jobsId);
 
     return {
@@ -118,7 +124,10 @@ export class JobsController {
    * @returns
    */
   @Patch("cancel/:jobsId")
-  async updateJobCancelYn(@Param("jobsId") jobsId: string, @RequestJwt() { user: { id: userId } }) {
+  async updateJobCancelYn(
+    @Param("jobsId") jobsId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const updateJob = await this.jobsService.updateJobCancelYn(userId, +jobsId);
 
     return {
@@ -135,7 +144,10 @@ export class JobsController {
    * @returns
    */
   @Delete(":jobsId")
-  async remove(@Param("jobsId") jobsId: string, @RequestJwt() { user: { id: userId } }) {
+  async remove(
+    @Param("jobsId") jobsId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const deleteJob = await this.jobsService.remove(userId, +jobsId);
 
     return {

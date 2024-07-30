@@ -43,7 +43,7 @@ export const MESSAGES = {
       },
       GOOGLE: {
         EMAIL: {
-          NOT_FOUND: "이메일이 존재하지 않습니다.",
+          NOT_FOUND: "이메일이 존재하지 않습니다.123",
         },
         SUCCEED: "구글 로그인에 성공했습니다.",
         FAIL: "구글 로그인에 실패했습니다.",
