@@ -33,13 +33,29 @@ export class JobMatchingController {
   }
 
   /**
-   * job-matching 목록조회
+   * job-matching 신청목록조회
    * @param userId
    * @returns
    */
-  @Get()
-  async findAll(@RequestJwt() { user: { id: userId }}) {
-    const Matching = await this.jobMatchingService.findAll(+userId);
+  @Get('apply')
+  async findAllApply(@RequestJwt() { user: { id: userId }}) {
+    const Matching = await this.jobMatchingService.findAllApply(+userId);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: MESSAGES.JOBMATCH.READ.READ_SUCCEED,
+      Matching
+    };
+  }
+
+  /**
+   * job-matching 지원목록조회
+   * @param userId
+   * @returns
+   */
+  @Get('applications')
+  async findAllApplication(@RequestJwt() { user: { id: userId }}) {
+    const Matching = await this.jobMatchingService.findAllApplication(+userId);
 
     return {
       statusCode: HttpStatus.CREATED,

@@ -48,15 +48,31 @@ export class JobMatchingService {
 
   }
 
-  async findAll(userId : number) {
+  async findAllApply(userId : number) {
     const data = await this.jobsMatchingRepository.find({
       where: {
         customerId : userId,
         deletedAt : null,
       },
-    })
+      order: { createdAt: 'DESC' }
+    })  
 
     return data;
+  }
+
+  async findAllApplication(userId : number) {
+    const data = await this.jobsRepository.find({
+      where: {
+        ownerId : userId,
+        deletedAt : null,
+      },
+      order: { createdAt: 'DESC' },
+      relations: ['jobsMatching'],
+    })
+
+    const jobsMatchingData = data.map(job => job.jobsMatching).flat();
+
+    return jobsMatchingData;
   }
 
   async findOne(matchingId: number) {
