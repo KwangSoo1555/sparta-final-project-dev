@@ -27,43 +27,29 @@ export class ChatGateway {
     @ConnectedSocket() client: Socket,
   ) {
     const { receiverId, content } = createChatDto;
-
-    // 새 채팅 메시지 생성 로직 (데이터베이스 저장 등)
     const newChat = await this.chatService.createChat(userId, createChatDto);
-
-    // 메시지를 해당 수신자에게 실시간으로 전송
     client.to(receiverId.toString()).emit("receiveChat", newChat);
-    this.server
-      .to(receiverId.toString())
-      .emit("newMessageAlert", { message: "새 메시지가 도착했습니다.", chat: newChat });
   }
 
   @SubscribeMessage("updateChat")
   async handleUpdateChat(
     @RequestJwt() { user: { id: userId } },
-    @Param("chat_rooms_id") chatRoomId: number,
-    @Param("chat_id") chatId: number,
-    @MessageBody() updateChatDto: UpdateChatDto,
+    @MessageBody() data: { chatRoomId: number; chatId: number; content: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const { content } = updateChatDto;
+    const { chatRoomId, chatId, content } = data;
     const updatedChat = await this.chatService.updateChat(userId, chatRoomId, chatId, { content });
-
-    // 변경 사항을 실시간으로 전송
     client.to(chatRoomId.toString()).emit("chatUpdated", updatedChat);
   }
 
   @SubscribeMessage("deleteChat")
   async handleDeleteChat(
     @RequestJwt() { user: { id: userId } },
-    @Param("chat_rooms_id") chatRoomId: number,
-    @Param("chat_id") chatId: number,
-    @MessageBody() data: { chatId: number; chatRoomId: number },
+    @MessageBody() data: { chatRoomId: number; chatId: number },
     @ConnectedSocket() client: Socket,
   ) {
+    const { chatRoomId, chatId } = data;
     await this.chatService.deleteChat(userId, chatRoomId, chatId);
-
-    // 삭제된 메시지 ID를 실시간으로 전송
     client.to(chatRoomId.toString()).emit("chatDeleted", { chatId });
   }
 
