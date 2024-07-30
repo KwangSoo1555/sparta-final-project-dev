@@ -4,6 +4,7 @@ import { UpdateNoticeDto } from "./dto/update-notice.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { NoticesEntity } from "src/entities/notices.entity";
 import { Repository } from "typeorm";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @Injectable()
 export class NoticesService {
@@ -68,9 +69,9 @@ export class NoticesService {
   }
 
   // ID 유효성 검사 함수
-  private validateId(id: number ){
+  private validateId(id: number) {
     if (Number.isNaN(id) || id <= 0) {
-      throw new NotFoundException('유효한 noticeId를 제공해주세요.');
+      throw new NotFoundException(MESSAGES.NOTICES.ERROR.INVALID_ID);
     }
   }
 
@@ -78,7 +79,7 @@ export class NoticesService {
   private async findOneBy(noticeId: number): Promise<NoticesEntity> {
     const noticeDetail = await this.noticeRepository.findOneBy({ id: noticeId });
     if (!noticeDetail) {
-      throw new NotFoundException("공지사항을 찾을 수 없습니다.");
+      throw new NotFoundException(MESSAGES.NOTICES.ERROR.NOT_FOUND);
     }
     return noticeDetail;
   }

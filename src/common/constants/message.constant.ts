@@ -43,7 +43,7 @@ export const MESSAGES = {
       },
       GOOGLE: {
         EMAIL: {
-          NOT_FOUND: "이메일이 존재하지 않습니다.",
+          NOT_FOUND: "이메일이 존재하지 않습니다.123",
         },
         SUCCEED: "구글 로그인에 성공했습니다.",
         FAIL: "구글 로그인에 실패했습니다.",
@@ -151,5 +151,51 @@ export const MESSAGES = {
       NOT_VERIFY: "삭제 권한이 없습니다.",
     },
     NOT_EXISTS: "존재하지 않는 내용입니다.",
+  },
+  REPORTS: {
+    ADMIN: {
+      LIST_SUCCEED: "유저 신고 목록 조회에 성공하였습니다.",
+    },
+    CREATE: {
+      SUCCEED: "신고가 성공적으로 접수되었습니다.",
+    },
+    READ: {
+      LIST_SUCCEED: "신고 목록이 성공적으로 조회되었습니다.",
+      DETAIL_SUCCEED: "신고 상세 정보가 성공적으로 조회되었습니다.",
+    },
+    UPDATE: {
+      SUCCEED: "신고가 성공적으로 수정되었습니다.",
+    },
+    DELETE: {
+      SUCCEED: "신고가 정상적으로 삭제되었습니다.",
+    },
+    ERRORS: {
+      USER_NOT_FOUND: {
+        REPORTED: "신고 대상 사용자를 찾을 수 없습니다.",
+        REPORTER: "신고자 정보를 찾을 수 없습니다.",
+      },
+      DUPLICATE_REPORT: "이미 해당 사용자에 대한 신고가 존재합니다.",
+      REPORT_NOT_FOUND: "해당 신고를 찾을 수 없거나 접근 권한이 없습니다.",
+      INVALID_REPORT_ID: "유효한 reportId를 제공해주세요.",
+    },
+  },
+  NOTICES: {
+    CREATE: {
+      SUCCESS: "공지사항이 성공적으로 생성되었습니다.",
+    },
+    READ: {
+      LIST_SUCCESS: "공지사항 목록이 성공적으로 조회되었습니다.",
+      DETAIL_SUCCESS: "공지사항이 성공적으로 조회되었습니다.",
+    },
+    UPDATE: {
+      SUCCESS: "공지사항이 정상적으로 업데이트되었습니다.",
+    },
+    DELETE: {
+      SUCCESS: "공지사항이 정상적으로 삭제되었습니다.",
+    },
+    ERROR: {
+      INVALID_ID: "유효한 noticeId를 제공해주세요.",
+      NOT_FOUND: "공지사항을 찾을 수 없습니다.",
+    },
   },
 };

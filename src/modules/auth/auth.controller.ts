@@ -16,8 +16,8 @@ import {
 import { Request as ExpressRequest, Response as ExpressResponse } from "express";
 
 import { AuthGuard } from "@nestjs/passport";
-import { JwtRefreshGuards, JwtAccessGuards } from "./strategies/jwt-strategy";
-import { RequestJwt } from "src/common/customs/decorators/jwt-request";
+import { JwtAccessGuards, JwtRefreshGuards } from "./strategies/jwt-strategy";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 
 import { AuthService } from "./auth.service";
 
@@ -61,9 +61,7 @@ export class AuthController {
 
   @Get("google")
   @UseGuards(AuthGuard("google"))
-  async googleAuth(@Request() req: ExpressRequest) {
-    console.log("Google Auth Request:", req.user); // 콘솔 로그 추가
-  }
+  async googleAuth(@Request() req: ExpressRequest) {}
 
   @Get("google/callback")
   @UseGuards(AuthGuard("google"))
@@ -71,47 +69,45 @@ export class AuthController {
     @Request() request: ExpressRequest,
     @Response() response: ExpressResponse,
   ): Promise<ExpressResponse | void> {
-    console.log("Google Auth Callback Request:", request.user); // 콘솔 로그 추가
-    await this.authService.googleSignIn(request, response);
+    await this.authService.socialSignIn(request, response);
     return response;
   }
 
-  // @Get("naver")
-  // @UseGuards(AuthGuard("naver"))
-  // async naverAuth(@Request() req: ExpressRequest) {
-  //   console.log(req);
-  // }
+  @Get("naver")
+  @UseGuards(AuthGuard("naver"))
+  async naverAuth(@Request() req: ExpressRequest) {}
 
-  // @Get("naver/callback")
-  // @UseGuards(AuthGuard("naver"))
-  // async naverAuthCallback(
-  //   @Request() request: ExpressRequest,
-  //   @Response() response: ExpressResponse,
-  // ): Promise<ExpressResponse | void> {
-  //   console.log("Naver Auth Callback Request:", request); // 콘솔 로그 추가
-  //   return await this.authService.naverSignIn(request, response);
-  // }
+  @Get("naver/callback")
+  @UseGuards(AuthGuard("naver"))
+  async naverAuthCallback(
+    @Request() request: ExpressRequest,
+    @Response() response: ExpressResponse,
+  ): Promise<ExpressResponse | void> {
+    await this.authService.socialSignIn(request, response);
+    return response;
+  }
 
-  // @Get("kakao")
-  // @UseGuards(AuthGuard("kakao"))
-  // async kakaoAuth(@Request() req: ExpressRequest) {
-  //   console.log(req);
-  // }
+  @Get("kakao")
+  @UseGuards(AuthGuard("kakao"))
+  async kakaoAuth(@Request() req: ExpressRequest) {
+    console.log(req);
+  }
 
-  // @Get("kakao/callback")
-  // @UseGuards(AuthGuard("kakao"))
-  // async kakaoAuthCallback(
-  //   @Request() request: ExpressRequest,
-  //   @Response() response: ExpressResponse,
-  // ): Promise<ExpressResponse | void> {
-  //   return await this.authService.kakaoSignIn(request, response);
-  // }
+  @Get("kakao/callback")
+  @UseGuards(AuthGuard("kakao"))
+  async kakaoAuthCallback(
+    @Request() request: ExpressRequest,
+    @Response() response: ExpressResponse,
+  ): Promise<ExpressResponse | void> {
+    await this.authService.socialSignIn(request, response);
+    return response;
+  }
 
   @Post("jwt-reissue")
   @UseGuards(JwtRefreshGuards)
   @UsePipes(ValidationPipe)
   tokenReissue(
-    @RequestJwt() { user: { id: userId }, token: refreshToken },
+    @RequestJwtByHttp() { user: { id: userId }, token: refreshToken },
     @Ip() ip: string,
     @Headers("user-agent") userAgent: string,
   ) {
@@ -124,8 +120,8 @@ export class AuthController {
   }
 
   @Patch("sign-out")
-  @UseGuards(JwtRefreshGuards)
-  signOut(@RequestJwt() { user: { id: userId } }) {
+  @UseGuards(JwtAccessGuards)
+  signOut(@RequestJwtByHttp() { user: { id: userId } }) {
     return this.authService.signOut(userId);
   }
 }

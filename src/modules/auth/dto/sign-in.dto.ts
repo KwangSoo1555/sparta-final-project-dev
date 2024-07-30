@@ -1,4 +1,7 @@
 import { IsNotEmpty, IsEmail, MaxLength, IsString, MinLength } from "class-validator";
+import { PickType } from "@nestjs/mapped-types";
+import { UserSignUpDto } from "./sign-up.dto";
+import { SocialProviders } from "src/common/customs/enums/enum-social-providers";
 
 export class LocalSignInDto {
   @IsNotEmpty()
@@ -13,26 +16,29 @@ export class LocalSignInDto {
   password: string;
 }
 
-export class GoogleSignInDto {
-  @IsNotEmpty()
-  @IsEmail()
-  @MaxLength(255)
-  email: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @MaxLength(255)
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  socialId: string;
-
-  @IsNotEmpty()
-  @IsString()
-  provider: string;
+export class GoogleSignInDto extends PickType(UserSignUpDto, [
+  "email",
+  "name",
+  "socialId",
+  "provider",
+] as const) {
+  provider: SocialProviders;
 }
 
-export class NaverSignInDto {}
+export class NaverSignInDto extends PickType(UserSignUpDto, [
+  "email",
+  "name",
+  "socialId",
+  "provider",
+] as const) {
+  provider: SocialProviders;
+}
 
-export class KakaoSignInDto {}
+export class KakaoSignInDto extends PickType(UserSignUpDto, [
+  "email",
+  "name",
+  "socialId",
+  "provider",
+] as const) {
+  provider: SocialProviders;
+}

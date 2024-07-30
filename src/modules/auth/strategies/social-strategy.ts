@@ -1,15 +1,19 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, ConflictException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { Strategy, Profile, VerifyCallback } from "passport-google-oauth20";
+import { Strategy as GoogleStrategy, Profile as GoogleProfile } from "passport-google-oauth20";
+import { Strategy as NaverStrategy, Profile as NaverProfile } from "passport-naver-v2";
+import { Strategy as KakaoStrategy, Profile as KakaoProfile } from "passport-kakao";
 import { ConfigService } from "@nestjs/config";
 
 import { AuthService } from "../auth.service";
 
 import { UsersEntity } from "src/entities/users.entity";
-import { GoogleSignInDto } from "../dto/sign-in.dto";
+import { GoogleSignInDto, NaverSignInDto, KakaoSignInDto } from "../dto/sign-in.dto";
+import { SocialProviders } from "src/common/customs/enums/enum-social-providers";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @Injectable()
-export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
+export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "google") {
   constructor(
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
@@ -25,26 +29,27 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
   async validate(
     _accessToken: string,
     _refreshToken: string,
-    profile: Profile,
+    profile: GoogleProfile,
   ): Promise<UsersEntity | string> {
-    console.log("Google Profile:", profile); // 콘솔 로그 추가
     const { id, name, emails, provider } = profile;
     const googleSignInDto: GoogleSignInDto = {
       email: emails[0].value,
-      provider: provider,
+      provider: provider as SocialProviders,
       socialId: id,
-      name: name.givenName + name.familyName,
+      name: name.familyName + name.givenName,
     };
 
-    const user = await this.authService.checkUserForAuth(googleSignInDto);
-    console.log({ user });
-    if (!user) return "fail";
-    return user;
+    const user = await this.authService.checkUserForAuth({ email: googleSignInDto.email });
+    if (!user) {
+      return await this.authService.signUp(googleSignInDto);
+    } else {
+      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+    }
   }
 }
 
 @Injectable()
-export class NaverStrategy extends PassportStrategy(Strategy, "naver") {
+export class NaverPassportStrategy extends PassportStrategy(NaverStrategy, "naver") {
   constructor(
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
@@ -56,15 +61,60 @@ export class NaverStrategy extends PassportStrategy(Strategy, "naver") {
     });
   }
 
-  async validate(profile: Profile, done: VerifyCallback): Promise<any> {
+  async validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: NaverProfile,
+  ): Promise<UsersEntity | string> {
     console.log("Naver Profile:", profile); // 콘솔 로그 추가
-    const user_email = profile._json.email;
+    const { id, name, email, provider } = profile;
+    const naverSignInDto: NaverSignInDto = {
+      email: email,
+      provider: provider as SocialProviders,
+      socialId: id,
+      name: name,
+    };
 
-    const user = await this.authService.checkUserForAuth({ email: user_email });
-    if (user === null) {
-      return fail;
+    const user = await this.authService.checkUserForAuth({ email: naverSignInDto.email });
+    if (!user) {
+      return await this.authService.signUp(naverSignInDto);
+    } else {
+      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
     }
+  }
+}
 
-    return done(null, user);
+@Injectable()
+export class KakaoPassportStrategy extends PassportStrategy(KakaoStrategy, "kakao") {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly authService: AuthService,
+  ) {
+    super({
+      clientID: configService.get("KAKAO_CLIENT_ID"),
+      clientSecret: configService.get("KAKAO_CLIENT_SECRET"),
+      callbackURL: configService.get("KAKAO_CALLBACK_URL"),
+    });
+  }
+
+  async validate(
+    _accessToken: string,
+    _refreshToken: string,
+    profile: KakaoProfile,
+  ): Promise<UsersEntity | string> {
+    const { id, name, emails, provider } = profile;
+    const kakaoSignInDto: KakaoSignInDto = {
+      email: emails[0].value,
+      provider: provider as SocialProviders,
+      socialId: id,
+      name: name.familyName + name.givenName,
+    };
+
+    const user = await this.authService.checkUserForAuth({ email: kakaoSignInDto.email });
+    if (!user) {
+      return await this.authService.signUp(kakaoSignInDto);
+    } else {
+      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+    }
   }
 }

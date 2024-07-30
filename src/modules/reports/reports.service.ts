@@ -5,6 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { ReportsEntity } from "src/entities/reports.entity";
 import { Repository } from "typeorm";
 import { UsersEntity } from "src/entities/users.entity";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @Injectable()
 export class ReportsService {
@@ -103,7 +104,7 @@ export class ReportsService {
   private async getUserByEmail(email: string): Promise<UsersEntity> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
-      throw new NotFoundException("신고 대상 사용자를 찾을 수 없습니다.");
+      throw new NotFoundException(MESSAGES.REPORTS.ERRORS.USER_NOT_FOUND.REPORTED);
     }
     return user;
   }
@@ -111,7 +112,7 @@ export class ReportsService {
   private async getUserById(id: number): Promise<UsersEntity> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) {
-      throw new NotFoundException("신고자 정보를 찾을 수 없습니다.");
+      throw new NotFoundException(MESSAGES.REPORTS.ERRORS.USER_NOT_FOUND.REPORTER);
     }
     return user;
   }
@@ -122,7 +123,7 @@ export class ReportsService {
     });
 
     if (existingReport) {
-      throw new ConflictException("이미 해당 사용자에 대한 신고가 존재합니다.");
+      throw new ConflictException(MESSAGES.REPORTS.ERRORS.DUPLICATE_REPORT);
     }
   }
 
@@ -132,7 +133,7 @@ export class ReportsService {
     });
 
     if (!report) {
-      throw new NotFoundException("해당 신고를 찾을 수 없거나 접근 권한이 없습니다.");
+      throw new NotFoundException(MESSAGES.REPORTS.ERRORS.REPORT_NOT_FOUND);
     }
     return report;
   }
@@ -140,7 +141,7 @@ export class ReportsService {
   // ID 유효성 검사 함수
   private validateId(id: number) {
     if (Number.isNaN(id) || id <= 0) {
-      throw new NotFoundException("유효한 reportId를 제공해주세요.");
+      throw new NotFoundException(MESSAGES.REPORTS.ERRORS.INVALID_REPORT_ID);
     }
   }
 }
