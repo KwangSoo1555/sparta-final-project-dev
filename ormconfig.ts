@@ -1,5 +1,5 @@
-import { DataSource } from "typeorm";
 import "dotenv/config";
+import { DataSource } from "typeorm";
 import { UsersEntity } from "./src/entities/users.entity";
 import { RefreshTokensEntity } from "./src/entities/refresh-tokens.entity";
 import { ReportsEntity } from "./src/entities/reports.entity";
