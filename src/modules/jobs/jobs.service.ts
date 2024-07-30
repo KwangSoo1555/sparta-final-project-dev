@@ -67,6 +67,7 @@ export class JobsService {
         expiredYn : false,
         matchedYn : false,
       },
+      order: { createdAt: 'DESC' }
     })
 
     return data;
