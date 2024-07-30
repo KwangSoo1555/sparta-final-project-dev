@@ -20,6 +20,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
 import { UserRoles } from "src/common/customs/enums/enum-user-roles";
 import { Roles } from "src/common/customs/decorators/roles.decorator";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @ApiTags("신고")
 @Controller("reports")
@@ -50,7 +51,7 @@ export class ReportsController {
     const { reports, pagination } = await this.reportsService.adminReport(page, limit);
     return {
       statusCode: HttpStatus.OK,
-      message: "유저 신고 목록 조회에 성공하였습니다.",
+      message: MESSAGES.REPORTS.ADMIN.LIST_SUCCEED,
       data: reports,
       meta: pagination,
     };
@@ -71,7 +72,7 @@ export class ReportsController {
     const createdReport = await this.reportsService.createReport(userId, createReportDto);
     return {
       statusCode: HttpStatus.CREATED,
-      message: "신고가 성공적으로 접수되었습니다.",
+      message: MESSAGES.REPORTS.CREATE.SUCCEED,
       data: createdReport,
     };
   }
@@ -105,7 +106,7 @@ export class ReportsController {
 
     return {
       statusCode: HttpStatus.OK,
-      message: "신고 목록이 성공적으로 조회되었습니다.",
+      message: MESSAGES.REPORTS.READ.LIST_SUCCEED,
       data: reports,
       meta: pagination,
     };
@@ -126,7 +127,7 @@ export class ReportsController {
     const reportDetail = await this.reportsService.getReportDetail(reportId, userId);
     return {
       statusCode: HttpStatus.OK,
-      message: "신고 상세 정보가 성공적으로 조회되었습니다.",
+      message: MESSAGES.REPORTS.READ.DETAIL_SUCCEED,
       data: reportDetail,
     };
   }
@@ -148,7 +149,7 @@ export class ReportsController {
     const updatedReport = await this.reportsService.updateReport(userId, reportId, updateReportDto);
     return {
       statusCode: HttpStatus.OK,
-      message: "신고가 성공적으로 수정되었습니다.",
+      message: MESSAGES.REPORTS.UPDATE.SUCCEED,
       data: updatedReport,
     };
   }
@@ -166,6 +167,6 @@ export class ReportsController {
     @Param("reportId") reportId: number,
   ) {
     await this.reportsService.deleteReport(reportId, userId);
-    return { statusCode: HttpStatus.OK, message: "신고가 정상적으로 삭제되었습니다." };
+    return { statusCode: HttpStatus.OK, message: MESSAGES.REPORTS.DELETE.SUCCEED};
   }
 }

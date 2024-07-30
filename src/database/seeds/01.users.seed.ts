@@ -4,7 +4,7 @@ import { UsersEntity } from "../../entities/users.entity";
 import { DataSource } from "typeorm";
 import { Seeder, SeederFactoryManager } from "typeorm-extension";
 import { AUTH_CONSTANT } from '../../common/constants/auth.constant';
-import { UserRoles } from '../../common/customs/types/enum-user-roles';
+import { UserRoles } from '../../common/customs/enums/enum-user-roles';
 
 export class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
