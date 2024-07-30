@@ -31,10 +31,7 @@ export class JobsController {
    * @returns
    */
   @Post()
-  async create(
-    @Body() createJobDto: CreateJobDto,
-    @RequestJwt() { user: { id: userId } }
-  ) {
+  async create(@Body() createJobDto: CreateJobDto, @RequestJwt() { user: { id: userId } }) {
     const createJob = await this.jobsService.create(createJobDto, userId);
 
     return {

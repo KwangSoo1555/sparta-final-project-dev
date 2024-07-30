@@ -15,7 +15,6 @@ import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { MESSAGES } from "src/common/constants/message.constant";
 import { BlacklistService } from "./blacklist.service";
 
-
 @ApiTags("blacklists")
 @ApiBearerAuth()
 @UseGuards(JwtAccessGuards)

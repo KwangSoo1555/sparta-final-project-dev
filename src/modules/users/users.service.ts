@@ -26,12 +26,10 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(userId: number, {
-    email,
-    name,
-    currentPasswordCheck,
-    newPassword
-  }: UsersUpdateDto) {
+  async updateUser(
+    userId: number,
+    { email, name, currentPasswordCheck, newPassword }: UsersUpdateDto,
+  ) {
     const user = await this.checkUserForUsers({ id: userId });
 
     // 유저가 새로운 이메일 입력 시 이메일 중복 체크
@@ -57,31 +55,22 @@ export class UsersService {
         );
 
       // 현재 비밀번호 입력 시 비밀번호 일치 여부 체크
-      const isPasswordMatch = await bcrypt.compare(
-        currentPasswordCheck,
-        user.password,
-      );
+      const isPasswordMatch = await bcrypt.compare(currentPasswordCheck, user.password);
       if (!isPasswordMatch)
         throw new UnauthorizedException(
           MESSAGES.USERS.UPDATE_ME.PASSWORD.CURRENT_PASSWORD_INCONSISTENT,
         );
 
       // 새로운 비밀번호 입력 시 비밀번호 해싱
-      newPassword = await bcrypt.hash(
-        newPassword,
-        AUTH_CONSTANT.HASH_SALT_ROUNDS,
-      );
+      newPassword = await bcrypt.hash(newPassword, AUTH_CONSTANT.HASH_SALT_ROUNDS);
     }
 
-    const updated:Partial<UsersEntity> = {};
-    if(email) updated.email = email;
-    if(name) updated.name = name;
-    if(newPassword) updated.password = newPassword;
+    const updated: Partial<UsersEntity> = {};
+    if (email) updated.email = email;
+    if (name) updated.name = name;
+    if (newPassword) updated.password = newPassword;
 
-    await this.userRepository.update(
-      { id: userId },
-      updated,
-    );
+    await this.userRepository.update({ id: userId }, updated);
 
     // 업데이트된 유저 정보 반환
     const updatedUser = await this.checkUserForUsers({ id: userId });

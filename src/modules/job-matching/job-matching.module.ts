@@ -10,7 +10,14 @@ import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([JobsMatchingEntity, JobsEntity, UsersEntity]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      JobsMatchingEntity,
+      JobsEntity,
+      UsersEntity,
+    ]),
+    AuthModule,
+  ],
   controllers: [JobMatchingController],
   providers: [JobMatchingService],
 })
