@@ -14,11 +14,38 @@ export class JobMatchingService {
   constructor(
     @InjectRepository(JobsMatchingEntity) private jobsMatchingRepository: Repository<JobsMatchingEntity>,
     @InjectRepository(JobsEntity) private jobsRepository: Repository<JobsEntity>,
-    @InjectRepository(UsersEntity) private UserRepository: Repository<UsersEntity>,
+    @InjectRepository(UsersEntity) private userRepository: Repository<UsersEntity>,
   ) {}
 
-  create(customerId : number, jobsId : number) {
-    return 'This action adds a new jobMatching';
+  async create(customerId : number, jobsId : number) {
+    const verifyUserbyId = await this.userRepository.findOne({
+      where: {
+        id : customerId
+      },
+    })
+    if (verifyUserbyId === undefined || verifyUserbyId === null) {
+      throw new NotFoundException(MESSAGES.USERS.COMMON.NOT_FOUND);
+    }
+
+    const verifyJobbyId = await this.jobsRepository.findOne({
+      where: {
+        id : jobsId,
+        deletedAt : null
+      },
+    })
+    if (verifyJobbyId === undefined || verifyJobbyId === null) {
+      throw new NotFoundException(MESSAGES.JOBS.NOT_EXISTS);
+    }
+
+    const data = await this.jobsMatchingRepository.save({
+      customerId,
+      jobId : jobsId,
+      matchedYn : false,
+      rejectedYn : false,
+    })
+
+    return data;
+
   }
 
   async findAll(userId : number) {
@@ -44,7 +71,7 @@ export class JobMatchingService {
 
   async updateMatchYn(customerId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
-    if (_.isNil(matching)) {
+    if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
     if (matching.customerId !== customerId) {
@@ -59,7 +86,7 @@ export class JobMatchingService {
 
   async updateRejectYn(customerId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
-    if (_.isNil(matching)) {
+    if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
     if (matching.customerId !== customerId) {
@@ -74,7 +101,7 @@ export class JobMatchingService {
 
   async remove(customerId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id : matchingId });
-    if (_.isNil(matching)) {
+    if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
     if (matching.customerId !== customerId) {

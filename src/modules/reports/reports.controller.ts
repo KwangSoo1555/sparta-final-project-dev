@@ -13,13 +13,13 @@ import {
 import { ReportsService } from "./reports.service";
 import { CreateReportDto } from "./dto/create-report.dto";
 import { UpdateReportDto } from "./dto/update-report.dto";
-import { JwtAccessGuards } from "../auth/common/jwt/jwt-strategy.service";
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { UsersEntity } from "src/entities/users.entity";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
-import { UserRoles } from "src/common/customs/types/enum-user-roles";
-import { Roles } from "src/common/customs/decorator/roles.decorator";
+import { UserRoles } from "src/common/customs/enums/enum-user-roles";
+import { Roles } from "src/common/customs/decorators/roles.decorator";
 
 @ApiTags("신고")
 @Controller("reports")

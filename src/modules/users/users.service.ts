@@ -4,7 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { UsersEntity } from "src/entities/users.entity";
-import { UsersUpdateDto } from "src/modules/users/users.dto/update.dto";
+import { UsersUpdateDto } from "src/modules/users/dto/update-user.dto";
 import { MESSAGES } from "src/common/constants/message.constant";
 import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
 
@@ -26,34 +26,39 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(userId: number, updateUserDto: UsersUpdateDto) {
+  async updateUser(userId: number, {
+    email,
+    name,
+    currentPasswordCheck,
+    newPassword
+  }: UsersUpdateDto) {
     const user = await this.checkUserForUsers({ id: userId });
 
     // 유저가 새로운 이메일 입력 시 이메일 중복 체크
-    if (updateUserDto.email) {
+    if (email) {
       const isEmailExist = await this.checkUserForUsers({
-        email: updateUserDto.email,
+        email: email,
       });
       if (isEmailExist) throw new ConflictException(MESSAGES.USERS.UPDATE_ME.EMAIL.DUPLICATED);
     }
 
     // 유저가 새로운 비밀번호 입력 시 현재 비밀번호 체크
-    if (updateUserDto.newPassword) {
+    if (newPassword) {
       // 현재 비밀번호 입력 누락 시 오류 발생
-      if (!updateUserDto.currentPasswordCheck)
+      if (!currentPasswordCheck)
         throw new UnauthorizedException(
           MESSAGES.USERS.UPDATE_ME.PASSWORD.CURRENT_PASSWORD_REQUIRED,
         );
 
       // 새로운 비밀번호와 현재 비밀번호가 같으면 오류 발생
-      if (updateUserDto.newPassword === updateUserDto.currentPasswordCheck)
+      if (newPassword === currentPasswordCheck)
         throw new UnauthorizedException(
           MESSAGES.USERS.UPDATE_ME.PASSWORD.NEW_PASSWORD_NOT_EQUAL_CURRENT_PASSWORD,
         );
 
       // 현재 비밀번호 입력 시 비밀번호 일치 여부 체크
       const isPasswordMatch = await bcrypt.compare(
-        updateUserDto.currentPasswordCheck,
+        currentPasswordCheck,
         user.password,
       );
       if (!isPasswordMatch)
@@ -62,19 +67,20 @@ export class UsersService {
         );
 
       // 새로운 비밀번호 입력 시 비밀번호 해싱
-      updateUserDto.newPassword = await bcrypt.hash(
-        updateUserDto.newPassword,
+      newPassword = await bcrypt.hash(
+        newPassword,
         AUTH_CONSTANT.HASH_SALT_ROUNDS,
       );
     }
 
+    const updated:Partial<UsersEntity> = {};
+    if(email) updated.email = email;
+    if(name) updated.name = name;
+    if(newPassword) updated.password = newPassword;
+
     await this.userRepository.update(
       { id: userId },
-      {
-        ...(user.email && { email: updateUserDto.email }),
-        ...(user.name && { name: updateUserDto.name }),
-        ...(user.password && { password: updateUserDto.newPassword }),
-      },
+      updated,
     );
 
     // 업데이트된 유저 정보 반환

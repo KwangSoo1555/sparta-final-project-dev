@@ -8,8 +8,8 @@ import {
 import { Server, Socket } from "socket.io";
 import { ChatService } from "../chat/chat.service";
 import { Param, UseGuards } from "@nestjs/common";
-import { JwtAccessGuards } from "../auth/common/jwt/jwt-strategy.service";
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { RequestJwt } from "src/common/customs/decorators/jwt-request";
 import { CreateChatDto } from "../chat/dto/create-chat.dto";
 import { UpdateChatDto } from "../chat/dto/update-chat.dto";
 

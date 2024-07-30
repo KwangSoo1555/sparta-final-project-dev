@@ -1,16 +1,11 @@
-const WebpackPnpExternals = require('webpack-node-externals');
-const { RunScriptWebpackPlugin } = require('run-script-webpack-plugin');
+const WebpackPnpExternals = require("webpack-node-externals");
+const { RunScriptWebpackPlugin } = require("run-script-webpack-plugin");
 
 module.exports = function (options, webpack) {
   return {
     ...options,
-    entry: [
-      'webpack/hot/poll?100',
-      options.entry
-    ],
-    externals: [
-      WebpackPnpExternals({ allowlist: ['webpack/hot/poll?100'] })
-    ],
+    entry: ["webpack/hot/poll?100", options.entry],
+    externals: [WebpackPnpExternals({ allowlist: ["webpack/hot/poll?100"] })],
     plugins: [
       ...options.plugins,
       new webpack.HotModuleReplacementPlugin(),
@@ -20,4 +15,4 @@ module.exports = function (options, webpack) {
       new RunScriptWebpackPlugin({ name: options.output.filename, autoRestart: true }),
     ],
   };
-}
+};
