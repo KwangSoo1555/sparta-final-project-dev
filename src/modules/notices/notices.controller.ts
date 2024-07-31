@@ -62,6 +62,7 @@ export class NoticesController {
     description: "페이지당 항목 수",
     example: 20,
   })
+  @UseGuards(JwtAccessGuards)
   @Get()
   async getNotices(@Query("page") page: number, @Query("limit") limit: number) {
     page = page && page > 0 ? page : 1;
@@ -81,6 +82,7 @@ export class NoticesController {
    * @param noticeId
    * @returns
    */
+  @UseGuards(JwtAccessGuards)
   @Get(":noticeId")
   async getNoticeDetail(@Param("noticeId") noticeId: number) {
     const notice = await this.noticesService.getNoticeDetail(noticeId);
