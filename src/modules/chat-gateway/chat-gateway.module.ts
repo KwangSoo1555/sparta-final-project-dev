@@ -8,9 +8,18 @@ import { ChatRoomsEntity } from "src/entities/chat-rooms.entity";
 import { AuthModule } from "../auth/auth.module";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { AccessTokenStrategy } from "../auth/strategies/jwt-strategy";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [TypeOrmModule.forFeature([ChatsEntity, UsersEntity, ChatRoomsEntity]), AuthModule],
-  providers: [ChatGateway, ChatService, RedisConfig, AccessTokenStrategy],
+  providers: [
+    ChatGateway,
+    ChatService,
+    RedisConfig,
+    AccessTokenStrategy,
+    JwtService,
+    ConfigService,
+  ],
 })
 export class ChatGatewayModule {}

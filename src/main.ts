@@ -13,12 +13,12 @@ async function bootstrap() {
     logger: ["error", "warn"],
   });
 
-  const corsOptions: CorsOptions = {
-    origin: "*",
+  app.enableCors({
+    origin: "http://localhost:3000", // 허용할 클라이언트 도메인 (예: React 앱)
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-  };
-  app.enableCors(corsOptions);
+    allowedHeaders: ["Content-Type", "Authorization"], // 허용할 헤더
+    credentials: true, // 쿠키와 같은 인증 정보를 허용할지 여부
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -9,8 +9,8 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { ChatService } from "../chat/chat.service";
-import { UnauthorizedException, UseGuards } from "@nestjs/common";
-import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { UseGuards } from "@nestjs/common";
+import { JwtSocketGuards } from "../auth/strategies/jwt-strategy";
 import { RequestJwtBySocket } from "src/common/customs/decorators/jwt-socket-request";
 import { CreateChatDto } from "../chat/dto/create-chat.dto";
 import { UpdateChatDto } from "../chat/dto/update-chat.dto";
@@ -19,15 +19,27 @@ import { UsersEntity } from "src/entities/users.entity";
 import { Repository } from "typeorm";
 import { AuthService } from "../auth/auth.service";
 import { InjectRepository } from "@nestjs/typeorm";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 
-@UseGuards(JwtAccessGuards)
-@WebSocketGateway(4000, { cors: { origin: "localhost:3000" }, namespace: "chat" })
+// @UseGuards(JwtSocketGuards)
+@WebSocketGateway({
+  cors: {
+    origin: "http://localhost:3000", // 클라이언트의 URL
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  },
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 유저 정보를 레디스에 적재시키기 위해서 레디스 설정이 선행되야합니다. db와 상호작용을 위해 챗 서비스 의존성을 주입합니다.
   constructor(
     private readonly chatService: ChatService,
     private readonly redisConfig: RedisConfig,
     private readonly authService: AuthService,
+    private readonly jwtService: JwtService, // JwtService를 DI로 주입받음
+    private readonly configService: ConfigService,
     @InjectRepository(UsersEntity)
     private readonly usersRepository: Repository<UsersEntity>,
   ) {}
@@ -40,10 +52,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   getUserIdFromSocket(client: Socket): number | null {
-    const token = client.handshake.auth.token;
+    const authHeader = client.handshake.auth.token;
+    console.log("Authorization Header:", authHeader);
+    const token =
+      authHeader && authHeader.toLowerCase().startsWith("bearer ")
+        ? authHeader.substring(7) // "Bearer ".length = 7
+        : null;
+
     if (token) {
       try {
-        const decoded = this.authService.verifyToken(token);
+        const decoded = this.jwtService.verify(token, {
+          secret: this.configService.get<string>("ACCESS_TOKEN_SECRET"),
+        });
+        console.log("---------" + decoded.userId);
+        console.log(typeof decoded.userId);
         return decoded.userId;
       } catch (error) {
         console.error("Invalid token", error);
@@ -56,6 +78,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(@ConnectedSocket() client: Socket) {
     try {
       const userId = this.getUserIdFromSocket(client);
+      console.log(userId + "++++++++++++++++++++");
       if (userId) {
         await this.redisConfig.setUserStatus(userId, "online");
         this.connectedClients.push({ userId, client });
@@ -103,9 +126,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 내 상태를 online으로 변경
   @SubscribeMessage("setUserStatus")
   async setUserStatus(
-    @RequestJwtBySocket() { user: { id: userId } },
+    // @RequestJwtBySocket() { user: { id: userId } },
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.getUserIdFromSocket(client);
     await this.redisConfig.setUserStatus(userId, "online");
     const user = await this.getUserById(userId);
     client.emit("userStatus", { userId, name: user.name, status: "online" });
@@ -114,9 +138,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 내 상태를 offline으로 변경
   @SubscribeMessage("removeUserStatus")
   async removeUserStatus(
-    @RequestJwtBySocket() { user: { id: userId } },
+    // @RequestJwtBySocket() { user: { id: userId } },
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.getUserIdFromSocket(client);
     await this.redisConfig.removeUserStatus(userId);
     const user = await this.getUserById(userId);
     client.emit("userStatus", { userId, name: user.name, status: "offline" });
@@ -133,10 +158,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("sendChat")
   async handleChat(
-    @RequestJwtBySocket() { user: { id: userId } },
+    // @RequestJwtBySocket() { user: { id: userId } },
     @MessageBody() createChatDto: CreateChatDto,
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.getUserIdFromSocket(client);
     const { receiverId, content } = createChatDto;
     const newChat = await this.chatService.createChat(userId, createChatDto);
     console.log("++++++++++++++++++++" + newChat);
@@ -145,10 +171,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("updateChat")
   async handleUpdateChat(
-    @RequestJwtBySocket() { user: { id: userId } },
+    // @RequestJwtBySocket() { user: { id: userId } },
     @MessageBody() data: { chatRoomId: number; chatId: number; content: string },
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.getUserIdFromSocket(client);
     const { chatRoomId, chatId, content } = data;
     const updatedChat = await this.chatService.updateChat(userId, chatRoomId, chatId, { content });
     client.to(chatRoomId.toString()).emit("chatUpdated", updatedChat);
@@ -156,10 +183,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("deleteChat")
   async handleDeleteChat(
-    @RequestJwtBySocket() { user: { id: userId } },
+    // @RequestJwtBySocket() { user: { id: userId } },
     @MessageBody() data: { chatRoomId: number; chatId: number },
     @ConnectedSocket() client: Socket,
   ) {
+    const userId = this.getUserIdFromSocket(client);
     const { chatRoomId, chatId } = data;
     await this.chatService.deleteChat(userId, chatRoomId, chatId);
     client.to(chatRoomId.toString()).emit("chatDeleted", { chatId });
@@ -167,6 +195,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("joinRoom")
   handleRoomJoin(@MessageBody() data: { chatRoomId: number }, @ConnectedSocket() client: Socket) {
+    const userId = this.getUserIdFromSocket(client);
+    console.log("++++++++++++" + userId);
+    console.log("123123124124");
     client.join(data.chatRoomId.toString()); // 채팅룸 ID를 기반으로 방에 조인
   }
 }
