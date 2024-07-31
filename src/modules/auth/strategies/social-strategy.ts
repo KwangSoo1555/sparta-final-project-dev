@@ -102,12 +102,12 @@ export class KakaoPassportStrategy extends PassportStrategy(KakaoStrategy, "kaka
     _refreshToken: string,
     profile: KakaoProfile,
   ): Promise<UsersEntity | string> {
-    const { id, name, emails, provider } = profile;
+    const { id, username, _json: { kakao_account: { email } }, provider } = profile;
     const kakaoSignInDto: KakaoSignInDto = {
-      email: emails[0].value,
+      email: email,
       provider: provider as SocialProviders,
       socialId: id,
-      name: name.familyName + name.givenName,
+      name: username,
     };
 
     const user = await this.authService.checkUserForAuth({ email: kakaoSignInDto.email });
