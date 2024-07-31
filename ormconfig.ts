@@ -3,7 +3,7 @@ import { DataSource } from "typeorm";
 import { UsersEntity } from "./src/entities/users.entity";
 import { RefreshTokensEntity } from "./src/entities/refresh-tokens.entity";
 import { ReportsEntity } from "./src/entities/reports.entity";
-import { NotificationsEntity } from "./src/entities/notifications.entity";
+import { NotificationsEntity } from "./src/entities/notification-messages.entity";
 import { NoticesEntity } from "./src/entities/notices.entity";
 import { JobsEntity } from "./src/entities/jobs.entity";
 import { JobsMatchingEntity } from "./src/entities/jobs-matching.entity";

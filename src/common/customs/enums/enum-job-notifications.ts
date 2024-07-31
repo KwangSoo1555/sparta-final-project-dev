@@ -1,0 +1,7 @@
+export enum NotificationTypes {
+  JOB_KEYWORD = "JOB_KEYWORD",
+  JOB_ADDRESS = "JOB_ADDRESS",
+  JOB_EXPIRED = "JOB_EXPIRED",
+  JOB_MATCHED = "JOB_MATCHED",
+  NEW_NOTICE = "NEW_NOTICE",
+}
