@@ -3,12 +3,21 @@ import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
+import { IoAdapter } from "@nestjs/platform-socket.io";
+import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ["error", "warn"],
+  });
+
+  app.enableCors({
+    origin: "http://localhost:3000", // 허용할 클라이언트 도메인 (예: React 앱)
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"], // 허용할 헤더
+    credentials: true, // 쿠키와 같은 인증 정보를 허용할지 여부
   });
 
   app.useGlobalPipes(
@@ -37,6 +46,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix("api/v1");
   app.enableCors();
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>("SERVER_PORT") || 3000;

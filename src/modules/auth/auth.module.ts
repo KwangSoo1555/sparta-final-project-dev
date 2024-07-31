@@ -1,7 +1,11 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule as NestTypeOrmModule } from "@nestjs/typeorm";
 import { JwtModule as NestJwtModule } from "@nestjs/jwt";
-import { AccessTokenStrategy, RefreshTokenStrategy } from "./strategies/jwt-strategy";
+import {
+  AccessTokenStrategy,
+  AccessTokenWsStrategy,
+  RefreshTokenStrategy,
+} from "./strategies/jwt-strategy";
 import {
   GooglePassportStrategy,
   NaverPassportStrategy,
@@ -35,6 +39,7 @@ import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
   providers: [
     AuthService,
     AccessTokenStrategy,
+    AccessTokenWsStrategy,
     RefreshTokenStrategy,
     GooglePassportStrategy,
     NaverPassportStrategy,

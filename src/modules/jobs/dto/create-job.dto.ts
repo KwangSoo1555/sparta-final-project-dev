@@ -4,15 +4,15 @@ export class CreateJobDto {
 
   @IsNotEmpty({ message: '제목을 입력해주세요.' })
   @IsString()
-  title: String;
+  title: string;
 
   @IsNotEmpty({ message: '내용을 입력해주세요.' })
   @IsString()
-  content: String;
+  content: string;
 
   @IsOptional()
   @IsString()
-  photoUrl: String;
+  photoUrl: string;
 
   @IsNotEmpty({ message: '가격을 입력해주세요.' })
   @IsNumber()
@@ -20,9 +20,9 @@ export class CreateJobDto {
 
   @IsNotEmpty({ message: '주소를 입력해주세요.' })
   @IsString()
-  address: String;
+  address: string;
 
   @IsNotEmpty({ message: '카테고리를 입력해주세요.' })
   @IsString()
-  category: String;
+  category: string;
 }

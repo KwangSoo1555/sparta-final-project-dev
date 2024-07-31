@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -26,21 +26,12 @@ export class UsersService {
     return user;
   }
 
-  async updateUser(
-    userId: number,
-    { email, name, currentPasswordCheck, newPassword }: UsersUpdateDto,
-  ) {
+  async updateUser(userId: number, userUpdateDto: UsersUpdateDto) {
+    const { name, currentPasswordCheck, newPassword } = userUpdateDto;
     const user = await this.checkUserForUsers({ id: userId });
+    let hashedNewPassword: string;
 
-    // 유저가 새로운 이메일 입력 시 이메일 중복 체크
-    if (email) {
-      const isEmailExist = await this.checkUserForUsers({
-        email: email,
-      });
-      if (isEmailExist) throw new ConflictException(MESSAGES.USERS.UPDATE_ME.EMAIL.DUPLICATED);
-    }
-
-    // 유저가 새로운 비밀번호 입력 시 현재 비밀번호 체크
+    // 유저가 새로운 비밀번호 입력 시 유효성 검사
     if (newPassword) {
       // 현재 비밀번호 입력 누락 시 오류 발생
       if (!currentPasswordCheck)
@@ -62,13 +53,12 @@ export class UsersService {
         );
 
       // 새로운 비밀번호 입력 시 비밀번호 해싱
-      newPassword = await bcrypt.hash(newPassword, AUTH_CONSTANT.HASH_SALT_ROUNDS);
+      hashedNewPassword = await bcrypt.hash(newPassword, AUTH_CONSTANT.HASH_SALT_ROUNDS);
     }
 
     const updated: Partial<UsersEntity> = {};
-    if (email) updated.email = email;
     if (name) updated.name = name;
-    if (newPassword) updated.password = newPassword;
+    if (newPassword) updated.password = hashedNewPassword;
 
     await this.userRepository.update({ id: userId }, updated);
 
