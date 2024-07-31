@@ -22,10 +22,10 @@ export class JobsMatchingEntity {
   @Column({ name: "job_id" })
   jobId: number;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean' , name: "matched_yn" })
   matchedYn: boolean;
   
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean' , name: "rejected_yn" })
   rejectedYn: boolean;
 
   @CreateDateColumn({ name: "created_at" })

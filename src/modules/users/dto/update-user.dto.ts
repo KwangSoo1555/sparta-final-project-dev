@@ -3,11 +3,6 @@ import { Exclude } from "class-transformer";
 
 export class UsersUpdateDto {
   @IsOptional()
-  @IsEmail()
-  @MaxLength(255)
-  email?: string;
-
-  @IsOptional()
   @IsString()
   @MaxLength(255)
   name?: string;
