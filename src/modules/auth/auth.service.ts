@@ -319,6 +319,7 @@ export class AuthService {
   }
 
   verifyToken(token: string): JwtPayload {
+    console.log(token);
     if (token.includes("access")) {
       return jwt.verify(token, this.jwtAccessKey) as JwtPayload;
     } else {
