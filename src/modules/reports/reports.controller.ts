@@ -13,13 +13,14 @@ import {
 import { ReportsService } from "./reports.service";
 import { CreateReportDto } from "./dto/create-report.dto";
 import { UpdateReportDto } from "./dto/update-report.dto";
-import { JwtAccessGuards } from "../auth/common/jwt/jwt-strategy.service";
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
+import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { UsersEntity } from "src/entities/users.entity";
 import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
-import { UserRoles } from "src/common/customs/types/enum-user-roles";
-import { Roles } from "src/common/customs/decorator/roles.decorator";
+import { UserRoles } from "src/common/customs/enums/enum-user-roles";
+import { Roles } from "src/common/customs/decorators/roles.decorator";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @ApiTags("신고")
 @Controller("reports")
@@ -50,7 +51,7 @@ export class ReportsController {
     const { reports, pagination } = await this.reportsService.adminReport(page, limit);
     return {
       statusCode: HttpStatus.OK,
-      message: "유저 신고 목록 조회에 성공하였습니다.",
+      message: MESSAGES.REPORTS.ADMIN.LIST_SUCCEED,
       data: reports,
       meta: pagination,
     };
@@ -65,13 +66,13 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Post()
   async createReport(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Body() createReportDto: CreateReportDto,
   ) {
     const createdReport = await this.reportsService.createReport(userId, createReportDto);
     return {
       statusCode: HttpStatus.CREATED,
-      message: "신고가 성공적으로 접수되었습니다.",
+      message: MESSAGES.REPORTS.CREATE.SUCCEED,
       data: createdReport,
     };
   }
@@ -94,7 +95,7 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Get()
   async getReportList(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
 
     @Query("page") page: number,
     @Query("limit") limit: number,
@@ -105,7 +106,7 @@ export class ReportsController {
 
     return {
       statusCode: HttpStatus.OK,
-      message: "신고 목록이 성공적으로 조회되었습니다.",
+      message: MESSAGES.REPORTS.READ.LIST_SUCCEED,
       data: reports,
       meta: pagination,
     };
@@ -120,13 +121,13 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Get(":reportId")
   async getReportDetail(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Param("reportId") reportId: number,
   ) {
     const reportDetail = await this.reportsService.getReportDetail(reportId, userId);
     return {
       statusCode: HttpStatus.OK,
-      message: "신고 상세 정보가 성공적으로 조회되었습니다.",
+      message: MESSAGES.REPORTS.READ.DETAIL_SUCCEED,
       data: reportDetail,
     };
   }
@@ -141,14 +142,14 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Patch(":reportId")
   async updateReport(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Param("reportId") reportId: number,
     @Body() updateReportDto: UpdateReportDto,
   ) {
     const updatedReport = await this.reportsService.updateReport(userId, reportId, updateReportDto);
     return {
       statusCode: HttpStatus.OK,
-      message: "신고가 성공적으로 수정되었습니다.",
+      message: MESSAGES.REPORTS.UPDATE.SUCCEED,
       data: updatedReport,
     };
   }
@@ -162,10 +163,10 @@ export class ReportsController {
   @UseGuards(JwtAccessGuards)
   @Delete(":reportId")
   async deleteReport(
-    @RequestJwt() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
+    @RequestJwtByHttp() { user: { id: userId } }: { user: Pick<UsersEntity, "id"> },
     @Param("reportId") reportId: number,
   ) {
     await this.reportsService.deleteReport(reportId, userId);
-    return { statusCode: HttpStatus.OK, message: "신고가 정상적으로 삭제되었습니다." };
+    return { statusCode: HttpStatus.OK, message: MESSAGES.REPORTS.DELETE.SUCCEED };
   }
 }

@@ -1,16 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
-import { JwtAccessGuards } from "src/modules/auth/common/jwt/jwt-strategy.service";
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { RequestJwt } from "src/common/customs/decorator/jwt-request";
-import { MESSAGES } from 'src/common/constants/message.constant'
-import { JobMatchingService } from './job-matching.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  HttpStatus,
+} from "@nestjs/common";
+import { JwtAccessGuards } from "src/modules/auth/strategies/jwt-strategy";
+import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
+import { MESSAGES } from "src/common/constants/message.constant";
+import { JobMatchingService } from "./job-matching.service";
 
-
-
-@ApiTags('job-matching')
+@ApiTags("job-matching")
 @ApiBearerAuth()
 @UseGuards(JwtAccessGuards)
-@Controller('job-matching')
+@Controller("job-matching")
 export class JobMatchingController {
   constructor(private readonly jobMatchingService: JobMatchingService) {}
 
@@ -20,31 +28,46 @@ export class JobMatchingController {
    * @param jobsId
    * @returns
    */
-  @Post(':jobsId')
-  async create(@RequestJwt() { user: { id: userId }}, @Param('jobsId') jobsId: string) {
-
+  @Post(":jobsId")
+  async create(@RequestJwtByHttp() { user: { id: userId } }, @Param("jobsId") jobsId: string) {
     const createMatching = await this.jobMatchingService.create(+userId, +jobsId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.CREATE.CREATE_SUCCEED,
-      createMatching
+      createMatching,
     };
   }
 
   /**
-   * job-matching 목록조회
+   * job-matching 신청목록조회
    * @param userId
    * @returns
    */
-  @Get()
-  async findAll(@RequestJwt() { user: { id: userId }}) {
-    const Matching = await this.jobMatchingService.findAll(+userId);
+  @Get("apply")
+  async findAllApply(@RequestJwtByHttp() { user: { id: userId } }) {
+    const Matching = await this.jobMatchingService.findAllApply(+userId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.READ.READ_SUCCEED,
-      Matching
+      Matching,
+    };
+  }
+
+  /**
+   * job-matching 지원목록조회
+   * @param userId
+   * @returns
+   */
+  @Get("applications")
+  async findAllApplication(@RequestJwtByHttp() { user: { id: userId } }) {
+    const Matching = await this.jobMatchingService.findAllApplication(+userId);
+
+    return {
+      statusCode: HttpStatus.CREATED,
+      message: MESSAGES.JOBMATCH.READ.READ_SUCCEED,
+      Matching,
     };
   }
 
@@ -53,17 +76,16 @@ export class JobMatchingController {
    * @param matchingId
    * @returns
    */
-  @Get(':matchingId')
-  async findOne(@Param('matchingId') matchingId: string) {
+  @Get(":matchingId")
+  async findOne(@Param("matchingId") matchingId: string) {
     const Matching = await this.jobMatchingService.findOne(+matchingId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.READ.READ_SUCCEED,
-      Matching
+      Matching,
     };
   }
-  
 
   /**
    * job-matching 승락
@@ -71,15 +93,17 @@ export class JobMatchingController {
    * @param userId
    * @returns
    */
-  @Patch('accept/:matchingId')
-  async updateMatchYn(@Param('matchingId') matchingId: string, @RequestJwt() { user: { id: userId }}) {
-
+  @Patch("accept/:matchingId")
+  async updateMatchYn(
+    @Param("matchingId") matchingId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const Matching = await this.jobMatchingService.updateMatchYn(+userId, +matchingId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.MATCHING.MATCHING_SUCCEED,
-      Matching
+      Matching,
     };
   }
 
@@ -89,15 +113,17 @@ export class JobMatchingController {
    * @param userId
    * @returns
    */
-  @Patch('reject/:matchingId')
-  async updateRejectYn(@Param('matchingId') matchingId: string, @RequestJwt() { user: { id: userId }}) {
-
+  @Patch("reject/:matchingId")
+  async updateRejectYn(
+    @Param("matchingId") matchingId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const Matching = await this.jobMatchingService.updateRejectYn(+userId, +matchingId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.REJECT.REJECT_SUCCEED,
-      Matching
+      Matching,
     };
   }
 
@@ -107,15 +133,17 @@ export class JobMatchingController {
    * @param userId
    * @returns
    */
-  @Delete(':matchingId')
-  async remove(@Param('matchingId') matchingId: string, @RequestJwt() { user: { id: userId }}) {
-
+  @Delete(":matchingId")
+  async remove(
+    @Param("matchingId") matchingId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const Matching = await this.jobMatchingService.remove(+userId, +matchingId);
 
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.DELETE.DELETE_SUCCEED,
-      Matching
+      Matching,
     };
   }
 }

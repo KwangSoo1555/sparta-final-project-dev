@@ -64,21 +64,43 @@ export class ChatService {
 
   // 채팅룸 목록 조회
   async findAllChatRooms(userId: number) {
-    const chatRoom = this.chatRoomsRepository
+    const chatRooms = await this.chatRoomsRepository
       .createQueryBuilder("chat_room")
-      .select("chat_room.id")
+      .select(["chat_room.id", "chat_room.user1Id", "chat_room.user2Id"])
       .where(
         new Brackets((qb) => {
-          qb.where("chat_room.user1Id = :userId", {
-            userId,
-          }).orWhere("chat_room.user2Id = :userId", {
-            userId,
-          });
+          qb.where("chat_room.user1Id = :userId", { userId }).orWhere(
+            "chat_room.user2Id = :userId",
+            { userId },
+          );
         }),
       )
       .getMany();
 
-    return chatRoom;
+    const chatRoomDetails = await Promise.all(
+      chatRooms.map(async (room) => {
+        const receiverId = room.user1Id === userId ? room.user2Id : room.user1Id;
+        const receiver = await this.usersRepository.findOne({
+          select: { name: true },
+          where: { id: receiverId },
+        });
+
+        const lastMessage = await this.chatsRepository.findOne({
+          where: { chatRoomsId: room.id },
+          order: { createdAt: "DESC" },
+          select: ["content", "createdAt"],
+        });
+
+        return {
+          roomId: room.id,
+          receiverName: receiver.name,
+          lastMessage: lastMessage.content,
+          lastMessageTime: lastMessage.createdAt,
+        };
+      }),
+    );
+
+    return chatRoomDetails;
   }
 
   // 채팅 로그 조회
