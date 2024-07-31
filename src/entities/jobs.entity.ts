@@ -22,27 +22,27 @@ export class JobsEntity {
   ownerId: number;
 
   @Column()
-  title: String;
+  title: string;
 
   @Column()
-  content: String;
+  content: string;
 
   @Column({ name: "photo_url" })
-  photoUrl: String;
+  photoUrl: string;
 
   @Column()
   price: number;
 
   @Column()
-  address: String;
+  address: string;
 
   @Column()
-  category: String;
+  category: string;
 
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean' , name: "expired_yn" })
   expiredYn: boolean;
   
-  @Column({ type: 'boolean' })
+  @Column({ type: 'boolean' , name: "matched_yn" })
   matchedYn: boolean;
 
   @CreateDateColumn({ name: "created_at" })
