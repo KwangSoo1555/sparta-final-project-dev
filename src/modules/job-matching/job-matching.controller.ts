@@ -40,7 +40,7 @@ export class JobMatchingController {
   }
 
   /**
-   * job-matching 신청목록조회
+   * job-matching 내가 신청한 목록조회
    * @param userId
    * @returns
    */
@@ -56,14 +56,14 @@ export class JobMatchingController {
   }
 
   /**
-   * job-matching 지원목록조회
+   * job-matching 나에게 지원한 지원목록조회
    * @param userId
    * @returns
    */
   @Get("applications")
   async findAllApplication(@RequestJwtByHttp() { user: { id: userId } }) {
     const Matching = await this.jobMatchingService.findAllApplication(+userId);
-
+    
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.READ.READ_SUCCEED,
@@ -134,10 +134,7 @@ export class JobMatchingController {
    * @returns
    */
   @Delete(":matchingId")
-  async remove(
-    @Param("matchingId") matchingId: string,
-    @RequestJwtByHttp() { user: { id: userId } },
-  ) {
+  async remove(@Param("matchingId") matchingId: string, @RequestJwtByHttp() { user: { id: userId } }) {
     const Matching = await this.jobMatchingService.remove(+userId, +matchingId);
 
     return {
