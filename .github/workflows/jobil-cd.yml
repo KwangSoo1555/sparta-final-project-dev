@@ -50,7 +50,7 @@ jobs:
             #echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
             # 의존성 설치
-            npm ci
+            npm install
 
             # 빌드 (ts 아니면 생략 가능)
             npm run build
