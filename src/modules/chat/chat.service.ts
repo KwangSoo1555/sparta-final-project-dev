@@ -18,6 +18,20 @@ export class ChatService {
     private readonly chatRoomsRepository: Repository<ChatRoomsEntity>,
   ) {}
 
+  // 두 사용자 간의 채팅룸을 생성
+  async createChatRoom(user1Id: number, user2Id: number) {
+    // 채팅룸 생성
+    const newChatRoom = this.chatRoomsRepository.create({
+      user1Id: user1Id,
+      user2Id: user2Id,
+    });
+
+    // 채팅룸 저장
+    await this.chatRoomsRepository.save(newChatRoom);
+
+    return newChatRoom;
+  }
+
   // 채팅 및 채팅룸 생성
   async createChat(userId: number, createChatDto: CreateChatDto) {
     const { receiverId, content } = createChatDto;
@@ -49,6 +63,15 @@ export class ChatService {
       chatRoomId = existingChatRoom.id;
     }
 
+    const receiverName = await this.usersRepository.findOne({
+      where: { id: receiverId },
+      select: { name: true },
+    });
+    const senderName = await this.usersRepository.findOne({
+      where: { id: userId },
+      select: { name: true },
+    });
+
     // 새 채팅 메시지 생성 후 저장
     const newChat = this.chatsRepository.create({
       senderId: userId,
@@ -57,11 +80,7 @@ export class ChatService {
       content: content,
     });
 
-    console.log("+++++++++++++++test1");
-
     await this.chatsRepository.save(newChat);
-
-    console.log("+++++++++++++++++++++++++++++test2");
 
     return newChat;
   }
@@ -115,16 +134,46 @@ export class ChatService {
       throw new UnauthorizedException("이 채팅방에 접근 권한이 없습니다.");
     }
 
-    const chatLogs = this.chatsRepository
+    const chatLogs = await this.chatsRepository
       .createQueryBuilder("chats")
-      .select(["chats.id", "chats.senderId", "chats.content", "chats.createdAt"])
+      .select([
+        "chats.id",
+        "chats.senderId",
+        "chats.receiverId",
+        "chats.content",
+        "chats.createdAt",
+      ])
       .where("chats.chatRoomsId = :chatRoomId", {
         chatRoomId,
       })
       .orderBy("chats.createdAt", "ASC")
       .getMany();
 
-    return chatLogs;
+    const chatLogsDetails = await Promise.all(
+      chatLogs.map(async (chat) => {
+        const receiverName = await this.usersRepository.findOne({
+          select: ["name"],
+          where: { id: chat.receiverId },
+        });
+
+        const senderName = await this.usersRepository.findOne({
+          select: ["name"],
+          where: { id: chat.senderId },
+        });
+
+        return {
+          chatId: chat.id,
+          senderId: chat.senderId,
+          senderName: senderName,
+          receiverId: chat.receiverId,
+          receiverName: receiverName,
+          content: chat.content,
+          createdAt: chat.createdAt,
+        };
+      }),
+    );
+
+    return chatLogsDetails;
   }
 
   // 채팅수정
