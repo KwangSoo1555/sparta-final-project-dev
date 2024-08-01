@@ -194,10 +194,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("joinRoom")
-  handleRoomJoin(@MessageBody() data: { chatRoomId: number }, @ConnectedSocket() client: Socket) {
+  async handleRoomJoin(
+    @MessageBody() data: { receiverId: number },
+    @ConnectedSocket() client: Socket,
+  ) {
     const userId = this.getUserIdFromSocket(client);
     console.log("++++++++++++" + userId);
-    console.log("123123124124");
-    client.join(data.chatRoomId.toString()); // 채팅룸 ID를 기반으로 방에 조인
+
+    // 채팅룸 생성 또는 조회
+    const existingChatRoom = await this.chatService.findChatRoomByIds(userId, data.receiverId);
+
+    let chatRoomId;
+    if (!existingChatRoom) {
+      // 새 채팅룸 생성
+      const newChatRoom = await this.chatService.createChatRoom(userId, data.receiverId);
+      chatRoomId = newChatRoom.id;
+    } else {
+      chatRoomId = existingChatRoom.id;
+    }
+
+    // 클라이언트 채팅룸 조인
+    client.join(chatRoomId.toString());
+    console.log(`User ${userId} joined room ${chatRoomId}`);
   }
 }
