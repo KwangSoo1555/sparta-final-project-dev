@@ -30,7 +30,7 @@ export class NotificationsService {
   ) {}
 
   //푸시알림 생성 메서드
-  async createNotificationMessage(userId: number, createNotificationDto: CreateNotificationDto) {
+  async createNotificationMessage(createNotificationDto: CreateNotificationDto) {
     const {
       title,
       data: { type, jobId, noticeId },
@@ -48,17 +48,22 @@ export class NotificationsService {
       const notificationLogs = await Promise.all(
         userIds.map(async (userId) => {
           const user = await this.usersRepository.findOneBy({ id: userId });
+          //만약 유저를 찾지 못했다면 null 반환 = 알림메시지 발송X
           if (!user) {
             return null;
           }
 
+          //알림메시지 로그를 생성
           const notificationLog = this.notificationLogsRepository.create({
             user,
             notificationMessage,
           });
+          //생성한 알림메시지 로그를 저장
           await this.notificationLogsRepository.save(notificationLog);
         }),
       );
-    } catch {}
+    } catch (error) {
+      throw new Error("알림메시지 생성 실패");
+    }
   }
 }

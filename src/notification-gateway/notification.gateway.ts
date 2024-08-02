@@ -12,6 +12,8 @@ import {
 import { Server, Socket } from "socket.io";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { AuthService } from "src/modules/auth/auth.service";
+import { CreateNoticeDto } from "src/modules/notices/dto/create-notice.dto";
+import { CreateNotificationDto } from "src/notifications/notifications.dto/create-notificaion.dto";
 import { NotificationsService } from "src/notifications/notifications.service";
 
 @WebSocketGateway({
@@ -91,9 +93,22 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       console.error("Error during disconnection:", error);
     }
   }
+  //클라이언트에서 notification 이벤트를 보내야 동작
+  @SubscribeMessage("notification")
+  async handleNotification(client: Socket, createNotificationDto: CreateNotificationDto) {
+    const userId = this.getUserIdFromSocket(client);
+    if (!userId) {
+      client.emit("error", { message: "Unauthorized User" });
+      return;
+    }
 
-  @SubscribeMessage("message")
-  handleMessage(client: any, payload: any): string {
-    return "Hello world!";
+    try {
+      createNotificationDto.userIds.push(userId);
+      await this.notificationsService.createNotificationMessage(createNotificationDto);
+
+      client.emit("notification succeed", { message: "notification sent" });
+    } catch (error) {
+      client.emit("notification Failed", { message: "Failed notification" });
+    }
   }
 }
