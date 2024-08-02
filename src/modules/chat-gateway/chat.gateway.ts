@@ -216,5 +216,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 클라이언트 채팅룸 조인
     client.join(chatRoomId.toString());
     console.log(`User ${userId} joined room ${chatRoomId}`);
+    // 채팅 로그 가져오기
+    const chatLogs = await this.chatService.findChatLog(userId, chatRoomId);
+    client.emit("chatLog", chatLogs); // 클라이언트에게 채팅 로그 전송
   }
 }

@@ -113,67 +113,88 @@ export class ChatService {
           order: { createdAt: "DESC" },
           select: ["content", "createdAt"],
         });
-
-        return {
-          roomId: room.id,
-          receiverName: receiver.name,
-          lastMessage: lastMessage.content,
-          lastMessageTime: lastMessage.createdAt,
-        };
+        if (!lastMessage) {
+          return {
+            roomId: room.id,
+            receiverId: receiverId,
+            receiverName: receiver.name,
+            lastMessage: null,
+            lastMessageTime: null,
+          };
+        } else {
+          return {
+            roomId: room.id,
+            receiverId: receiverId,
+            receiverName: receiver.name,
+            lastMessage: lastMessage.content,
+            lastMessageTime: lastMessage.createdAt,
+          };
+        }
       }),
     );
+    const sortedChatRoomDetails = chatRoomDetails.sort((a, b) => {
+      if (a.lastMessageTime === null) return 1; // null 값을 뒤로
+      if (b.lastMessageTime === null) return -1; // null 값을 뒤로
+      return new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime();
+    });
 
-    return chatRoomDetails;
+    return sortedChatRoomDetails;
   }
 
   // 채팅 로그 조회
   async findChatLog(userId: number, chatRoomId: number) {
-    const checkUser = this.findAllChatRooms(userId);
+    const checkUser = await this.findAllChatRooms(userId);
 
     if (!checkUser) {
       throw new UnauthorizedException("이 채팅방에 접근 권한이 없습니다.");
     }
 
-    const chatLogs = await this.chatsRepository
-      .createQueryBuilder("chats")
-      .select([
-        "chats.id",
-        "chats.senderId",
-        "chats.receiverId",
-        "chats.content",
-        "chats.createdAt",
-      ])
-      .where("chats.chatRoomsId = :chatRoomId", {
-        chatRoomId,
-      })
-      .orderBy("chats.createdAt", "ASC")
-      .getMany();
+    const chatRoom = await this.chatRoomsRepository.findOne({ where: { id: chatRoomId } });
 
-    const chatLogsDetails = await Promise.all(
-      chatLogs.map(async (chat) => {
-        const receiverName = await this.usersRepository.findOne({
-          select: ["name"],
-          where: { id: chat.receiverId },
-        });
+    if (!chatRoom) {
+      return [];
+    } else {
+      const chatLogs = await this.chatsRepository
+        .createQueryBuilder("chats")
+        .select([
+          "chats.id",
+          "chats.senderId",
+          "chats.receiverId",
+          "chats.content",
+          "chats.createdAt",
+        ])
+        .where("chats.chatRoomsId = :chatRoomId", {
+          chatRoomId,
+        })
+        .orderBy("chats.createdAt", "ASC")
+        .getMany();
 
-        const senderName = await this.usersRepository.findOne({
-          select: ["name"],
-          where: { id: chat.senderId },
-        });
+      const chatLogsDetails = await Promise.all(
+        chatLogs.map(async (chat) => {
+          const receiver = await this.usersRepository.findOne({
+            select: ["name"],
+            where: { id: chat.receiverId },
+          });
 
-        return {
-          chatId: chat.id,
-          senderId: chat.senderId,
-          senderName: senderName,
-          receiverId: chat.receiverId,
-          receiverName: receiverName,
-          content: chat.content,
-          createdAt: chat.createdAt,
-        };
-      }),
-    );
+          const sender = await this.usersRepository.findOne({
+            select: ["name"],
+            where: { id: chat.senderId },
+          });
 
-    return chatLogsDetails;
+          return {
+            chatId: chat.id,
+            senderId: chat.senderId,
+            senderName: sender?.name || "Unknown",
+            receiverId: chat.receiverId,
+            receiverName: receiver?.name || "Unknown",
+            content: chat.content,
+            createdAt: chat.createdAt,
+          };
+        }),
+      );
+
+      return chatLogsDetails;
+    }
   }
 
   // 채팅수정
