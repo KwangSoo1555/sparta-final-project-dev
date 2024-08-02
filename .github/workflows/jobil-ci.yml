@@ -28,4 +28,4 @@ jobs:
 
 
           # package-lock.json 파일에 저장 된 버전 정보와 동일하게 설치
-           npm ci
+           npm install
