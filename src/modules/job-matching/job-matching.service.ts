@@ -170,12 +170,12 @@ export class JobMatchingService {
     );
   }
 
-  async remove(customerId: number, matchingId: number) {
+  async remove(userId: number, matchingId: number) {
     const matching = await this.jobsMatchingRepository.findOneBy({ id: matchingId });
     if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
-    if (matching.customerId !== customerId) {
+    if (matching.customerId !== userId) {
       throw new BadRequestException(MESSAGES.JOBMATCH.DELETE.NOT_VERIFY);
     }
 
