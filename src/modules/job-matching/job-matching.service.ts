@@ -170,12 +170,15 @@ export class JobMatchingService {
     );
   }
 
-  async remove(customerId: number, matchingId: number) {
-    const matching = await this.jobsMatchingRepository.findOneBy({ id: matchingId });
+  async remove(userId: number, matchingId: number) {
+    const matching = await this.jobsMatchingRepository.findOne({ 
+      where:{ id: matchingId },
+      relations: ["job"],
+    });
     if (matching === undefined || matching === null) {
       throw new NotFoundException(MESSAGES.JOBMATCH.NOT_EXISTS);
     }
-    if (matching.customerId !== customerId) {
+    if (matching.job.ownerId !== userId) {
       throw new BadRequestException(MESSAGES.JOBMATCH.DELETE.NOT_VERIFY);
     }
 
