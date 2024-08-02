@@ -19,7 +19,13 @@ export class NotificationMessagesEntity {
   title: string;
 
   @Column({ nullable: true })
-  data: string;
+  type: string;
+
+  @Column({ nullable: true })
+  jobId: number;
+
+  @Column({ nullable: true })
+  noticeId: number;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

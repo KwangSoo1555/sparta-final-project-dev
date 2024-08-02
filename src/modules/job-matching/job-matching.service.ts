@@ -50,28 +50,28 @@ export class JobMatchingService {
 
   async findAllApply(userId: number) {
     const data = await this.jobsMatchingRepository.find({
-      relations: ["users","job"],
-      select:{
-        id : true,
-        customerId : true,
-        jobId : true,
-        matchedYn : true,
-        rejectedYn : true,
-        createdAt : true,
-        users:{
-          name : true,
+      relations: ["users", "job"],
+      select: {
+        id: true,
+        customerId: true,
+        jobId: true,
+        matchedYn: true,
+        rejectedYn: true,
+        createdAt: true,
+        users: {
+          name: true,
         },
-        job:{
-          ownerId : true,
-          title : true,
-          content : true,
-          price : true,
-          photoUrl : true,
-          address : true,
-          category : true,
-          expiredYn : true,
-          matchedYn : true,
-        }
+        job: {
+          ownerId: true,
+          title: true,
+          content: true,
+          price: true,
+          photoUrl: true,
+          address: true,
+          category: true,
+          expiredYn: true,
+          matchedYn: true,
+        },
       },
       where: {
         customerId: userId,
@@ -85,34 +85,34 @@ export class JobMatchingService {
 
   async findAllApplication(userId: number) {
     const data = await this.jobsMatchingRepository.find({
-      relations: ["users","job"],
-      select:{
-        id : true,
-        customerId : true,
-        jobId : true,
-        matchedYn : true,
-        rejectedYn : true,
-        createdAt : true,
-        users:{
-          name : true,
+      relations: ["users", "job"],
+      select: {
+        id: true,
+        customerId: true,
+        jobId: true,
+        matchedYn: true,
+        rejectedYn: true,
+        createdAt: true,
+        users: {
+          name: true,
         },
-        job:{
-          ownerId : true,
-          title : true,
-          content : true,
-          price : true,
-          photoUrl : true,
-          address : true,
-          category : true,
-          expiredYn : true,
-          matchedYn : true,
-        }
+        job: {
+          ownerId: true,
+          title: true,
+          content: true,
+          price: true,
+          photoUrl: true,
+          address: true,
+          category: true,
+          expiredYn: true,
+          matchedYn: true,
+        },
       },
       where: {
-        job:{
+        job: {
           ownerId: userId,
           deletedAt: null,
-        }
+        },
       },
       order: { createdAt: "DESC" },
     });

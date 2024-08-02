@@ -1,4 +1,4 @@
-import { NotificationTypes } from "src/common/customs/enums/enum-job-notifications";
+import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 
 export class CreateNotificationDto {
   //푸시알림의 제목

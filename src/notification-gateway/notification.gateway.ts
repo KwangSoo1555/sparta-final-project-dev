@@ -93,6 +93,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       console.error("Error during disconnection:", error);
     }
   }
+
   //클라이언트에서 notification 이벤트를 보내야 동작
   @SubscribeMessage("notification")
   async handleNotification(client: Socket, createNotificationDto: CreateNotificationDto) {

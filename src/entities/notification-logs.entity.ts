@@ -18,7 +18,7 @@ export class NotificationLogsEntity {
   notificationMessage: NotificationMessagesEntity;
 
   //알림을 받을 유저 저장, 한 유저가 여러 알림을 받을 수 있으니 MTO관계
-  @ManyToOne(() => UsersEntity, (user) => user.id)
+  @ManyToOne(() => UsersEntity, (user) => user.notificationLogs)
   @JoinColumn({ name: "user_id" })
   user: UsersEntity;
 }
