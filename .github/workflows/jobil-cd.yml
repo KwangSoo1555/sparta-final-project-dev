@@ -35,14 +35,9 @@ jobs:
             # export PATH="$(yarn global bin):$PATH"
 
             # 프로젝트 폴더로 이동
-            if [ -d "/home/ec2-user/sparta-final-project" ]; then
-              echo "Directory exists. Navigating to /home/ec2-user/sparta-final-project"
-              cd /home/ec2-user/sparta-final-project
-            else
-              echo "Directory /home/ec2-user/sparta-final-project does not exist. Creating directory."
-              mkdir -p /home/ec2-user/sparta-final-project
-              cd /home/ec2-user/sparta-final-project
-            fi
+            echo "Directory /home/ec2-user/sparta-final-project does not exist. Cloning repository."
+            git clone -b dev https://github.com/your-repo-url/sparta-final-project.git /home/ec2-user/sparta-final-project
+            cd /home/ec2-user/sparta-final-project
 
             # dev 브랜치로 이동
             git switch dev || git checkout -b dev
