@@ -34,16 +34,23 @@ jobs:
             # yarn global 설치한 pm2 명령을 위한 설정 (npm 사용 시 불필요)
             # export PATH="$(yarn global bin):$PATH"
 
-            # 프로젝트 폴더로 이동
+            # 프로젝트 폴더로 이동 또는 생성
             if [ -d "/home/ec2-user/sparta-final-project" ]; then
-              echo "Directory exists. Navigating to /home/ec2-user/sparta-final-project"
-              cd /home/ec2-user/sparta-final-project
+              if [ -d "/home/ec2-user/sparta-final-project/.git" ]; then
+                echo "Directory exists and is a git repository. Navigating to /home/ec2-user/sparta-final-project"
+                cd /home/ec2-user/sparta-final-project
+              else
+                echo "Directory exists but is not a git repository. Deleting and cloning again."
+                rm -rf /home/ec2-user/sparta-final-project
+                git clone -b dev https://github.com/KwangSoo1555/sparta-final-project.git /home/ec2-user/sparta-final-project
+                cd /home/ec2-user/sparta-final-project
+              fi
             else
               echo "Directory /home/ec2-user/sparta-final-project does not exist. Cloning repository."
               git clone -b dev https://github.com/KwangSoo1555/sparta-final-project.git /home/ec2-user/sparta-final-project
               cd /home/ec2-user/sparta-final-project
             fi
-            
+
             # dev 브랜치로 이동
             git switch dev || git checkout -b dev
 
