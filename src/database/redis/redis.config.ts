@@ -39,4 +39,14 @@ export class RedisConfig {
   async removeUserStatus(userId: number) {
     await this.redisClient.del(`user:${userId.toString()}:status`);
   }
+
+  //userId와 socketId를 redis 서버에 저장
+  async setUserSocketId(userId: number, socketId: string) {
+    await this.redisClient.set(`user:${userId.toString()}: socketId`, socketId);
+  }
+
+  //userId를 이용해 redis에서 socketId를 조회
+  async getUserSocketId(userId: number): Promise<string | null> {
+    return this.redisClient.get(`user:${userId.toString()} : socketId`);
+  }
 }

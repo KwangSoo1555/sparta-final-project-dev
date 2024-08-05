@@ -66,7 +66,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     try {
       const userId = this.getUserIdFromSocket(client);
       if (userId) {
-        await this.redisConfig.setUserStatus(userId, "online");
+        await this.redisConfig.setUserSocketId(userId, client.id);
         this.connectedClients.push({ userId, client });
         console.log(`User ${userId} connected with socket ID ${client.id}`);
       } else {
@@ -83,7 +83,10 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     try {
       const userId = this.getUserIdFromSocket(client);
       if (userId) {
-        await this.redisConfig.removeUserStatus(userId);
+        //redisClient로 redisClient enstance를 가져옴
+        const redisClient = this.redisConfig.getClient();
+        //del으로 redis에서 연결에 사용했던 socketId를 삭제
+        await redisClient.del(`user : ${userId.toString()} : socketId`);
         this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
         console.log(`User ${userId} disconnected`);
       } else {
@@ -94,22 +97,9 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
   }
 
-  //클라이언트에서 notification 이벤트를 보내야 동작
-  @SubscribeMessage("notification")
-  async handleNotification(client: Socket, createNotificationDto: CreateNotificationDto) {
-    const userId = this.getUserIdFromSocket(client);
-    if (!userId) {
-      client.emit("error", { message: "Unauthorized User" });
-      return;
-    }
-
-    try {
-      createNotificationDto.userIds.push(userId);
-      await this.notificationsService.createNotificationMessage(createNotificationDto);
-
-      client.emit("notification succeed", { message: "notification sent" });
-    } catch (error) {
-      client.emit("notification Failed", { message: "Failed notification" });
+  async sendNotification(userIds: number[], notificationData: CreateNotificationDto) {
+    for (const userId of userIds) {
+      const socketId = await this.redisConfig.getUserSocketId(userId);
     }
   }
 }
