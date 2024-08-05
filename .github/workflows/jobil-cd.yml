@@ -36,10 +36,12 @@ jobs:
 
             # 프로젝트 폴더로 이동
             if [ -d "/home/ec2-user/sparta-final-project" ]; then
+              echo "Directory exists. Navigating to /home/ec2-user/sparta-final-project"
               cd /home/ec2-user/sparta-final-project
             else
-              echo "Directory /home/ec2-user/sparta-final-project does not exist."
-              exit 1
+              echo "Directory /home/ec2-user/sparta-final-project does not exist. Creating directory."
+              mkdir -p /home/ec2-user/sparta-final-project
+              cd /home/ec2-user/sparta-final-project
             fi
 
             # dev 브랜치로 이동
