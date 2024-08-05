@@ -36,7 +36,7 @@ jobs:
 
             # 프로젝트 폴더로 이동
             echo "Directory /home/ec2-user/sparta-final-project does not exist. Cloning repository."
-            git clone -b dev https://github.com/your-repo-url/sparta-final-project.git /home/ec2-user/sparta-final-project
+            git clone -b dev https://github.com/KwangSoo1555/sparta-final-project.git /home/ec2-user/sparta-final-project
             cd /home/ec2-user/sparta-final-project
 
             # dev 브랜치로 이동
