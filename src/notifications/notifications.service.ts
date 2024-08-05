@@ -11,6 +11,8 @@ import { NoticesEntity } from "src/entities/notices.entity";
 import { NotificationGateway } from "src/notification-gateway/notification.gateway";
 
 import { Repository } from "typeorm";
+import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
+import { JobsEntity } from "src/entities/jobs.entity";
 
 @Injectable()
 export class NotificationsService {
@@ -24,6 +26,9 @@ export class NotificationsService {
     @InjectRepository(ChatsEntity)
     private readonly chatsRepository: Repository<ChatsEntity>,
 
+    @InjectRepository(JobsEntity)
+    private readonly jobsRepository: Repository<JobsEntity>,
+
     @InjectRepository(UsersEntity)
     private readonly usersRepository: Repository<UsersEntity>,
 
@@ -33,44 +38,27 @@ export class NotificationsService {
     private notificationGateway: NotificationGateway,
   ) {}
 
-  //푸시알림 생성 메서드
-  async createNotificationMessage(createNotificationDto: CreateNotificationDto) {
-    const {
-      title,
-      data: { type, jobId, noticeId },
-      userIds,
-    } = createNotificationDto;
-
+  //지원자 발생 시 푸시알림 생성 메서드
+  async createApplyNotificationMessage(jobsId: number, customerId: number, ownerId: number) {
     try {
       //알림메시지 생성
       const notificationMessage = await this.notificationMessagesRepository.save({
-        title: title,
-        data: JSON.stringify({ type, jobId, noticeId }),
+        title: "등록한 잡일에 지원자가 있습니다.",
+        data: JSON.stringify({ type: NotificationTypes.JOB_APPLIED, jobsId, customerId }),
       });
 
-      //알림메시지 로그 생성(보낸 알림메시지의 모든 기록)
-      const notificationLogs = await Promise.all(
-        userIds.map(async (userId) => {
-          const user = await this.usersRepository.findOneBy({ id: userId });
-          //만약 유저를 찾지 못했다면 null 반환 = 알림메시지 발송X
-          if (!user) {
-            return null;
-          }
+      //알림메시지 로그를 생성
+      const notificationLog = this.notificationLogsRepository.create({
+        user: await this.usersRepository.findOneBy({ id: ownerId }),
+        notificationMessage,
+      });
+      //생성한 알림메시지 로그를 저장
+      await this.notificationLogsRepository.save(notificationLog);
 
-          //알림메시지 로그를 생성
-          const notificationLog = this.notificationLogsRepository.create({
-            user,
-            notificationMessage,
-          });
-          //생성한 알림메시지 로그를 저장
-          await this.notificationLogsRepository.save(notificationLog);
-
-          //알림 발송
-          await this.notificationGateway.sendNotification(
-            createNotificationDto.userIds,
-            createNotificationDto,
-          );
-        }),
+      //알림 발송
+      await this.notificationGateway.sendNotification(
+        [ownerId], //일감 owner에게 알림 발송
+        { type: NotificationTypes.JOB_APPLIED, jobsId, customerId }, //유저의 id를 제외한 나머지 데이터를 처리
       );
     } catch (error) {
       throw new Error("알림메시지 생성 실패");

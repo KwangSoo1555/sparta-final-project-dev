@@ -10,6 +10,7 @@ import {
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { AuthService } from "src/modules/auth/auth.service";
 import { CreateNoticeDto } from "src/modules/notices/dto/create-notice.dto";
@@ -85,7 +86,7 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       if (userId) {
         //redisClient로 redisClient enstance를 가져옴
         const redisClient = this.redisConfig.getClient();
-        //del으로 redis에서 연결에 사용했던 socketId를 삭제
+        //del으로 redis에서 연결에 사용했던 socketId를 삭제 - 이유 : redisConfig로 호출 시 에러 발생
         await redisClient.del(`user : ${userId.toString()} : socketId`);
         this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
         console.log(`User ${userId} disconnected`);
@@ -97,9 +98,17 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
   }
 
-  async sendNotification(userIds: number[], notificationData: CreateNotificationDto) {
+  //notificationData = notificationDTO로 만든 알림 내용
+  async sendNotification(
+    userIds: number[],
+    notificationData: { type: NotificationTypes; jobsId: number; customerId?: number },
+  ) {
+    //for문을 사용해 userIds array에 있는 userId를 순회하며 메시지 발송
     for (const userId of userIds) {
       const socketId = await this.redisConfig.getUserSocketId(userId);
+      if (socketId) {
+        this.server.to(socketId).emit("notification", notificationData);
+      }
     }
   }
 }
