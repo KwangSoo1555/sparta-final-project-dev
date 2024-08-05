@@ -3,7 +3,7 @@ name: jobil nestJS CD
 on:
   workflow_dispatch: # 수동 실행
   workflow_run: # 특정 workflow가 실행됐을 때
-    workflows: ['jobil nestJS StartCI'] # CI workflow
+    workflows: ["jobil nestJS StartCI"] # CI workflow
     types: [completed] # 완료 되었을 때
     branches: [dev] # main 브랜치
 
