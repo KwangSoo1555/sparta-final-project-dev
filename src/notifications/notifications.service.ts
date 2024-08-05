@@ -8,6 +8,8 @@ import { UsersEntity } from "src/entities/users.entity";
 import { ChatsEntity } from "src/entities/chats.entity";
 import { NoticesEntity } from "src/entities/notices.entity";
 
+import { NotificationGateway } from "src/notification-gateway/notification.gateway";
+
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -27,6 +29,8 @@ export class NotificationsService {
 
     @InjectRepository(NoticesEntity)
     private readonly noticesRepository: Repository<NoticesEntity>,
+
+    private notificationGateway: NotificationGateway,
   ) {}
 
   //푸시알림 생성 메서드
@@ -60,6 +64,12 @@ export class NotificationsService {
           });
           //생성한 알림메시지 로그를 저장
           await this.notificationLogsRepository.save(notificationLog);
+
+          //알림 발송
+          await this.notificationGateway.sendNotification(
+            createNotificationDto.userIds,
+            createNotificationDto,
+          );
         }),
       );
     } catch (error) {
