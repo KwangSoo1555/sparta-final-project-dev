@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Navigate to the app staging directory
-cd /var/app/staging
+cd /var/app/current
 
 # npm 의존성 설치
 npm install
@@ -16,8 +16,8 @@ REGION="ap-northeast-2"  # 리전
 
 # AWS CLI 설치
 if ! command -v aws &> /dev/null; then
-    apt-get update
-    apt-get install -y awscli
+    yum update # 업데이트 (Amazon Linux 2 기준 yum 명령어 사용)
+    yum install -y awscli # AWS CLI 설치
 fi
 
 # 인스턴스 ID 가져오기 (이 주소는 EC2 인스턴스의 메타데이터를 가져오는 표준 URL로, 인스턴스 내에서 사용될 때 인스턴스 ID를 반환한다.)
