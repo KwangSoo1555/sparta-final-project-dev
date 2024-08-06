@@ -41,24 +41,30 @@ export class NotificationsService {
   //지원자 발생 시 푸시알림 생성 메서드
   async createApplyNotificationMessage(jobsId: number, customerId: number, ownerId: number) {
     try {
+      const senderId = customerId;
+      const receiverId = ownerId;
+
       //알림메시지 생성
       const notificationMessage = await this.notificationMessagesRepository.save({
         title: "등록한 잡일에 지원자가 있습니다.",
-        data: JSON.stringify({ type: NotificationTypes.JOB_APPLIED, jobsId, customerId }),
+        type: NotificationTypes.JOB_APPLIED,
+        jobsId,
+        senderId,
+        receiverId,
       });
 
       //알림메시지 로그를 생성
       const notificationLog = this.notificationLogsRepository.create({
-        user: await this.usersRepository.findOneBy({ id: ownerId }),
+        user: await this.usersRepository.findOneBy({ id: receiverId }),
         notificationMessage,
       });
       //생성한 알림메시지 로그를 저장
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendNotification(
-        [ownerId], //일감 owner에게 알림 발송
-        { type: NotificationTypes.JOB_APPLIED, jobsId, customerId }, //유저의 id를 제외한 나머지 데이터를 처리
+      await this.notificationGateway.sendJobMatchingNotification(
+        receiverId, //일감 owner에게 알림 발송
+        { type: NotificationTypes.JOB_APPLIED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
       );
     } catch (error) {
       throw new Error("알림메시지 생성 실패");

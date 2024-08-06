@@ -47,6 +47,6 @@ export class RedisConfig {
 
   //userId를 이용해 redis에서 socketId를 조회
   async getUserSocketId(userId: number): Promise<string | null> {
-    return this.redisClient.get(`user:${userId.toString()} : socketId`);
+    return this.redisClient.get(`user:${userId.toString()}: socketId`);
   }
 }

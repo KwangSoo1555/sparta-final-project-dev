@@ -74,18 +74,14 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
   }
 
   //notificationData = 내가 알림을 보낼 내용
-  async sendNotification(
-    userIds: number[],
-    notificationData: { type: NotificationTypes; jobsId: number; customerId: number },
+  async sendJobMatchingNotification(
+    userId: number,
+    notificationData: { type: NotificationTypes; jobsId: number; title: string },
   ) {
-    //for문을 사용해 userIds array에 있는 userId를 순회하며 메시지 발송
-    //new notice의 경우 모든 유저에게 다 보내야 하는 문제가 있다. 그 경우 시간복잡도 증가.
-    //개선 필요
-    for (const userId of userIds) {
-      const socketId = await this.redisConfig.getUserSocketId(userId);
-      if (socketId) {
-        this.chatGateway.server.to(socketId).emit("notification", notificationData);
-      }
+    const socketId = await this.redisConfig.getUserSocketId(userId);
+    console.log("socket ID : ", socketId);
+    if (socketId) {
+      this.chatGateway.server.to(socketId).emit("notification", notificationData);
     }
   }
 }
