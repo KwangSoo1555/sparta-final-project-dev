@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { NotificationLogsEntity } from "./notification-logs.entity";
+import { UsersEntity } from "./users.entity";
 
 @Entity("notification_messages")
 export class NotificationMessagesEntity {
@@ -22,10 +23,13 @@ export class NotificationMessagesEntity {
   type: string;
 
   @Column({ nullable: true })
-  jobId: number;
+  jobsId: number;
 
-  @Column({ nullable: true })
-  noticeId: number;
+  @Column()
+  receiverId: number;
+
+  @Column()
+  senderId: number;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
@@ -37,4 +41,9 @@ export class NotificationMessagesEntity {
   @OneToMany(() => NotificationLogsEntity, (notificationLog) => notificationLog.notificationMessage)
   @JoinColumn({ name: "notification_log" })
   notificaionLog: NotificationLogsEntity;
+
+  //알림메시지 발송받을 유저는 한 번 참조(OtM), 유저는 알림메시지 여러번 수취(MtO)
+  @OneToMany(() => UsersEntity, (users) => users.notificationMessage)
+  @JoinColumn({ name: "users" })
+  users: UsersEntity;
 }

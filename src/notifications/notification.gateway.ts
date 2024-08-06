@@ -13,6 +13,7 @@ import { Server, Socket } from "socket.io";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { AuthService } from "src/modules/auth/auth.service";
+import { ChatGateway } from "src/modules/chat-gateway/chat.gateway";
 import { CreateNoticeDto } from "src/modules/notices/dto/create-notice.dto";
 import { CreateNotificationDto } from "src/notifications/notifications.dto/create-notificaion.dto";
 import { NotificationsService } from "src/notifications/notifications.service";
@@ -27,45 +28,19 @@ import { NotificationsService } from "src/notifications/notifications.service";
 })
 export class NotificationGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
-    private readonly notificationsService: NotificationsService,
+    // private readonly notificationsService: NotificationsService,
     private readonly redisConfig: RedisConfig,
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   private connectedClients = [];
 
-  @WebSocketServer()
-  server: Server;
-
-  getUserIdFromSocket(client: Socket): number | null {
-    const authHeader = client.handshake.auth.token;
-    console.log("Authorization Header:", authHeader);
-    const token =
-      authHeader && authHeader.toLowerCase().startsWith("bearer ")
-        ? authHeader.substring(7) // "Bearer ".length = 7
-        : null;
-
-    if (token) {
-      try {
-        const decoded = this.jwtService.verify(token, {
-          secret: this.configService.get<string>("ACCESS_TOKEN_SECRET"),
-        });
-        console.log("---------" + decoded.userId);
-        console.log(typeof decoded.userId);
-        return decoded.userId;
-      } catch (error) {
-        console.error("Invalid token", error);
-        return null;
-      }
-    }
-    return null;
-  }
-
   async handleConnection(@ConnectedSocket() client: Socket) {
     try {
-      const userId = this.getUserIdFromSocket(client);
+      const userId = this.chatGateway.getUserIdFromSocket(client);
       if (userId) {
         await this.redisConfig.setUserSocketId(userId, client.id);
         this.connectedClients.push({ userId, client });
@@ -82,11 +57,11 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
 
   async handleDisconnect(@ConnectedSocket() client: Socket) {
     try {
-      const userId = this.getUserIdFromSocket(client);
+      const userId = this.chatGateway.getUserIdFromSocket(client);
       if (userId) {
-        //redisClient로 redisClient enstance를 가져옴
+        //redisClient로 redisClient enstance를 가져옴 - del 사용하기 위해
         const redisClient = this.redisConfig.getClient();
-        //del으로 redis에서 연결에 사용했던 socketId를 삭제 - 이유 : redisConfig로 호출 시 에러 발생
+        //del을 이용해 redis에서 socketId를 삭제 - 이유 : redisConfig로 호출 시 에러 발생
         await redisClient.del(`user : ${userId.toString()} : socketId`);
         this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
         console.log(`User ${userId} disconnected`);
@@ -98,16 +73,18 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
     }
   }
 
-  //notificationData = notificationDTO로 만든 알림 내용
+  //notificationData = 내가 알림을 보낼 내용
   async sendNotification(
     userIds: number[],
-    notificationData: { type: NotificationTypes; jobsId: number; customerId?: number },
+    notificationData: { type: NotificationTypes; jobsId: number; customerId: number },
   ) {
     //for문을 사용해 userIds array에 있는 userId를 순회하며 메시지 발송
+    //new notice의 경우 모든 유저에게 다 보내야 하는 문제가 있다. 그 경우 시간복잡도 증가.
+    //개선 필요
     for (const userId of userIds) {
       const socketId = await this.redisConfig.getUserSocketId(userId);
       if (socketId) {
-        this.server.to(socketId).emit("notification", notificationData);
+        this.chatGateway.server.to(socketId).emit("notification", notificationData);
       }
     }
   }

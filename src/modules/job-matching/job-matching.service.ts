@@ -51,7 +51,6 @@ export class JobMatchingService {
     });
 
     //지원자 발생 시 알림 발송 메서드
-    const job = await this.jobsRepository.findOneBy({ id: jobsId });
     await this.notificationsService.createApplyNotificationMessage(
       jobsId,
       customerId,

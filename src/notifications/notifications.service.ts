@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
-import { CreateNotificationDto } from "./notifications.dto/create-notificaion.dto";
+// import { CreateNotificationDto } from "./notifications.dto/create-notificaion.dto";
 import { NotificationMessagesEntity } from "src/entities/notification-messages.entity";
 import { NotificationLogsEntity } from "src/entities/notification-logs.entity";
 import { UsersEntity } from "src/entities/users.entity";
-import { ChatsEntity } from "src/entities/chats.entity";
-import { NoticesEntity } from "src/entities/notices.entity";
+// import { ChatsEntity } from "src/entities/chats.entity";
+// import { NoticesEntity } from "src/entities/notices.entity";
 
-import { NotificationGateway } from "src/notification-gateway/notification.gateway";
+import { NotificationGateway } from "src/notifications/notification.gateway";
 
 import { Repository } from "typeorm";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
@@ -23,8 +23,8 @@ export class NotificationsService {
     @InjectRepository(NotificationLogsEntity)
     private readonly notificationLogsRepository: Repository<NotificationLogsEntity>,
 
-    @InjectRepository(ChatsEntity)
-    private readonly chatsRepository: Repository<ChatsEntity>,
+    // @InjectRepository(ChatsEntity)
+    // private readonly chatsRepository: Repository<ChatsEntity>,
 
     @InjectRepository(JobsEntity)
     private readonly jobsRepository: Repository<JobsEntity>,
@@ -32,8 +32,8 @@ export class NotificationsService {
     @InjectRepository(UsersEntity)
     private readonly usersRepository: Repository<UsersEntity>,
 
-    @InjectRepository(NoticesEntity)
-    private readonly noticesRepository: Repository<NoticesEntity>,
+    // @InjectRepository(NoticesEntity)
+    // private readonly noticesRepository: Repository<NoticesEntity>,
 
     private notificationGateway: NotificationGateway,
   ) {}
