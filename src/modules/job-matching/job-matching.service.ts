@@ -154,6 +154,13 @@ export class JobMatchingService {
       throw new BadRequestException(MESSAGES.JOBMATCH.MATCHING.NOT_VERIFY);
     }
 
+    //매칭 수락 시 알림 발송 메서드
+    await this.notificationsService.createApplyNotificationMessage(
+      matching.jobId,
+      matching.customerId,
+      matching.job.ownerId,
+    );
+
     return await this.jobsMatchingRepository.update(
       { id: matchingId },
       {

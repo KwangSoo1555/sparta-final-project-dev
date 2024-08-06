@@ -70,4 +70,37 @@ export class NotificationsService {
       throw new Error("알림메시지 생성 실패");
     }
   }
+
+  //매치 수락
+  async createMatchedNotificationMessage(jobsId: number, customerId: number, ownerId: number) {
+    try {
+      const senderId = ownerId;
+      const receiverId = customerId;
+
+      //알림메시지 생성
+      const notificationMessage = await this.notificationMessagesRepository.save({
+        title: "지원한 잡일이 수락되었습니다.",
+        type: NotificationTypes.JOB_MATCHED,
+        jobsId,
+        senderId,
+        receiverId,
+      });
+
+      //알림메시지 로그를 생성
+      const notificationLog = this.notificationLogsRepository.create({
+        user: await this.usersRepository.findOneBy({ id: receiverId }),
+        notificationMessage,
+      });
+      //생성한 알림메시지 로그를 저장
+      await this.notificationLogsRepository.save(notificationLog);
+
+      //알림 발송
+      await this.notificationGateway.sendJobMatchingNotification(
+        receiverId, //일감 owner에게 알림 발송
+        { type: NotificationTypes.JOB_MATCHED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
+      );
+    } catch (error) {
+      throw new Error("알림메시지 생성 실패");
+    }
+  }
 }
