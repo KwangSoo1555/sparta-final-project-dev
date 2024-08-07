@@ -8,7 +8,7 @@ import { JobMatchingController } from "./job-matching.controller";
 import { JobsMatchingEntity } from "src/entities/jobs-matching.entity";
 import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
-import { NotificationsModule } from "src/notifications/notifications.module";
+import { NotificationsModule } from "src/modules/notifications/notifications.module";
 
 @Module({
   imports: [

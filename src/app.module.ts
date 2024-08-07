@@ -12,7 +12,7 @@ import { NoticesModule } from "./modules/notices/notices.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 import { BlacklistModule } from "./modules/blacklist/blacklist.module";
 // import { NotificationGatewayModule } from "./notification-gateway/notification-gateway.module";
-import { NotificationsModule } from "./notifications/notifications.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";

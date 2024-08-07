@@ -8,9 +8,9 @@ import { MESSAGES } from "src/common/constants/message.constant";
 import { JobsMatchingEntity } from "src/entities/jobs-matching.entity";
 import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
-import { NotificationsService } from "src/notifications/notifications.service";
+import { NotificationsService } from "src/modules/notifications/notifications.service";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
-import { CreateNotificationDto } from "src/notifications/notifications.dto/create-notificaion.dto";
+import { CreateNotificationDto } from "src/modules/notifications/notifications.dto/create-notificaion.dto";
 
 @Injectable()
 export class JobMatchingService {
@@ -155,7 +155,7 @@ export class JobMatchingService {
     }
 
     //매칭 수락 시 알림 발송 메서드
-    await this.notificationsService.createApplyNotificationMessage(
+    await this.notificationsService.createMatchedNotificationMessage(
       matching.jobId,
       matching.customerId,
       matching.job.ownerId,
@@ -180,6 +180,13 @@ export class JobMatchingService {
     if (matching.job.ownerId !== userId) {
       throw new BadRequestException(MESSAGES.JOBMATCH.REJECT.NOT_VERIFY);
     }
+
+    //매칭 거절 시 알림 발송 메서드
+    await this.notificationsService.createDeniedNotificationMessage(
+      matching.jobId,
+      matching.customerId,
+      matching.job.ownerId,
+    );
 
     return await this.jobsMatchingRepository.update(
       { id: matchingId },
