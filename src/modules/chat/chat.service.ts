@@ -6,6 +6,7 @@ import { ChatsEntity } from "src/entities/chats.entity";
 import { ChatRoomsEntity } from "src/entities/chat-rooms.entity";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { UpdateChatDto } from "./dto/update-chat.dto";
+import { RedisConfig } from "src/database/redis/redis.config";
 
 @Injectable()
 export class ChatService {
@@ -16,6 +17,7 @@ export class ChatService {
     private readonly usersRepository: Repository<UsersEntity>,
     @InjectRepository(ChatRoomsEntity)
     private readonly chatRoomsRepository: Repository<ChatRoomsEntity>,
+    private readonly redisConfig: RedisConfig, // RedisConfig 주입
   ) {}
 
   // 두 사용자 간의 채팅룸을 생성
@@ -30,6 +32,12 @@ export class ChatService {
     await this.chatRoomsRepository.save(newChatRoom);
 
     return newChatRoom;
+  }
+
+  // Redis에 채팅 메시지 저장
+  async saveChatToRedis(chatRoomId: number, chatData: any) {
+    const redisClient = this.redisConfig.getClient();
+    await redisClient.lpush(`chatRoom:${chatRoomId}`, JSON.stringify(chatData));
   }
 
   // 채팅 및 채팅룸 생성
