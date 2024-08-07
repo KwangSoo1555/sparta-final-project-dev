@@ -31,10 +31,7 @@ export class JobsController {
    * @returns
    */
   @Post()
-  async create(
-    @Body() createJobDto: CreateJobDto,
-    @RequestJwtByHttp() { user: { id: userId } },
-  ) {
+  async create(@Body() createJobDto: CreateJobDto, @RequestJwtByHttp() { user: { id: userId } }) {
     const createJob = await this.jobsService.create(createJobDto, userId);
 
     return {
@@ -104,10 +101,7 @@ export class JobsController {
    * @returns
    */
   @Patch("matching/:jobsId")
-  async updateJobYn(
-    @Param("jobsId") jobsId: string,
-    @RequestJwtByHttp() { user: { id: userId } },
-  ) {
+  async updateJobYn(@Param("jobsId") jobsId: string, @RequestJwtByHttp() { user: { id: userId } }) {
     const updateJob = await this.jobsService.updateJobYn(userId, +jobsId);
 
     return {
@@ -144,10 +138,7 @@ export class JobsController {
    * @returns
    */
   @Delete(":jobsId")
-  async remove(
-    @Param("jobsId") jobsId: string,
-    @RequestJwtByHttp() { user: { id: userId } },
-  ) {
+  async remove(@Param("jobsId") jobsId: string, @RequestJwtByHttp() { user: { id: userId } }) {
     const deleteJob = await this.jobsService.remove(userId, +jobsId);
 
     return {

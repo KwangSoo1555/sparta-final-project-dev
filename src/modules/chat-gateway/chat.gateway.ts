@@ -81,6 +81,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(userId + "++++++++++++++++++++");
       if (userId) {
         await this.redisConfig.setUserStatus(userId, "online");
+        await this.redisConfig.setUserSocketId(userId, client.id);
         this.connectedClients.push({ userId, client });
         console.log(`User ${userId} connected with socket ID ${client.id}`);
       } else {

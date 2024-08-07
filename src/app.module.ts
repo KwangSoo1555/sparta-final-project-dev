@@ -11,6 +11,8 @@ import { ChatGatewayModule } from "./modules/chat-gateway/chat-gateway.module";
 import { NoticesModule } from "./modules/notices/notices.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 import { BlacklistModule } from "./modules/blacklist/blacklist.module";
+// import { NotificationGatewayModule } from "./notification-gateway/notification-gateway.module";
+import { NotificationsModule } from "./notifications/notifications.module";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
@@ -29,6 +31,7 @@ import { AppController } from "./app.controller";
     ReportsModule,
     BlacklistModule,
     NoticesModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
