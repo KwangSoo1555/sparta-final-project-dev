@@ -150,20 +150,29 @@ export class NotificationsService {
           type: true,
           title: true,
           jobsId: true,
+          senderId: true,
         },
       },
       where: { user: { id: receiverId } },
       order: { createdAt: "DESC" },
     });
 
-    const notificationData = logData.map((log) => ({
-      id: log.id,
-      title: log.notificationMessage.title,
-      jobsId: log.notificationMessage.jobsId,
-      type: log.notificationMessage.type,
-      createdAt: log.createdAt,
-      notificationMessageId: log.notificationMessage.id,
-    }));
+    const notificationData = await Promise.all(
+      logData.map(async (log) => {
+        const sender = await this.usersRepository.findOneBy({
+          id: log.notificationMessage.senderId,
+        });
+        return {
+          id: log.id,
+          title: log.notificationMessage.title,
+          jobsId: log.notificationMessage.jobsId,
+          type: log.notificationMessage.type,
+          createdAt: log.createdAt,
+          notificationMessageId: log.notificationMessage.id,
+          senderName: sender ? sender.name : null,
+        };
+      }),
+    );
 
     return notificationData;
   }
