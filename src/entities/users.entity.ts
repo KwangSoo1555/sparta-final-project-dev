@@ -7,6 +7,8 @@ import {
   DeleteDateColumn,
   OneToOne,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm";
 
 import { RefreshTokensEntity } from "./refresh-tokens.entity";
@@ -20,6 +22,8 @@ import { NoticesEntity } from "./notices.entity";
 
 import { SocialProviders } from "../common/customs/enums/enum-social-providers";
 import { UserRoles } from "../common/customs/enums/enum-user-roles";
+import { NotificationLogsEntity } from "./notification-logs.entity";
+import { NotificationMessagesEntity } from "./notification-messages.entity";
 
 @Entity("users")
 export class UsersEntity {
@@ -98,4 +102,11 @@ export class UsersEntity {
 
   @OneToMany(() => JobsMatchingEntity, (jobsMatching) => jobsMatching.users)
   jobsMatching: JobsMatchingEntity[];
+
+  @OneToMany(() => NotificationLogsEntity, (notificationLogs) => notificationLogs.user)
+  notificationLogs: NotificationLogsEntity[];
+
+  @ManyToOne(() => NotificationMessagesEntity, (notificationMessage) => notificationMessage.users)
+  @JoinColumn({ name: "notification_messages" })
+  notificationMessage: NotificationMessagesEntity;
 }

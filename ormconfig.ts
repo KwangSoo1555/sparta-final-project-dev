@@ -3,7 +3,8 @@ import { DataSource } from "typeorm";
 import { UsersEntity } from "./src/entities/users.entity";
 import { RefreshTokensEntity } from "./src/entities/refresh-tokens.entity";
 import { ReportsEntity } from "./src/entities/reports.entity";
-import { NotificationsEntity } from "./src/entities/notifications.entity";
+import { NotificationMessagesEntity } from "src/entities/notification-messages.entity";
+import { NotificationLogsEntity } from "src/entities/notification-logs.entity";
 import { NoticesEntity } from "./src/entities/notices.entity";
 import { JobsEntity } from "./src/entities/jobs.entity";
 import { JobsMatchingEntity } from "./src/entities/jobs-matching.entity";
@@ -18,7 +19,8 @@ export const config = new DataSource({
     UsersEntity,
     RefreshTokensEntity,
     ReportsEntity,
-    NotificationsEntity,
+    NotificationLogsEntity,
+    NotificationMessagesEntity,
     NoticesEntity,
     JobsEntity,
     JobsMatchingEntity,
