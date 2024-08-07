@@ -8,6 +8,9 @@ import { MESSAGES } from "src/common/constants/message.constant";
 import { JobsMatchingEntity } from "src/entities/jobs-matching.entity";
 import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
+import { NotificationsService } from "src/notifications/notifications.service";
+import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
+import { CreateNotificationDto } from "src/notifications/notifications.dto/create-notificaion.dto";
 
 @Injectable()
 export class JobMatchingService {
@@ -16,6 +19,8 @@ export class JobMatchingService {
     private jobsMatchingRepository: Repository<JobsMatchingEntity>,
     @InjectRepository(JobsEntity) private jobsRepository: Repository<JobsEntity>,
     @InjectRepository(UsersEntity) private userRepository: Repository<UsersEntity>,
+
+    private notificationsService: NotificationsService,
   ) {}
 
   async create(customerId: number, jobsId: number) {
@@ -45,33 +50,40 @@ export class JobMatchingService {
       rejectedYn: false,
     });
 
+    //지원자 발생 시 알림 발송 메서드
+    await this.notificationsService.createApplyNotificationMessage(
+      jobsId,
+      customerId,
+      verifyJobbyId.ownerId,
+    );
+
     return data;
   }
 
   async findAllApply(userId: number) {
     const data = await this.jobsMatchingRepository.find({
-      relations: ["users","job"],
-      select:{
-        id : true,
-        customerId : true,
-        jobId : true,
-        matchedYn : true,
-        rejectedYn : true,
-        createdAt : true,
-        users:{
-          name : true,
+      relations: ["users", "job"],
+      select: {
+        id: true,
+        customerId: true,
+        jobId: true,
+        matchedYn: true,
+        rejectedYn: true,
+        createdAt: true,
+        users: {
+          name: true,
         },
-        job:{
-          ownerId : true,
-          title : true,
-          content : true,
-          price : true,
-          photoUrl : true,
-          address : true,
-          category : true,
-          expiredYn : true,
-          matchedYn : true,
-        }
+        job: {
+          ownerId: true,
+          title: true,
+          content: true,
+          price: true,
+          photoUrl: true,
+          address: true,
+          category: true,
+          expiredYn: true,
+          matchedYn: true,
+        },
       },
       where: {
         customerId: userId,
@@ -85,34 +97,34 @@ export class JobMatchingService {
 
   async findAllApplication(userId: number) {
     const data = await this.jobsMatchingRepository.find({
-      relations: ["users","job"],
-      select:{
-        id : true,
-        customerId : true,
-        jobId : true,
-        matchedYn : true,
-        rejectedYn : true,
-        createdAt : true,
-        users:{
-          name : true,
+      relations: ["users", "job"],
+      select: {
+        id: true,
+        customerId: true,
+        jobId: true,
+        matchedYn: true,
+        rejectedYn: true,
+        createdAt: true,
+        users: {
+          name: true,
         },
-        job:{
-          ownerId : true,
-          title : true,
-          content : true,
-          price : true,
-          photoUrl : true,
-          address : true,
-          category : true,
-          expiredYn : true,
-          matchedYn : true,
-        }
+        job: {
+          ownerId: true,
+          title: true,
+          content: true,
+          price: true,
+          photoUrl: true,
+          address: true,
+          category: true,
+          expiredYn: true,
+          matchedYn: true,
+        },
       },
       where: {
-        job:{
+        job: {
           ownerId: userId,
           deletedAt: null,
-        }
+        },
       },
       order: { createdAt: "DESC" },
     });
@@ -131,8 +143,8 @@ export class JobMatchingService {
   }
 
   async updateMatchYn(userId: number, matchingId: number) {
-    const matching = await this.jobsMatchingRepository.findOne({ 
-      where:{ id: matchingId },
+    const matching = await this.jobsMatchingRepository.findOne({
+      where: { id: matchingId },
       relations: ["job"],
     });
     if (matching === undefined || matching === null) {
@@ -141,6 +153,13 @@ export class JobMatchingService {
     if (matching.job.ownerId !== userId) {
       throw new BadRequestException(MESSAGES.JOBMATCH.MATCHING.NOT_VERIFY);
     }
+
+    //매칭 수락 시 알림 발송 메서드
+    await this.notificationsService.createApplyNotificationMessage(
+      matching.jobId,
+      matching.customerId,
+      matching.job.ownerId,
+    );
 
     return await this.jobsMatchingRepository.update(
       { id: matchingId },
@@ -151,8 +170,8 @@ export class JobMatchingService {
   }
 
   async updateRejectYn(userId: number, matchingId: number) {
-    const matching = await this.jobsMatchingRepository.findOne({ 
-      where:{ id: matchingId },
+    const matching = await this.jobsMatchingRepository.findOne({
+      where: { id: matchingId },
       relations: ["job"],
     });
     if (matching === undefined || matching === null) {
