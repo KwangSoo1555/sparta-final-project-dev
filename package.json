@@ -23,7 +23,7 @@
     "seed": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d ./ormconfig.ts",
     "db:create": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:create -d ./ormconfig.ts",
     "db:drop": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop -d ./ormconfig.ts",
-    "eb:prod": "npm install && npm run start:prod"
+    "eb:prod": "npm install && npm run build && npm run start:prod"
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
