@@ -1,1 +1,1 @@
-web: appstart
+web: npm run eb:prod

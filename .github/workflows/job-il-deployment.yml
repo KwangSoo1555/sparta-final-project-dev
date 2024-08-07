@@ -1,11 +1,14 @@
-name: Backend CI/CD
+name: deploy main to EB
 
+# main branch에 push 되면 실행 (action 트리거 브랜치)
 on:
-  pull_request:
-    branches: dev
+  push:
+    branches:
+      - main
 
 jobs:
   build:
+    name: CI Pipeline
     runs-on: ubuntu-latest
 
     strategy:
@@ -21,8 +24,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # Cache dependencies
+      # cache
       - name: Cache node modules
+        id: node-cache
         uses: actions/cache@v2
         env:
           cache-name: cache-node-modules
@@ -32,11 +36,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-modules-
 
-      # Install dependencies
+      # Install project dependencies, test and build
       - name: Install dependencies
+        if: steps.node-cache.outputs.cache-hit != 'true'
         run: npm install
-
-      # Run build
       - name: Run build
         run: npm run build
 
@@ -48,28 +51,29 @@ jobs:
       matrix:
         node-version: ["18.x"]
 
+    # 위에서 정의한 build 실행
     needs: build
     steps:
       - uses: actions/checkout@v3
-
+      # Github Secrets를 이용하여 env 파일을 만들고 추가한다.
+      # 참고로 ElasticBeanstalk에 Node 관련을 배포할 때는, 8081 포트를 열어줘야 한다.
       - name: Create env file
         run: |
           touch .env
           echo PORT=8081 >> .env
           echo NODE_ENV=${{ secrets.NODE_ENV }} >> .env
           cat .env
-
       # Initialize Node.js
       - name: Install Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      # Install project dependencies
+      # Install project dependencies and build
       - name: Install dependencies
         run: npm install
-
-      # Run build
+      # TS 파일들을 빌드해서 dist 폴더에 js 파일들을 만들기 때문에
+      # 아래에서 zip 파일 구성 시 src 폴더를 제외한 것을 확인할 수 있다.
       - name: Run build
         run: npm run build
 
@@ -80,29 +84,30 @@ jobs:
           unzip awscliv2.zip
           which aws
           sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
-
       # Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_EB_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_EB_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       # Make ZIP file with source code
+      # -x는 zip파일 생성 시에 해당 부분들을 제외한다.
       - name: Generate deployment package
-        run: zip -r deploy.zip . -x '*.git*' './node_modules/*' awscliv2.zip
+        run: zip -r modumarket-server.zip . -x '*.git*' './src/*' './aws/*' './node_modules/*' awscliv2.zip
 
       # Deploy to Elastic Beanstalk
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v22
+      # application_name과 environment_name을 꼭 확인하자!
+      # 해당 부분은 꼭 같아야 한다!!
+      - name: deploy main to EB
+        uses: einaregilsson/beanstalk-deploy@v18
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_access_key: ${{ secrets.AWS_EB_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_EB_SECRET_ACCESS_KEY }}
           application_name: ${{ secrets.AWS_EB_APPLICATION_NAME }}
           environment_name: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
-          region: ap-northeast-2
-          version_label: github-action-${{ steps.current-time.outputs.formattedTime }}
-          deployment_package: deploy.zip
+          region: ${{ secrets.AWS_REGION }}
+          version_label: ${{github.SHA}}
+          deployment_package: modumarket-server.zip
           use_existing_version_if_available: true
-          wait_for_environment_recovery: 180
