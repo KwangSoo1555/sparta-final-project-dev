@@ -52,7 +52,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   getUserIdFromSocket(client: Socket): number | null {
-    const authHeader = client.handshake.auth.token;
+    const authHeader = client.handshake.headers.authorization;
     console.log("Authorization Header:", authHeader);
     const token =
       authHeader && authHeader.toLowerCase().startsWith("bearer ")
@@ -81,6 +81,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(userId + "++++++++++++++++++++");
       if (userId) {
         await this.redisConfig.setUserStatus(userId, "online");
+        await this.redisConfig.setUserSocketId(userId, client.id);
         this.connectedClients.push({ userId, client });
         console.log(`User ${userId} connected with socket ID ${client.id}`);
       } else {
