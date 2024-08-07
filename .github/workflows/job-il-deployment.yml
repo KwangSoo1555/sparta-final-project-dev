@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ["18.x"]
+        node-version: ["20.x"]
 
     steps:
       - uses: actions/checkout@v3
@@ -49,7 +49,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: ["18.x"]
+        node-version: ["20.x"]
 
     # 위에서 정의한 build 실행
     needs: build
@@ -60,7 +60,7 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo PORT=8081 >> .env
+          echo PORT=3333 >> .env
           echo NODE_ENV=${{ secrets.NODE_ENV }} >> .env
           cat .env
       # Initialize Node.js
@@ -101,7 +101,7 @@ jobs:
       # application_name과 environment_name을 꼭 확인하자!
       # 해당 부분은 꼭 같아야 한다!!
       - name: deploy main to EB
-        uses: einaregilsson/beanstalk-deploy@v18
+        uses: einaregilsson/beanstalk-deploy@v20
         with:
           aws_access_key: ${{ secrets.AWS_EB_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_EB_SECRET_ACCESS_KEY }}
