@@ -8,12 +8,12 @@ import {
   OnGatewayDisconnect,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import { ChatService } from "../chat/chat.service";
+import { ChatService } from "../chats/chat.service";
 import { UseGuards } from "@nestjs/common";
 import { JwtSocketGuards } from "../auth/strategies/jwt-strategy";
 import { RequestJwtBySocket } from "src/common/customs/decorators/jwt-socket-request";
-import { CreateChatDto } from "../chat/dto/create-chat.dto";
-import { UpdateChatDto } from "../chat/dto/update-chat.dto";
+import { CreateChatDto } from "../chats/dto/create-chat.dto";
+import { UpdateChatDto } from "../chats/dto/update-chat.dto";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { UsersEntity } from "src/entities/users.entity";
 import { Repository } from "typeorm";
