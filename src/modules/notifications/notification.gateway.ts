@@ -15,8 +15,8 @@ import { RedisConfig } from "src/database/redis/redis.config";
 import { AuthService } from "src/modules/auth/auth.service";
 import { ChatGateway } from "src/modules/chat-gateway/chat.gateway";
 import { CreateNoticeDto } from "src/modules/notices/dto/create-notice.dto";
-import { CreateNotificationDto } from "src/notifications/notifications.dto/create-notificaion.dto";
-import { NotificationsService } from "src/notifications/notifications.service";
+import { CreateNotificationDto } from "src/modules/notifications/notifications.dto/create-notificaion.dto";
+import { NotificationsService } from "src/modules/notifications/notifications.service";
 
 @WebSocketGateway({
   cors: {
