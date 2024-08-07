@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToMany,
@@ -36,6 +37,9 @@ export class NotificationMessagesEntity {
 
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
+
+  @DeleteDateColumn({ name: "deleted_at" })
+  deletedAt: Date;
 
   //알림메시지 발송 기록(생성은 한 번, 발송은 여러 번 되는 경우 있음)
   @OneToMany(() => NotificationLogsEntity, (notificationLog) => notificationLog.notificationMessage)
