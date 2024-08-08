@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ChatGateway } from "./chat.gateway";
-import { ChatService } from "../chat/chat.service";
+import { ChatService } from "../chats/chat.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ChatsEntity } from "src/entities/chats.entity";
 import { UsersEntity } from "src/entities/users.entity";
