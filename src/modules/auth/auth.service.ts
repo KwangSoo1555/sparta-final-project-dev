@@ -81,8 +81,7 @@ export class AuthService {
         `,
     };
 
-    await this.redisClient.set(email, verificationCode);
-    await this.redisClient.set(`${email}:timestamp`, timestamp);
+    await this.redisClient.set(email, verificationCode, "EX", 300);
 
     await this.smtpTransport.sendMail(mailOptions);
 
@@ -106,14 +105,6 @@ export class AuthService {
   async getVerificationCode(email: string): Promise<number | null> {
     const code = await this.redisClient.get(email);
     return code ? parseInt(code) : null;
-  }
-
-  // redis 에서 메일 인증 코드 만료 여부 확인
-  async isExpired(email: string) {
-    const expirationTime = 5 * 60 * 1000; // 5분 뒤 코드 인증 만료
-    const timestamp = await this.redisClient.get(`${email}:timestamp`);
-    if (!timestamp) return true;
-    return Date.now() > parseInt(timestamp) + expirationTime;
   }
 
   // 임시 비밀번호 발송
@@ -185,8 +176,7 @@ export class AuthService {
     else {
       // 이메일 인증 코드 확인
       const sendedEmailCode = await this.getVerificationCode(email);
-      const isExpired = await this.isExpired(email);
-      if (!sendedEmailCode || isExpired || sendedEmailCode !== verificationCode)
+      if (!sendedEmailCode || sendedEmailCode !== verificationCode)
         throw new BadRequestException(MESSAGES.AUTH.SIGN_UP.EMAIL.VERIFICATION_CODE.INCONSISTENT);
 
       // 비밀번호 해싱
@@ -233,7 +223,7 @@ export class AuthService {
   async socialSignIn(req: any, res: any): Promise<Response | void> {
     try {
       const user = req.user;
-
+      const code = 123
       if (!user) {
         return res.status(HttpStatus.BAD_REQUEST).json({
           status: HttpStatus.BAD_REQUEST,
@@ -253,7 +243,7 @@ export class AuthService {
 
       await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
 
-      return res.json({ accessToken, refreshToken });
+      return res.redirect(`http://localhost:3000/home?code=${code}`);
     } catch (error) {
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.GOOGLE.EMAIL);
     }
