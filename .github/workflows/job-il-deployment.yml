@@ -119,7 +119,7 @@ jobs:
       # Make ZIP file with source code
       # -x는 zip파일 생성 시에 해당 부분들을 제외한다.
       - name: Generate deployment package
-        run: zip -r modumarket-server.zip . -x '*.git*' './node_modules/*' awscliv2.zip
+        run: zip -r deploy.zip . -x '*.git*' './node_modules/*' awscliv2.zip
 
       # Deploy to Elastic Beanstalk
       # application_name과 environment_name을 꼭 확인하자!
@@ -133,5 +133,5 @@ jobs:
           environment_name: ${{ secrets.AWS_EB_ENVIRONMENT_NAME }}
           region: ${{ secrets.AWS_REGION }}
           version_label: ${{github.SHA}}
-          deployment_package: modumarket-server.zip
+          deployment_package: deploy.zip
           use_existing_version_if_available: true

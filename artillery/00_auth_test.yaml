@@ -1,9 +1,8 @@
 config:
-  target: 'http://localhost:3000'  # Change this to your server URL
+  target: 'http://localhost:3333'
   phases:
-    - duration: 60  # Duration of the test in seconds
-      arrivalRate: 5  # Number of requests per second
-  processor: './process-response.js'  # Optional: script to process responses, if needed
+    - duration: 60
+      arrivalRate: 5
 
 scenarios:
   - name: 'Sign Up'
@@ -16,9 +15,9 @@ scenarios:
             email: 'user@example.com'
             name: 'John Doe'
             password: 'password123'
-            verificationCode: 123456  # Replace with the actual verification code if needed
-            provider: ''  # Leave empty if not using social sign-up
-            socialId: ''  # Leave empty if not using social sign-up
+            verificationCode: 123456
+            provider: ''  
+            socialId: ''  
           capture:
             - json: '$.data.id'
               as: 'userId'
