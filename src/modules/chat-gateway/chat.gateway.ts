@@ -52,7 +52,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   getUserIdFromSocket(client: Socket): number | null {
-    const authHeader = client.handshake.headers.authorization;
+    const authHeader = client.handshake.auth.token;
     console.log("Authorization Header:", authHeader);
     const token =
       authHeader && authHeader.toLowerCase().startsWith("bearer ")

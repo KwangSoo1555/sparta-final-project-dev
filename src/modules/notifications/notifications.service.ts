@@ -112,8 +112,8 @@ export class NotificationsService {
 
       //알림메시지 생성
       const notificationMessage = await this.notificationMessagesRepository.save({
-        title: "지원한 잡일이 수락되었습니다.",
-        type: NotificationTypes.JOB_MATCHED,
+        title: "지원한 잡일이 거절되었습니다.",
+        type: NotificationTypes.JOB_DENIED,
         jobsId,
         senderId,
         receiverId,
@@ -175,5 +175,10 @@ export class NotificationsService {
     );
 
     return notificationData;
+  }
+
+  //알림 전체 삭제
+  async deleteAllNotifications(receiverId: number) {
+    await this.notificationLogsRepository.delete({ user: { id: receiverId } });
   }
 }
