@@ -4,5 +4,6 @@ export enum NotificationTypes {
   JOB_EXPIRED = "JOB_EXPIRED",
   JOB_APPLIED = "JOB_APPLIED",
   JOB_MATCHED = "JOB_MATCHED",
+  JOB_DENIED = "JOB_DENIED",
   NEW_NOTICE = "NEW_NOTICE",
 }
