@@ -41,4 +41,19 @@ export class NotificationsController {
       message: "받은 알림 전체 삭제 완료",
     };
   }
+
+  /**
+  유저가 받은 notifications 하나 삭제
+  * @param receiverId
+  * @returns
+   */
+  @Delete()
+  async deleteNotificationByLogId(@RequestJwtByHttp() { user: { id: receiverId } }) {
+    await this.notificationsService.deleteAllNotifications(+receiverId);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: "받은 알림 삭제 완료",
+    };
+  }
 }
