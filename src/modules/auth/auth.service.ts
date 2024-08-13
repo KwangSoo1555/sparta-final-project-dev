@@ -20,7 +20,7 @@ import { UsersEntity } from "src/entities/users.entity";
 import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
 import { EmailVerificationDto } from "./dto/email-verification.dto";
 import { UserSignUpDto } from "./dto/sign-up.dto";
-import { LocalSignInDto, GoogleSignInDto, NaverSignInDto, KakaoSignInDto } from "./dto/sign-in.dto";
+import { LocalSignInDto, SocialSignInDto } from "./dto/sign-in.dto";
 import { FindPwDto } from "./dto/find-pw.dto";
 import { JwtPayload } from "src/common/customs/types/jwt-payload.type";
 import { JwtInput } from "src/common/customs/types/jwt-input.type";
@@ -104,7 +104,7 @@ export class AuthService {
   // redis 에서 메일 인증 코드 조회
   async getVerificationCode(email: string): Promise<number | null> {
     const code = await this.redisClient.get(email);
-    return code ? parseInt(code) : null;
+    return +code;
   }
 
   // 임시 비밀번호 발송
@@ -143,11 +143,6 @@ export class AuthService {
     return tempPassword || null;
   }
 
-  // redis 에서 임시 비밀번호 삭제
-  async deleteTempPassword(email: string) {
-    await this.redisClient.del(email);
-  }
-
   // auth 관련 메서드
   // 유저 존재 여부 확인
   checkUserForAuth(params: { email?: string; id?: number }) {
@@ -155,47 +150,34 @@ export class AuthService {
   }
 
   async signUp(signUpDto: UserSignUpDto) {
-    const { email, name, password, verificationCode, provider, socialId } = signUpDto;
-
+    const { email, name, password, verificationCode } = signUpDto;
     const existingUser = await this.checkUserForAuth({ email });
+
     if (existingUser) throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
 
-    // 소셜 회원가입 처리
-    if (socialId) {
-      const user = this.userRepository.create({
-        email,
-        name,
-        socialId,
-        provider,
-      });
+    // 이메일 인증 코드 확인
+    const sendedEmailCode = await this.getVerificationCode(email);
+    if (!sendedEmailCode || sendedEmailCode !== verificationCode)
+      throw new BadRequestException(MESSAGES.AUTH.SIGN_UP.EMAIL.VERIFICATION_CODE.INCONSISTENT);
 
-      return await this.userRepository.save(user);
-    }
+    // 비밀번호 해싱
+    const hashedPassword = await bcrypt.hash(password, AUTH_CONSTANT.HASH_SALT_ROUNDS);
 
-    // 소셜 회원가입이 아닌 로컬 회원가입 처리
-    else {
-      // 이메일 인증 코드 확인
-      const sendedEmailCode = await this.getVerificationCode(email);
-      if (!sendedEmailCode || sendedEmailCode !== verificationCode)
-        throw new BadRequestException(MESSAGES.AUTH.SIGN_UP.EMAIL.VERIFICATION_CODE.INCONSISTENT);
+    // 유저 생성
+    const user = this.userRepository.create({
+      email,
+      name,
+      password: hashedPassword,
+    });
 
-      // 비밀번호 해싱
-      const hashedPassword = await bcrypt.hash(password, AUTH_CONSTANT.HASH_SALT_ROUNDS);
+    const signUpUser = await this.userRepository.save(user);
 
-      // 유저 생성
-      const user = this.userRepository.create({
-        email,
-        name,
-        password: hashedPassword,
-      });
+    // 비밀번호 필드를 undefined로 설정
+    signUpUser.password = undefined;
 
-      const signUpUser = await this.userRepository.save(user);
+    await this.redisClient.del(email);
 
-      // 비밀번호 필드를 undefined로 설정
-      signUpUser.password = undefined;
-
-      return signUpUser;
-    }
+    return signUpUser;
   }
 
   async signIn(signInDto: LocalSignInDto, ip: string, userAgent: string) {
@@ -214,38 +196,35 @@ export class AuthService {
 
     await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return { accessToken, refreshToken };
   }
 
-  async socialSignIn(req: any, res: any): Promise<Response | void> {
+  async socialSignIn(user: any, ip: string, userAgent: string, res: any): Promise<Response | void> {
     try {
-      const user = req.user;
-      const code = 123
-      if (!user) {
-        return res.status(HttpStatus.BAD_REQUEST).json({
-          status: HttpStatus.BAD_REQUEST,
-          message: MESSAGES.AUTH.LOG_IN.GOOGLE.EMAIL,
-        });
+      const email = user.email;
+      let checkUser = await this.checkUserForAuth({ email });
+
+      if (!checkUser) {
+        checkUser = await this.userRepository.save(user);
       }
 
-      const accessToken = this.createToken({ userId: user.id });
-      const refreshToken = this.createToken({ userId: user.id }, true);
+      const userId = checkUser.id;
 
-      const userAgent =
-        req.headers["user-agent"] ||
-        req.rawHeaders.find(
-          (header, index) => header.toLowerCase() === "user-agent" && req.rawHeaders[index + 1],
-        );
-      const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      const accessToken = this.createToken({ userId });
+      const refreshToken = this.createToken({ userId }, true);
 
-      await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
+      await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
-      return res.redirect(`http://localhost:3000/home?code=${code}`);
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+      });
+
+      return res.json({ accessToken, refreshToken });
     } catch (error) {
-      throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.GOOGLE.EMAIL);
+      console.log(error);
+      throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.SOCIAL.EMAIL.NOT_FOUND);
     }
   }
 
@@ -271,31 +250,29 @@ export class AuthService {
   }
 
   async findPw(findPwDto: FindPwDto) {
-    const user = await this.userRepository.findOne({
-      where: { email: findPwDto.email, name: findPwDto.name },
-    });
-    
+    const { email, name, tempPassword } = findPwDto;
+    const user = await this.userRepository.findOne({ where: { email, name } });
+
     if (!user) throw new NotFoundException("가입되지 않은 계정입니다.");
 
     // 임시 비밀번호
-    const tempPassword = await this.getTempPassword(findPwDto.email);
-    if (findPwDto.tempPassword !== tempPassword) {
+    const inputTempPassword = await this.getTempPassword(email);
+    if (tempPassword !== inputTempPassword)
       throw new NotFoundException("잘못된 임시 비밀번호입니다.");
-    } else {
-      await this.deleteTempPassword(findPwDto.email);
-    }
 
     // 비밀번호 암호화
-    const hashedPassword = await bcrypt.hash(tempPassword, AUTH_CONSTANT.HASH_SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(inputTempPassword, AUTH_CONSTANT.HASH_SALT_ROUNDS);
 
     // 비밀번호 업데이트
     await this.userRepository.update(user.id, { password: hashedPassword });
+
+    await this.redisClient.del(email);
 
     return {
       status: HttpStatus.OK,
       message: "비밀번호가 임시 비밀번호로 변경되었습니다.",
       data: {
-        password: tempPassword,
+        password: inputTempPassword,
       },
     };
   }
@@ -318,14 +295,20 @@ export class AuthService {
   }
 
   createToken(jwtInput: JwtInput, isRefresh?: boolean): string {
-    const payload: JwtPayload = {
-      ...jwtInput,
-      type: isRefresh ? "REFRESH" : "ACCESS",
-    };
-    const key = isRefresh ? this.jwtRefreshKey : this.jwtAccessKey;
-    const options = isRefresh ? this.jwtRefreshOptions : this.jwtAccessOptions;
+    try {
+      const payload: JwtPayload = {
+        ...jwtInput,
+        type: isRefresh ? "REFRESH" : "ACCESS",
+      };
+      const key = isRefresh ? this.jwtRefreshKey : this.jwtAccessKey;
+      const options = isRefresh ? this.jwtRefreshOptions : this.jwtAccessOptions;
 
-    return jwt.sign(payload, key, options);
+      console.log("Token creation params:", { payload, key, options });
+      return jwt.sign(payload, key, options);
+    } catch (error) {
+      console.error("Error in createToken:", error);
+      throw new Error("토큰 생성 중 오류가 발생했습니다.");
+    }
   }
 
   async refreshTokenStore(userId: number, refreshToken: string, ip: string, userAgent: string) {
