@@ -26,7 +26,7 @@ import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
   cors: {
-    origin: "http://localhost:3000", // 클라이언트의 URL
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // 두 주소 모두 추가
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
