@@ -18,12 +18,14 @@ import { Request as ExpressRequest, Response as ExpressResponse } from "express"
 import { AuthGuard } from "@nestjs/passport";
 import { JwtAccessGuards, JwtRefreshGuards } from "./strategies/jwt-strategy";
 import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
+import { RequestUserAgent } from "src/common/customs/decorators/user-agent-request";
+import { RequestIp } from "src/common/customs/decorators/ip-request";
 
 import { AuthService } from "./auth.service";
 
 import { EmailVerificationDto } from "./dto/email-verification.dto";
 import { UserSignUpDto } from "./dto/sign-up.dto";
-import { LocalSignInDto, GoogleSignInDto, NaverSignInDto, KakaoSignInDto } from "./dto/sign-in.dto";
+import { LocalSignInDto, SocialSignInDto } from "./dto/sign-in.dto";
 import { FindPwDto } from "./dto/find-pw.dto";
 
 @Controller("auth")
@@ -66,11 +68,13 @@ export class AuthController {
   @Get("google/callback")
   @UseGuards(AuthGuard("google"))
   async googleAuthCallback(
-    @Request() request: ExpressRequest,
-    @Response() response: ExpressResponse,
-  ): Promise<ExpressResponse | void> {
-    await this.authService.socialSignIn(request, response);
-    return response;
+    @RequestUserAgent() userAgent: string,
+    @RequestIp() ip: string,
+    @Response() res: ExpressResponse,
+    @Request() req: ExpressRequest,
+  ) {
+    const user = req.user;
+    await this.authService.socialSignIn(user, ip, userAgent, res);
   }
 
   @Get("naver")
@@ -80,27 +84,29 @@ export class AuthController {
   @Get("naver/callback")
   @UseGuards(AuthGuard("naver"))
   async naverAuthCallback(
-    @Request() request: ExpressRequest,
-    @Response() response: ExpressResponse,
-  ): Promise<ExpressResponse | void> {
-    await this.authService.socialSignIn(request, response);
-    return response;
+    @RequestUserAgent() userAgent: string,
+    @RequestIp() ip: string,
+    @Response() res: ExpressResponse,
+    @Request() req: ExpressRequest,
+  ) {
+    const user = req.user;
+    await this.authService.socialSignIn(user, ip, userAgent, res);
   }
 
   @Get("kakao")
   @UseGuards(AuthGuard("kakao"))
-  async kakaoAuth(@Request() req: ExpressRequest) {
-    console.log(req);
-  }
+  async kakaoAuth(@Request() req: ExpressRequest) {}
 
   @Get("kakao/callback")
   @UseGuards(AuthGuard("kakao"))
   async kakaoAuthCallback(
-    @Request() request: ExpressRequest,
-    @Response() response: ExpressResponse,
-  ): Promise<ExpressResponse | void> {
-    await this.authService.socialSignIn(request, response);
-    return response;
+    @RequestUserAgent() userAgent: string,
+    @RequestIp() ip: string,
+    @Response() res: ExpressResponse,
+    @Request() req: ExpressRequest,
+  ) {
+    const user = req.user;
+    await this.authService.socialSignIn(user, ip, userAgent, res);
   }
 
   @Post("jwt-reissue")

@@ -8,7 +8,7 @@ import { ConfigService } from "@nestjs/config";
 import { AuthService } from "../auth.service";
 
 import { UsersEntity } from "src/entities/users.entity";
-import { GoogleSignInDto, NaverSignInDto, KakaoSignInDto } from "../dto/sign-in.dto";
+import { SocialSignInDto } from "../dto/sign-in.dto";
 import { SocialProviders } from "src/common/customs/enums/enum-social-providers";
 import { MESSAGES } from "src/common/constants/message.constant";
 
@@ -30,20 +30,19 @@ export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "go
     _accessToken: string,
     _refreshToken: string,
     profile: GoogleProfile,
-  ): Promise<UsersEntity | string> {
+    done: (error: any, result: any) => void,
+  ) {
     const { id, name, emails, provider } = profile;
-    const googleSignInDto: GoogleSignInDto = {
-      email: emails[0].value,
-      provider: provider as SocialProviders,
-      socialId: id,
-      name: name.familyName + name.givenName,
-    };
-
-    const user = await this.authService.checkUserForAuth({ email: googleSignInDto.email });
-    if (!user) {
-      return await this.authService.signUp(googleSignInDto);
-    } else {
-      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+    try {
+      const googleSignInDto: SocialSignInDto = {
+        email: emails[0].value,
+        provider: provider as SocialProviders,
+        socialId: id,
+        name: name.familyName + name.givenName,
+      };
+      done(null, googleSignInDto);
+    } catch (error) {
+      done(error, null);
     }
   }
 }
@@ -65,21 +64,19 @@ export class NaverPassportStrategy extends PassportStrategy(NaverStrategy, "nave
     _accessToken: string,
     _refreshToken: string,
     profile: NaverProfile,
-  ): Promise<UsersEntity | string> {
-    console.log("Naver Profile:", profile); // 콘솔 로그 추가
+    done: (error: any, result: any) => void,
+  ) {
     const { id, name, email, provider } = profile;
-    const naverSignInDto: NaverSignInDto = {
-      email: email,
-      provider: provider as SocialProviders,
-      socialId: id,
-      name: name,
-    };
-
-    const user = await this.authService.checkUserForAuth({ email: naverSignInDto.email });
-    if (!user) {
-      return await this.authService.signUp(naverSignInDto);
-    } else {
-      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+    try {
+      const naverSignInDto: SocialSignInDto = {
+        email: email,
+        provider: provider as SocialProviders,
+        socialId: id,
+        name: name,
+      };
+      done(null, naverSignInDto);
+    } catch (error) {
+      done(error, null);
     }
   }
 }
@@ -101,20 +98,26 @@ export class KakaoPassportStrategy extends PassportStrategy(KakaoStrategy, "kaka
     _accessToken: string,
     _refreshToken: string,
     profile: KakaoProfile,
-  ): Promise<UsersEntity | string> {
-    const { id, username, _json: { kakao_account: { email } }, provider } = profile;
-    const kakaoSignInDto: KakaoSignInDto = {
-      email: email,
-      provider: provider as SocialProviders,
-      socialId: id,
-      name: username,
-    };
-
-    const user = await this.authService.checkUserForAuth({ email: kakaoSignInDto.email });
-    if (!user) {
-      return await this.authService.signUp(kakaoSignInDto);
-    } else {
-      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+    done: (error: any, result: any) => void,
+  ) {
+    const {
+      id,
+      username,
+      _json: {
+        kakao_account: { email },
+      },
+      provider,
+    } = profile;
+    try {
+      const kakaoSignInDto: SocialSignInDto = {
+        email: email,
+        provider: provider as SocialProviders,
+        socialId: id,
+        name: username,
+      };
+      done(null, kakaoSignInDto);
+    } catch (error) {
+      done(error, null);
     }
   }
 }
