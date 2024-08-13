@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 // import { CreateNotificationDto } from "./notifications.dto/create-notificaion.dto";
@@ -180,5 +180,21 @@ export class NotificationsService {
   //알림 전체 삭제
   async deleteAllNotifications(receiverId: number) {
     await this.notificationLogsRepository.delete({ user: { id: receiverId } });
+  }
+
+  //알림 하나 삭제
+  async deleteSpecificNotifications(receiverId: number, notificationLogId: number) {
+    const notificationLog = await this.notificationLogsRepository.findOne({
+      where: {
+        id: notificationLogId,
+        user: { id: receiverId },
+      },
+    });
+
+    if (!notificationLog) {
+      throw new NotFoundException("알림이 존재하지 않습니다.");
+    }
+
+    await this.notificationLogsRepository.delete(notificationLogId);
   }
 }
