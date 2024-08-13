@@ -16,25 +16,7 @@ export class LocalSignInDto {
   password: string;
 }
 
-export class GoogleSignInDto extends PickType(UserSignUpDto, [
-  "email",
-  "name",
-  "socialId",
-  "provider",
-] as const) {
-  provider: SocialProviders;
-}
-
-export class NaverSignInDto extends PickType(UserSignUpDto, [
-  "email",
-  "name",
-  "socialId",
-  "provider",
-] as const) {
-  provider: SocialProviders;
-}
-
-export class KakaoSignInDto extends PickType(UserSignUpDto, [
+export class SocialSignInDto extends PickType(UserSignUpDto, [
   "email",
   "name",
   "socialId",
