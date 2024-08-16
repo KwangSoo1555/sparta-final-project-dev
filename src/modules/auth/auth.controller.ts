@@ -74,7 +74,8 @@ export class AuthController {
     @Request() req: ExpressRequest,
   ) {
     const user = req.user;
-    await this.authService.socialSignIn(user, ip, userAgent, res);
+    const authCode = req.query.code as string;
+    await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
   }
 
   @Get("naver")
@@ -90,7 +91,8 @@ export class AuthController {
     @Request() req: ExpressRequest,
   ) {
     const user = req.user;
-    await this.authService.socialSignIn(user, ip, userAgent, res);
+    const authCode = req.query.code as string;
+    await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
   }
 
   @Get("kakao")
@@ -106,7 +108,8 @@ export class AuthController {
     @Request() req: ExpressRequest,
   ) {
     const user = req.user;
-    await this.authService.socialSignIn(user, ip, userAgent, res);
+    const authCode = req.query.code as string;
+    await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
   }
 
   @Post("jwt-reissue")
