@@ -6,12 +6,18 @@ import { ValidationPipe } from "@nestjs/common";
 import { IoAdapter } from "@nestjs/platform-socket.io";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
+import { WinstonLogger } from './modules/utils/winston.util';
+import { ExceptionsFilter } from './filters/exception.filter'
+
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ["error", "warn"],
+    bufferLogs: true,
+    logger: WinstonLogger, // replacing logger
   });
+  
+  app.useGlobalFilters(new ExceptionsFilter());
 
   app.enableCors({
     origin: "http://localhost:3000", // 허용할 클라이언트 도메인 (예: React 앱)
