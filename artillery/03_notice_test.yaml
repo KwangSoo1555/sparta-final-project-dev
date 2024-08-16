@@ -1,0 +1,25 @@
+config:
+  target: 'http://127.0.0.1:3333'  # 서버 URL
+  phases:
+    - duration: 60  # 테스트 지속 시간 (초)
+      arrivalRate: 100  # 초당 요청 수
+  defaults:
+    headers:
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwMSwidHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcyMzU5NjgyNCwiZXhwIjoxNzI0MjAxNjI0fQ.sudMewaTpJ7GZAZSwsyGft1CLKpPnMP5ovXIb9lJrCU'  # 토큰 추가
+
+scenarios:
+  - name: 'Fetch Notices and Jobs'
+    flow:
+      - get:
+          url: '/api/v1/notices'
+          qs:
+            page: 1
+            limit: 20
+          capture:
+            - json: '$.data'
+              as: 'notices'
+      - get:
+          url: '/api/v1/jobs'
+          capture:
+            - json: '$.jobs'  # 응답 구조에 맞게 수정
+              as: 'jobs'
