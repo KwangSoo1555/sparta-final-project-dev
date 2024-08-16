@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer, Logger } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "./database/typeorm/typeorm.module";
 import { RedisModule } from "./database/redis/redis.module";
@@ -13,6 +13,8 @@ import { ReportsModule } from "./modules/reports/reports.module";
 import { BlacklistModule } from "./modules/blacklists/blacklist.module";
 // import { NotificationGatewayModule } from "./notification-gateway/notification-gateway.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
+
+import { LoggerMiddleware } from "./common/middleware/logger.middleware"
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
@@ -34,6 +36,10 @@ import { AppController } from "./app.controller";
     NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Logger, LoggerMiddleware],
 })
-export class AppModule {}
+export class AppModule implements NestModule{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
