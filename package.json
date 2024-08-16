@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "dev": "nest build --webpack --webpackPath webpack-hmr.config.js --watch",
+    "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -21,7 +22,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d ./ormconfig.ts",
     "db:create": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:create -d ./ormconfig.ts",
-    "db:drop": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop -d ./ormconfig.ts"
+    "db:drop": "ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop -d ./ormconfig.ts",
+    "eb:prod": "npm install && npm run build && npm run start:prod"
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -49,6 +51,7 @@
     "passport-kakao": "^1.0.1",
     "passport-naver-v2": "^2.0.8",
     "reflect-metadata": "^0.2.0",
+    "rimraf": "^6.0.1",
     "rxjs": "^7.8.1",
     "socket.io-redis": "^6.1.1",
     "typeorm": "^0.3.20",
@@ -70,6 +73,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "artillery": "^2.0.19",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -102,8 +106,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "engines": {
-    "node": "18.14.0"
   }
 }

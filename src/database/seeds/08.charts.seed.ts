@@ -13,7 +13,7 @@ export class ChatSeeder implements Seeder {
     const chats: ChatsEntity[] = [];
 
     for (const chatRoom of chatRooms) {
-      const chatCount = faker.number.int({ min: 5, max: 10 });
+      const chatCount = faker.number.int({ min: 10, max: 15 });
 
       for (let i = 0; i < chatCount; i++) {
         const isUser1Sender = faker.datatype.boolean();
