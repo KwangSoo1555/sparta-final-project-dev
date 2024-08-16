@@ -84,4 +84,15 @@ export class NotificationGateway implements OnGatewayConnection, OnGatewayDiscon
       this.chatGateway.server.to(socketId).emit("notification", notificationData);
     }
   }
+
+  async sendchattingNotification(
+    userId: number,
+    notificationData: { type: NotificationTypes; chatRoomId: number; title: string },
+  ) {
+    const socketId = await this.redisConfig.getUserSocketId(userId);
+    console.log("socket ID : ", socketId);
+    if (socketId) {
+      this.chatGateway.server.to(socketId).emit("notification", notificationData);
+    }
+  }
 }

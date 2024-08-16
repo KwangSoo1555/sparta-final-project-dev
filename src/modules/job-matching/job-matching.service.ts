@@ -2,7 +2,7 @@ import _ from "lodash";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { MESSAGES } from "src/common/constants/message.constant";
 
 import { JobsMatchingEntity } from "src/entities/jobs-matching.entity";
@@ -11,6 +11,7 @@ import { UsersEntity } from "src/entities/users.entity";
 import { NotificationsService } from "src/modules/notifications/notifications.service";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 import { CreateNotificationDto } from "src/modules/notifications/notifications.dto/create-notificaion.dto";
+import Redis from "ioredis";
 
 @Injectable()
 export class JobMatchingService {
@@ -20,7 +21,8 @@ export class JobMatchingService {
     @InjectRepository(JobsEntity) private jobsRepository: Repository<JobsEntity>,
     @InjectRepository(UsersEntity) private userRepository: Repository<UsersEntity>,
 
-    private notificationsService: NotificationsService,
+    @Inject("REDIS_CLIENT")
+    private readonly redisClient: Redis,
   ) {}
 
   async create(customerId: number, jobsId: number) {
@@ -51,11 +53,16 @@ export class JobMatchingService {
     });
 
     //지원자 발생 시 알림 발송 메서드
-    await this.notificationsService.createApplyNotificationMessage(
-      jobsId,
-      customerId,
-      verifyJobbyId.ownerId,
+    await this.redisClient.publish(
+      "jobMatcing",
+      JSON.stringify({
+        type: NotificationTypes.JOB_APPLIED,
+        jobsId,
+        customerId,
+        ownerId: verifyJobbyId.ownerId,
+      }),
     );
+    console.log("jobMatchingCreated");
 
     return data;
   }
@@ -155,10 +162,14 @@ export class JobMatchingService {
     }
 
     //매칭 수락 시 알림 발송 메서드
-    await this.notificationsService.createMatchedNotificationMessage(
-      matching.jobId,
-      matching.customerId,
-      matching.job.ownerId,
+    await this.redisClient.publish(
+      "jobMatcing",
+      JSON.stringify({
+        type: NotificationTypes.JOB_APPLIED,
+        jobId: matching.jobId,
+        customerId: matching.customerId,
+        ownerId: matching.job.ownerId,
+      }),
     );
 
     return await this.jobsMatchingRepository.update(
@@ -182,10 +193,14 @@ export class JobMatchingService {
     }
 
     //매칭 거절 시 알림 발송 메서드
-    await this.notificationsService.createDeniedNotificationMessage(
-      matching.jobId,
-      matching.customerId,
-      matching.job.ownerId,
+    await this.redisClient.publish(
+      "jobMatcing",
+      JSON.stringify({
+        type: NotificationTypes.JOB_DENIED,
+        jobId: matching.jobId,
+        customerId: matching.customerId,
+        ownerId: matching.job.ownerId,
+      }),
     );
 
     return await this.jobsMatchingRepository.update(

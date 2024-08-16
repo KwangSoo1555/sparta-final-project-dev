@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
 // import { CreateNotificationDto } from "./notifications.dto/create-notificaion.dto";
@@ -13,6 +13,10 @@ import { NotificationGateway } from "src/modules/notifications/notification.gate
 import { Repository } from "typeorm";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 import { JobsEntity } from "src/entities/jobs.entity";
+import { ChatRoomsEntity } from "src/entities/chat-rooms.entity";
+import Redis from "ioredis";
+import { error } from "console";
+import { channel } from "diagnostics_channel";
 
 @Injectable()
 export class NotificationsService {
@@ -36,7 +40,34 @@ export class NotificationsService {
     // private readonly noticesRepository: Repository<NoticesEntity>,
 
     private notificationGateway: NotificationGateway,
-  ) {}
+
+    @Inject("REDIS_SUBSCRIBER_CLIENT")
+    private readonly redisClient: Redis,
+  ) {
+    this.redisClient.subscribe("chatMessageCreated", "newNotice", "jobMatching", (err, count) => {
+      if (err) {
+        console.error("채팅 알림 채널 구독 설정에 실패했습니다 :", err);
+        return;
+      }
+      console.log(`구독 중인 채널 갯수 : ${count}`);
+    });
+
+    this.redisClient.on("message", async (channel, message) => {
+      if (channel === "chatMessageCreated") {
+        const { chatRoomId, receiverId, senderId } = JSON.parse(message);
+        await this.createChatMessageReceiveNotification(chatRoomId, receiverId, senderId);
+      } else if (channel === "jobMatching") {
+        const { type, jobId, customerId, ownerId } = JSON.parse(message);
+        if (type === NotificationTypes.JOB_APPLIED) {
+          await this.createApplyNotificationMessage(jobId, customerId, ownerId);
+        } else if (type === NotificationTypes.JOB_MATCHED) {
+          await this.createMatchedNotificationMessage(jobId, customerId, ownerId);
+        } else if (type === NotificationTypes.JOB_DENIED) {
+          await this.createDeniedNotificationMessage(jobId, customerId, ownerId);
+        }
+      }
+    });
+  }
 
   //지원자 발생 시 푸시알림 생성 메서드
   async createApplyNotificationMessage(jobsId: number, customerId: number, ownerId: number) {
@@ -137,6 +168,42 @@ export class NotificationsService {
     }
   }
 
+  //채팅 알림
+  async createChatMessageReceiveNotification(
+    chatRoomId: number,
+    receiverId: number,
+    senderId: number,
+  ) {
+    try {
+      //알림메시지 생성
+
+      const sender = await this.usersRepository.findOneBy({ id: senderId });
+      const notificationMessage = await this.notificationMessagesRepository.save({
+        title: `${sender.name}유저로부터 새로운 채팅이 도착했습니다.`,
+        type: NotificationTypes.NEW_CHAT,
+        chatRoomId,
+        senderId,
+        receiverId,
+      });
+
+      //알림메시지 로그를 생성
+      const notificationLog = this.notificationLogsRepository.create({
+        user: await this.usersRepository.findOneBy({ id: receiverId }),
+        notificationMessage,
+      });
+      //생성한 알림메시지 로그를 저장
+      await this.notificationLogsRepository.save(notificationLog);
+
+      //알림 발송
+      await this.notificationGateway.sendchattingNotification(
+        receiverId, //receiver에게 알림 발송
+        { type: NotificationTypes.NEW_CHAT, chatRoomId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
+      );
+    } catch (error) {
+      throw new Error("알림메시지 생성 실패");
+    }
+  }
+
   //알림 목록 조회
   async findAllNotifications(receiverId: number) {
     //notificationLog와 notificationMessage relation으로 logData 생성
@@ -150,6 +217,7 @@ export class NotificationsService {
           type: true,
           title: true,
           jobsId: true,
+          chatRoomId: true,
           senderId: true,
         },
       },
@@ -166,6 +234,7 @@ export class NotificationsService {
           id: log.id,
           title: log.notificationMessage.title,
           jobsId: log.notificationMessage.jobsId,
+          chatRoomId: log.notificationMessage.chatRoomId,
           type: log.notificationMessage.type,
           createdAt: log.createdAt,
           notificationMessageId: log.notificationMessage.id,

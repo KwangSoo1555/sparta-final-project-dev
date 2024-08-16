@@ -14,8 +14,16 @@ import { RedisConfig } from "../redis/redis.config";
       },
       inject: [ConfigService],
     },
+    {
+      provide: "REDIS_SUBSCRIBER_CLIENT",
+      useFactory: (configService: ConfigService) => {
+        const redisConfig = new RedisConfig(configService);
+        return redisConfig.getClient();
+      },
+      inject: [ConfigService],
+    },
     RedisConfig,
   ],
-  exports: ["REDIS_CLIENT", RedisConfig],
+  exports: ["REDIS_CLIENT", "REDIS_SUBSCRIBER_CLIENT", RedisConfig],
 })
 export class RedisModule {}
