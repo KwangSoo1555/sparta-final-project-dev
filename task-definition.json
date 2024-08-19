@@ -1,22 +1,22 @@
 {
-  "family": "family-name",
-  "taskRoleArn": "arn:aws:iam::123123123:role/ecsTaskExecutionRole",
-  "executionRoleArn": "arn:aws:iam::123123123:role/ecsTaskExecutionRole",
-  "networkMode": null,
-  "requiresCompatibilities": ["EC2"],
-  "cpu": null,
-  "memory": null,
+  "family": "sparta-final-project-ecs-task",
+  "taskRoleArn": "arn:aws:iam::590183983800:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::590183983800:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "3072",
   "containerDefinitions": [
     {
-      "name": "container-name",
-      "image": "123123123.dkr.ecr.ap-northeast-2.amazonaws.com/project/service",
+      "name": "sparta-final-project-backend-core-deployment",
+      "image": "590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin",
       "cpu": 2048,
       "memory": null,
       "memoryReservation": 450,
       "portMappings": [
         {
-          "containerPort": 3100,
-          "hostPort": 0,
+          "containerPort": 3333,
+          "hostPort": 3333,
           "protocol": "tcp"
         }
       ],
@@ -43,7 +43,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/service-name",
+          "awslogs-group": "/ecs/sparta-final-project-ecs-task",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs"
         }

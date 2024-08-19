@@ -1,8 +1,8 @@
 on:
   push:
     branches: dev
-  # pull_request:
-  #   branches: dev
+  pull_request:
+    branches: dev
 
 name: Web Server CI/CD # Action 이름
 
@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout # 현재 Repo의 소스를 clone
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials # AWS 인증
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -24,30 +24,38 @@ jobs:
 
       - name: Login to Amazon ECR # AWS ECR 로그인
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
       - name: Build, tag, and push image to Amazon ECR # Docker 이미지 빌드, 태깅 후 AWS ECR에 PUSH
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: project-name/service # AWS ECR 이름
+          ECR_REPOSITORY: sparta-final-project-team7-server-origin # AWS ECR 이름
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # 도커 이미지 빌드
+          docker build --secret id=env,src=.env -t sparta-final-project-team7-server-origin .
+
+          # 도커 이미지 태깅
+          docker tag sparta-final-project-team7-server-origin:latest 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
+
+          # 도커 이미지 푸시
+          docker push 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
+
+          # 도커 이미지 출력
+          echo "image=590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition # ECS 작업 정의 생성
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json # 작업 정의 템플릿 파일 이름
-          container-name: service # 컨테이너 이름
+          container-name: sparta-final-project-backend-core-deployment # 컨테이너 이름
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition # 작업 정의 파일을 ECS 서비스에 반영
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: container-name # 컨테이너 이름
-          cluster: cluster-name # 클러스터 이름
+          service: sparta-final-project-backend-core-deployment # 컨테이너 이름
+          cluster: sparta-final-project-ecs-cluster # 클러스터 이름
           wait-for-service-stability: true
