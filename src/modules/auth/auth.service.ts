@@ -221,7 +221,10 @@ export class AuthService {
 
       await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
-      await this.redisClient.hmset(RequestAuthCode, { accessToken, refreshToken });
+      await this.redisClient.hset(RequestAuthCode, {
+        accessToken: accessToken,
+        refreshToken: refreshToken
+      });
       await this.redisClient.expire(RequestAuthCode, 10);
 
       return res.redirect(`http://localhost:3000/auth/social-login?code=${RequestAuthCode}`);
@@ -231,7 +234,8 @@ export class AuthService {
   }
 
   async getAuthCode(authCode: string) {
-    return await this.redisClient.hmget(authCode);
+    const fields = ['accessToken', 'refreshToken'];
+    return this.redisClient.hmget(authCode, ...fields);
   }
 
   async tokenReissue(userId: number, refreshToken: string, ip: string, userAgent: string) {

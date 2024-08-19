@@ -11,6 +11,7 @@ import {
   Ip,
   Request,
   Response,
+  Param,
 } from "@nestjs/common";
 
 import { Request as ExpressRequest, Response as ExpressResponse } from "express";
@@ -115,8 +116,8 @@ export class AuthController {
     await this.authService.socialSignIn(user, ip, userAgent, RequestAuthCode, res);
   }
 
-  @Get("auth-code")
-  async getAuthCode(@Body() authCode: string) {
+  @Get("auth-code/:authCode")
+  async getAuthCode(@Param('authCode') authCode: string) {
     return this.authService.getAuthCode(authCode);
   }
 
