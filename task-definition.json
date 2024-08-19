@@ -4,13 +4,13 @@
   "executionRoleArn": "arn:aws:iam::590183983800:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
-  "cpu": "2048",
+  "cpu": "1024",
   "memory": "3072",
   "containerDefinitions": [
     {
       "name": "sparta-final-project-backend-core-deployment",
       "image": "590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin",
-      "cpu": 2048,
+      "cpu": 1024,
       "memory": null,
       "memoryReservation": 450,
       "portMappings": [
