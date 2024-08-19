@@ -39,7 +39,10 @@ export class ChatController {
 
   // 채팅및 채팅룸 생성 api
   @Post()
-  async createChat(@RequestJwtByHttp() { user: { id: userId } }, @Body() createChatDto: CreateChatDto) {
+  async createChat(
+    @RequestJwtByHttp() { user: { id: userId } },
+    @Body() createChatDto: CreateChatDto,
+  ) {
     const createChat = await this.chatService.createChat(userId, createChatDto);
 
     return {
@@ -57,23 +60,6 @@ export class ChatController {
       statusCode: HttpStatus.OK,
       message: "카드목록 조회 성공",
       findAllChatRooms,
-    };
-  }
-
-  // 채팅 수정 api
-  @Patch("/:chat_rooms_id/chats/:chat_id")
-  async updateChat(
-    @RequestJwtByHttp() { user: { id: userId } },
-    @Param("chat_rooms_id") chatRoomId: number,
-    @Param("chat_id") chatId: number,
-    @Body() updateChatDto: UpdateChatDto,
-  ) {
-    const updateChat = await this.chatService.updateChat(userId, chatRoomId, chatId, updateChatDto);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: "채팅 수정 성공",
-      data: updateChat,
     };
   }
 

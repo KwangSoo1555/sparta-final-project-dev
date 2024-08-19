@@ -24,6 +24,7 @@ import { SocialProviders } from "../common/customs/enums/enum-social-providers";
 import { UserRoles } from "../common/customs/enums/enum-user-roles";
 import { NotificationLogsEntity } from "./notification-logs.entity";
 import { NotificationMessagesEntity } from "./notification-messages.entity";
+import { UsersLocalCodesEntity } from "./users-localcodes.entity";
 
 @Entity("users")
 export class UsersEntity {
@@ -109,4 +110,7 @@ export class UsersEntity {
   @ManyToOne(() => NotificationMessagesEntity, (notificationMessage) => notificationMessage.users)
   @JoinColumn({ name: "notification_messages" })
   notificationMessage: NotificationMessagesEntity;
+
+  @OneToMany(() => UsersLocalCodesEntity, (usersLocalCodes) => usersLocalCodes.user)
+  usersLocalCodes: UsersLocalCodesEntity[];
 }
