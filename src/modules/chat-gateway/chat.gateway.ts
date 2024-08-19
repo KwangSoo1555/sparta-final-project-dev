@@ -26,7 +26,7 @@ import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
   cors: {
-    origin: "http://localhost:3000", // 클라이언트의 URL
+    origin: '*', // 모든 도메인에서의 요청을 허용
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -168,6 +168,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const newChat = await this.chatService.createChat(userId, createChatDto);
     console.log("++++++++++++++++++++" + newChat);
     client.to(newChat.chatRoomsId.toString()).emit("receiveChat", newChat);
+    client.emit("chatSent", newChat);
   }
 
   @SubscribeMessage("updateChat")

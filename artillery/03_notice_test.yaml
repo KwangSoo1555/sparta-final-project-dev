@@ -1,0 +1,85 @@
+config:
+  target: 'http://127.0.0.1:3333'  # 서버 URL
+  phases:
+    - duration: 60  # 테스트 지속 시간 (초)
+      arrivalRate: 170  # 초당 요청 수
+  defaults:
+    headers:
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwMSwidHlwZSI6IkFDQ0VTUyIsImlhdCI6MTcyMzU5NjgyNCwiZXhwIjoxNzI0MjAxNjI0fQ.sudMewaTpJ7GZAZSwsyGft1CLKpPnMP5ovXIb9lJrCU'  # 토큰 추가
+
+scenarios:
+  - name: 'Fetch Notices Page 1'
+    flow:
+      - get:
+          url: '/api/v1/notices'
+          qs:
+            page: 1
+            limit: 20
+          capture:
+            - json: '$.data'
+              as: 'notices'
+
+  - name: 'Fetch Notices Page 3'
+    flow:
+      - get:
+          url: '/api/v1/notices'
+          qs:
+            page: 3
+            limit: 20
+          capture:
+            - json: '$.data'
+              as: 'notices'
+
+  - name: 'Fetch Notices Page 2'
+    flow:
+      - get:
+          url: '/api/v1/notices'
+          qs:
+            page: 2
+            limit: 20
+          capture:
+            - json: '$.data'
+              as: 'notices'
+
+  - name: 'Fetch Notices Page 2'
+    flow:
+      - get:
+          url: '/api/v1/notices'
+          qs:
+            page: 4
+            limit: 20
+          capture:
+            - json: '$.data'
+              as: 'notices'
+
+  - name: 'Fetch Jobs'
+    flow:
+      - get:
+          url: '/api/v1/jobs'
+          capture:
+            - json: '$.jobs'
+              as: 'jobs'
+
+  - name: 'Fetch Jobs'
+    flow:
+      - get:
+          url: '/api/v1/jobs'
+          capture:
+            - json: '$.jobs'
+              as: 'jobs'
+              
+  - name: 'Fetch Jobs'
+    flow:
+      - get:
+          url: '/api/v1/jobs'
+          capture:
+            - json: '$.jobs'
+              as: 'jobs'
+
+  - name: 'Fetch Jobs'
+    flow:
+      - get:
+          url: '/api/v1/jobs'
+          capture:
+            - json: '$.jobs'
+              as: 'jobs'

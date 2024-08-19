@@ -49,4 +49,12 @@ export class RedisConfig {
   async getUserSocketId(userId: number): Promise<string | null> {
     return this.redisClient.get(`user:${userId.toString()}: socketId`);
   }
+
+  async setNotice(cacheKey: string, data: any){
+    return this.redisClient.set(cacheKey, JSON.stringify(data), 'EX', 3600);
+  }
+
+  async getNotice(cacheKey:string){
+    return this.redisClient.get(cacheKey)
+  }
 }

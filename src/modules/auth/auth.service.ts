@@ -199,7 +199,13 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async socialSignIn(user: any, ip: string, userAgent: string, res: any): Promise<Response | void> {
+  async socialSignIn(
+    user: any,
+    ip: string,
+    userAgent: string,
+    RequestAuthCode: string,
+    res: any,
+  ): Promise<string[] | void> {
     try {
       const email = user.email;
       let checkUser = await this.checkUserForAuth({ email });
@@ -215,17 +221,17 @@ export class AuthService {
 
       await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-      });
+      await this.redisClient.hmset(RequestAuthCode, { accessToken, refreshToken });
+      await this.redisClient.expire(RequestAuthCode, 10);
 
-      return res.json({ accessToken, refreshToken });
+      return res.redirect(`http://localhost:3000/auth/social-login?code=${RequestAuthCode}`);
     } catch (error) {
-      console.log(error);
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.SOCIAL.EMAIL.NOT_FOUND);
     }
+  }
+
+  async getAuthCode(authCode: string) {
+    return await this.redisClient.hmget(authCode);
   }
 
   async tokenReissue(userId: number, refreshToken: string, ip: string, userAgent: string) {
@@ -303,10 +309,8 @@ export class AuthService {
       const key = isRefresh ? this.jwtRefreshKey : this.jwtAccessKey;
       const options = isRefresh ? this.jwtRefreshOptions : this.jwtAccessOptions;
 
-      console.log("Token creation params:", { payload, key, options });
       return jwt.sign(payload, key, options);
     } catch (error) {
-      console.error("Error in createToken:", error);
       throw new Error("토큰 생성 중 오류가 발생했습니다.");
     }
   }
