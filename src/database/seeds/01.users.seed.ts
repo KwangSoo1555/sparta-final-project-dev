@@ -1,18 +1,18 @@
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from "bcrypt";
 import { faker, Faker, ko } from "@faker-js/faker";
 import { UsersEntity } from "../../entities/users.entity";
 import { DataSource } from "typeorm";
 import { Seeder, SeederFactoryManager } from "typeorm-extension";
-import { AUTH_CONSTANT } from '../../common/constants/auth.constant';
-import { UserRoles } from '../../common/customs/enums/enum-user-roles';
+import { AUTH_CONSTANT } from "../../common/constants/auth.constant";
+import { UserRoles } from "../../common/customs/enums/enum-user-roles";
 
 export class UserSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
     const userRepository = dataSource.getRepository(UsersEntity);
-    
+
     const koreanFaker = new Faker({ locale: [ko] });
 
-    const hashedPassword = await bcrypt.hash('qwer1234', AUTH_CONSTANT.HASH_SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash("qwer1234", AUTH_CONSTANT.HASH_SALT_ROUNDS);
 
     const users: UsersEntity[] = [];
     for (let i = 1; i <= 100; i++) {
@@ -25,7 +25,7 @@ export class UserSeeder implements Seeder {
 
       if (i === 1) {
         user.role = UserRoles.ADMIN;
-        user.email = 'user1@example.com';
+        user.email = "user3@example.com";
       } else {
         user.role = UserRoles.USER;
       }
@@ -33,6 +33,6 @@ export class UserSeeder implements Seeder {
       users.push(user);
     }
 
-    await userRepository.save(users);  
-  } 
+    await userRepository.save(users);
+  }
 }

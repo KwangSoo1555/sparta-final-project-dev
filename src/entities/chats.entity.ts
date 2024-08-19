@@ -29,6 +29,9 @@ export class ChatsEntity {
   @Column()
   content: string;
 
+  @Column()
+  redisCreatedAt: string;
+
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
