@@ -20,7 +20,7 @@ async function bootstrap() {
   app.useGlobalFilters(new ExceptionsFilter());
 
   app.enableCors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://sparta-final-project.netlify.app'], // 두 주소 모두 추가
+    origin: '*', // 모든 도메인에서의 요청을 허용
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type", "Authorization"], // 허용할 헤더
     credentials: true, // 쿠키와 같은 인증 정보를 허용할지 여부

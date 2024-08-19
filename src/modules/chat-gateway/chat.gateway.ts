@@ -26,11 +26,7 @@ import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "https://sparta-final-project.netlify.app",
-    ], // 두 주소 모두 추가
+    origin: '*', // 모든 도메인에서의 요청을 허용
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
