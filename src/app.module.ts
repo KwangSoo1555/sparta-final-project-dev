@@ -14,14 +14,16 @@ import { BlacklistModule } from "./modules/blacklists/blacklist.module";
 // import { NotificationGatewayModule } from "./notification-gateway/notification-gateway.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 
-import { LoggerMiddleware } from "./common/middleware/logger.middleware"
+import { LoggerMiddleware } from "./common/middleware/logger.middleware";
 
 import { AppService } from "./app.service";
 import { AppController } from "./app.controller";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     TypeOrmModule,
     RedisModule,
     AuthModule,
@@ -38,8 +40,8 @@ import { AppController } from "./app.controller";
   controllers: [AppController],
   providers: [AppService, Logger, LoggerMiddleware],
 })
-export class AppModule implements NestModule{
+export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(LoggerMiddleware).forRoutes("*");
   }
 }

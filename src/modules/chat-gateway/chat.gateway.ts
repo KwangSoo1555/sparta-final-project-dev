@@ -27,7 +27,7 @@ import { Redis } from "ioredis";
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
   cors: {
-    origin: '*', // 모든 도메인에서의 요청을 허용
+    origin: "*", // 모든 도메인에서의 요청을 허용
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -68,8 +68,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const decoded = this.jwtService.verify(token, {
           secret: this.configService.get<string>("ACCESS_TOKEN_SECRET"),
         });
-        console.log("---------" + decoded.userId);
-        console.log(typeof decoded.userId);
         return decoded.userId;
       } catch (error) {
         console.error("Invalid token", error);
@@ -82,12 +80,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(@ConnectedSocket() client: Socket) {
     try {
       const userId = this.getUserIdFromSocket(client);
-      console.log(userId + "++++++++++++++++++++");
       if (userId) {
-        await this.redisConfig.setUserStatus(userId, "online");
-        await this.redisConfig.setUserSocketId(userId, client.id);
-        this.connectedClients.push({ userId, client });
-        console.log(`User ${userId} connected with socket ID ${client.id}`);
+        // 이미 연결된 동일한 소켓 ID가 있는지 확인
+        const existingConnection = this.connectedClients.find((c) => c.client.id === client.id);
+        if (!existingConnection) {
+          await this.redisConfig.setUserStatus(userId, "online");
+          await this.redisConfig.setUserSocketId(userId, client.id);
+          this.connectedClients.push({ userId, client });
+          console.log(`User ${userId} connected with socket ID ${client.id}`);
+        } else {
+          console.warn(`User ${userId} is already connected with socket ID ${client.id}.`);
+        }
       } else {
         console.error("Unauthorized connection attempt. Disconnecting...");
         client.disconnect(); // 연결 종료
@@ -102,8 +105,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const userId = this.getUserIdFromSocket(client);
       if (userId) {
-        await this.redisConfig.removeUserStatus(userId);
-        this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
+        // 해당 소켓만 제거
+        this.connectedClients = this.connectedClients.filter((c) => c.client.id !== client.id);
+
+        // 해당 사용자의 다른 소켓이 모두 연결 해제된 경우에만 상태 변경
+        const isUserStillConnected = this.connectedClients.some((c) => c.userId === userId);
+        if (!isUserStillConnected) {
+          await this.redisConfig.removeUserStatus(userId);
+          console.log(`User ${userId} is now offline`);
+        }
+
         console.log(`User ${userId} disconnected`);
       } else {
         console.error("Unexpected disconnect without valid user ID.");
@@ -170,32 +181,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = this.getUserIdFromSocket(client);
     const { receiverId, content } = createChatDto;
     const newChat = await this.chatService.createChat(userId, createChatDto);
-    console.log("++++++++++++++++++++" + newChat);
-
-    //새 채팅 발생 시 알림 발송 이벤트
-    await this.redisClient.publish(
-      "chatMessageCreated",
-      JSON.stringify({
-        chatRoomId: newChat.chatRoomsId,
-        receiverId,
-        senderId: userId,
-      }),
-    );
-
     client.to(newChat.chatRoomsId.toString()).emit("receiveChat", newChat);
     client.emit("chatSent", newChat);
-  }
-
-  @SubscribeMessage("updateChat")
-  async handleUpdateChat(
-    // @RequestJwtBySocket() { user: { id: userId } },
-    @MessageBody() data: { chatRoomId: number; chatId: number; content: string },
-    @ConnectedSocket() client: Socket,
-  ) {
-    const userId = this.getUserIdFromSocket(client);
-    const { chatRoomId, chatId, content } = data;
-    const updatedChat = await this.chatService.updateChat(userId, chatRoomId, chatId, { content });
-    client.to(chatRoomId.toString()).emit("chatUpdated", updatedChat);
   }
 
   @SubscribeMessage("deleteChat")
@@ -216,7 +203,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ) {
     const userId = this.getUserIdFromSocket(client);
-    console.log("++++++++++++" + userId);
 
     // 채팅룸 생성 또는 조회
     const existingChatRoom = await this.chatService.findChatRoomByIds(userId, data.receiverId);
