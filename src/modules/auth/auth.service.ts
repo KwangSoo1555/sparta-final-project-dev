@@ -221,6 +221,9 @@ export class AuthService {
 
       await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
+      await this.redisClient.hmset(authCode, { accessToken, refreshToken });
+      await this.redisClient.expire(authCode, 10);
+
       res.redirect(`http://localhost:3000/auth/social-login?code=${authCode}`);
 
       return res.json({ accessToken, refreshToken });
