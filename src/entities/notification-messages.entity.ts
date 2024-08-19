@@ -26,6 +26,9 @@ export class NotificationMessagesEntity {
   @Column({ nullable: true })
   jobsId: number;
 
+  @Column({ nullable: true })
+  chatRoomId: number;
+
   @Column()
   receiverId: number;
 

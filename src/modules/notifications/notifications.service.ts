@@ -1,18 +1,18 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import Redis from "ioredis";
 
-// import { CreateNotificationDto } from "./notifications.dto/create-notificaion.dto";
 import { NotificationMessagesEntity } from "src/entities/notification-messages.entity";
 import { NotificationLogsEntity } from "src/entities/notification-logs.entity";
 import { UsersEntity } from "src/entities/users.entity";
-// import { ChatsEntity } from "src/entities/chats.entity";
-// import { NoticesEntity } from "src/entities/notices.entity";
 
 import { NotificationGateway } from "src/modules/notifications/notification.gateway";
 
 import { Repository } from "typeorm";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 import { JobsEntity } from "src/entities/jobs.entity";
+import { RedisPubSub } from "graphql-redis-subscriptions";
+import { RedisPubsubService } from "src/database/redis/redis-pubsub.service";
 
 @Injectable()
 export class NotificationsService {
@@ -23,35 +23,57 @@ export class NotificationsService {
     @InjectRepository(NotificationLogsEntity)
     private readonly notificationLogsRepository: Repository<NotificationLogsEntity>,
 
-    // @InjectRepository(ChatsEntity)
-    // private readonly chatsRepository: Repository<ChatsEntity>,
-
     @InjectRepository(JobsEntity)
     private readonly jobsRepository: Repository<JobsEntity>,
 
     @InjectRepository(UsersEntity)
     private readonly usersRepository: Repository<UsersEntity>,
 
-    // @InjectRepository(NoticesEntity)
-    // private readonly noticesRepository: Repository<NoticesEntity>,
-
     private notificationGateway: NotificationGateway,
-  ) {}
+
+    @Inject("REDIS_SUBSCRIBER_CLIENT")
+    private readonly redisClient: Redis,
+
+    @Inject("REDIS_PUB_SUB_TOKEN")
+    private readonly pubSub: RedisPubSub,
+
+    private readonly redisPubSubService: RedisPubsubService,
+  ) {
+    this.pubSub.subscribe("chatMessageCreated", async (message) => {
+      console.log("channel name : chatMessageCreated, ", "message : ", message);
+      const { chatRoomId, receiverId, senderId } = JSON.parse(message);
+      await this.createChatMessageReceiveNotification(chatRoomId, receiverId, senderId);
+    });
+
+    this.pubSub.subscribe("jobMatching", async (message) => {
+      console.log("channel name : jobMatching, ", "message : ", message);
+      const { type, jobsId, ownerId, customerId } = message;
+      if (type === NotificationTypes.JOB_APPLIED) {
+        await this.createApplyNotificationMessage(jobsId, customerId, ownerId);
+      } else if (type === NotificationTypes.JOB_MATCHED) {
+        await this.createMatchedNotificationMessage(jobsId, customerId, ownerId);
+      } else if (type === NotificationTypes.JOB_DENIED) {
+        await this.createDeniedNotificationMessage(jobsId, customerId, ownerId);
+      }
+    });
+  }
 
   //지원자 발생 시 푸시알림 생성 메서드
   async createApplyNotificationMessage(jobsId: number, customerId: number, ownerId: number) {
     try {
       const senderId = customerId;
       const receiverId = ownerId;
-
       //알림메시지 생성
+
       const notificationMessage = await this.notificationMessagesRepository.save({
-        title: "등록한 잡일에 지원자가 있습니다.",
+        title: "job matching applied",
         type: NotificationTypes.JOB_APPLIED,
         jobsId,
         senderId,
         receiverId,
       });
+
+      console.log(notificationMessage);
 
       //알림메시지 로그를 생성
       const notificationLog = this.notificationLogsRepository.create({
@@ -62,10 +84,10 @@ export class NotificationsService {
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendJobMatchingNotification(
-        receiverId, //일감 owner에게 알림 발송
-        { type: NotificationTypes.JOB_APPLIED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
-      );
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
     }
@@ -95,10 +117,10 @@ export class NotificationsService {
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendJobMatchingNotification(
-        receiverId, //일감 owner에게 알림 발송
-        { type: NotificationTypes.JOB_MATCHED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
-      );
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
     }
@@ -128,10 +150,47 @@ export class NotificationsService {
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendJobMatchingNotification(
-        receiverId, //일감 owner에게 알림 발송
-        { type: NotificationTypes.JOB_MATCHED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
-      );
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
+    } catch (error) {
+      throw new Error("알림메시지 생성 실패");
+    }
+  }
+
+  //채팅 알림
+  async createChatMessageReceiveNotification(
+    chatRoomId: number,
+    receiverId: number,
+    senderId: number,
+  ) {
+    try {
+      //알림메시지 생성
+      const sender = await this.usersRepository.findOneBy({ id: senderId });
+      const notificationMessage = await this.notificationMessagesRepository.save({
+        title: `${sender.name}유저로부터 새로운 채팅이 도착했습니다.`,
+        type: NotificationTypes.NEW_CHAT,
+        chatRoomId,
+        senderId,
+        receiverId,
+      });
+
+      console.log(notificationMessage);
+
+      //알림메시지 로그를 생성
+      const notificationLog = this.notificationLogsRepository.create({
+        user: await this.usersRepository.findOneBy({ id: receiverId }),
+        notificationMessage,
+      });
+      //생성한 알림메시지 로그를 저장
+      await this.notificationLogsRepository.save(notificationLog);
+
+      //알림 발송
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
     }
@@ -150,6 +209,7 @@ export class NotificationsService {
           type: true,
           title: true,
           jobsId: true,
+          chatRoomId: true,
           senderId: true,
         },
       },
@@ -166,6 +226,7 @@ export class NotificationsService {
           id: log.id,
           title: log.notificationMessage.title,
           jobsId: log.notificationMessage.jobsId,
+          chatRoomId: log.notificationMessage.chatRoomId,
           type: log.notificationMessage.type,
           createdAt: log.createdAt,
           notificationMessageId: log.notificationMessage.id,

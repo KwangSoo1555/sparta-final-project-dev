@@ -15,6 +15,8 @@ import { JobsEntity } from "src/entities/jobs.entity";
 import { ChatModule } from "src/modules/chats/chat.module";
 import { ChatGatewayModule } from "src/modules/chat-gateway/chat-gateway.module";
 import { NotificationsController } from "./notifications.controller";
+import { RedisModule } from "src/database/redis/redis.module";
+import { RedisPubsubService } from "src/database/redis/redis-pubsub.service";
 // import { NotificationGatewayModule } from "src/notification-gateway/notification-gateway.module";
 
 @Module({
@@ -28,8 +30,9 @@ import { NotificationsController } from "./notifications.controller";
     AuthModule,
     JwtModule,
     ChatGatewayModule,
+    RedisModule,
   ],
-  providers: [NotificationsService, NotificationGateway],
+  providers: [NotificationsService, NotificationGateway, RedisPubsubService],
   exports: [NotificationsService, NotificationGateway],
   controllers: [NotificationsController],
 })

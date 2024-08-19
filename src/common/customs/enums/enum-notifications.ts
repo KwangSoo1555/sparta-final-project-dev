@@ -6,4 +6,5 @@ export enum NotificationTypes {
   JOB_MATCHED = "JOB_MATCHED",
   JOB_DENIED = "JOB_DENIED",
   NEW_NOTICE = "NEW_NOTICE",
+  NEW_CHAT = "NEW_CHAT",
 }

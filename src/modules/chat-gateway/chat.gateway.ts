@@ -9,7 +9,7 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { ChatService } from "../chats/chat.service";
-import { UseGuards } from "@nestjs/common";
+import { Inject, UseGuards } from "@nestjs/common";
 import { JwtSocketGuards } from "../auth/strategies/jwt-strategy";
 import { RequestJwtBySocket } from "src/common/customs/decorators/jwt-socket-request";
 import { CreateChatDto } from "../chats/dto/create-chat.dto";
@@ -22,6 +22,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
+import { Redis } from "ioredis";
 
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
@@ -42,6 +43,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly configService: ConfigService,
     @InjectRepository(UsersEntity)
     private readonly usersRepository: Repository<UsersEntity>,
+
+    @Inject("REDIS_CLIENT")
+    private readonly redisClient: Redis,
   ) {}
 
   // 유저정보는 같지만 소켓이 여러개가 연결되어 있을 경우 핸들링 할수있게 유저정보와 소켓 연결정보에 대한 분기처리가 필요하다.
@@ -167,6 +171,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { receiverId, content } = createChatDto;
     const newChat = await this.chatService.createChat(userId, createChatDto);
     console.log("++++++++++++++++++++" + newChat);
+
+    //새 채팅 발생 시 알림 발송 이벤트
+    await this.redisClient.publish(
+      "chatMessageCreated",
+      JSON.stringify({
+        chatRoomId: newChat.chatRoomsId,
+        receiverId,
+        senderId: userId,
+      }),
+    );
+
     client.to(newChat.chatRoomsId.toString()).emit("receiveChat", newChat);
     client.emit("chatSent", newChat);
   }
