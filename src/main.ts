@@ -6,12 +6,18 @@ import { ValidationPipe } from "@nestjs/common";
 import { IoAdapter } from "@nestjs/platform-socket.io";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 
+import { WinstonLogger } from './modules/utils/winston.util';
+import { ExceptionsFilter } from './filters/exception.filter'
+
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ["error", "warn"],
+    bufferLogs: true,
+    logger: WinstonLogger, // replacing logger
   });
+  
+  app.useGlobalFilters(new ExceptionsFilter());
 
   app.enableCors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://sparta-final-project.netlify.app'], // 두 주소 모두 추가
