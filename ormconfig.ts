@@ -11,6 +11,7 @@ import { JobsMatchingEntity } from "./src/entities/jobs-matching.entity";
 import { ChatRoomsEntity } from "./src/entities/chat-rooms.entity";
 import { BlacklistsEntity } from "./src/entities/blacklists.entity";
 import { ChatsEntity } from "./src/entities/chats.entity";
+import { LocalCodesEntity } from "./src/entities/local-codes.entity";
 
 export const config = new DataSource({
   type: "mysql",
@@ -27,6 +28,7 @@ export const config = new DataSource({
     ChatsEntity,
     ChatRoomsEntity,
     BlacklistsEntity,
+    LocalCodesEntity,
   ],
   synchronize: true,
   logging: true,
