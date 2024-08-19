@@ -1,49 +1,25 @@
 config:
   target: 'http://localhost:3333'
   phases:
-    - duration: 60
-      arrivalRate: 5
+    - duration: 60  # 테스트 지속 시간 (초)
+      arrivalRate: 10  # 초당 요청 수
+  defaults:
+    headers:
+      User-Agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
 
 scenarios:
-  - name: 'Sign Up'
+  - name: 'User Flow'
     flow:
       - post:
-          url: '/auth/sign-up'
+          url: '/api/v1/auth/sign-in'
           headers:
             Content-Type: 'application/json'
+            X-Forwarded-For: '192.168.0.1'
           json:
-            email: 'user@example.com'
-            name: 'John Doe'
-            password: 'password123'
-            verificationCode: 123456
-            provider: ''  
-            socialId: ''  
-          capture:
-            - json: '$.data.id'
-              as: 'userId'
-
-  - name: 'Sign In'
-    flow:
-      - post:
-          url: '/auth/sign-in'
-          headers:
-            Content-Type: 'application/json'
-          json:
-            email: 'user@example.com'
-            password: 'password123'
+            email: 'user1@example.com'
+            password: 'qwer1234'
           capture:
             - json: '$.accessToken'
               as: 'accessToken'
             - json: '$.refreshToken'
               as: 'refreshToken'
-
-  - name: 'Sign Out'
-    flow:
-      - patch:
-          url: '/auth/sign-out'
-          headers:
-            Content-Type: 'application/json'
-            Authorization: 'Bearer {{ accessToken }}'
-          capture:
-            - json: '$.message'
-              as: 'signOutMessage'
