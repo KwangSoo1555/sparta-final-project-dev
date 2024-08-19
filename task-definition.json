@@ -1,0 +1,53 @@
+{
+  "family": "family-name",
+  "taskRoleArn": "arn:aws:iam::123123123:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::123123123:role/ecsTaskExecutionRole",
+  "networkMode": null,
+  "requiresCompatibilities": ["EC2"],
+  "cpu": null,
+  "memory": null,
+  "containerDefinitions": [
+    {
+      "name": "container-name",
+      "image": "123123123.dkr.ecr.ap-northeast-2.amazonaws.com/project/service",
+      "cpu": 2048,
+      "memory": null,
+      "memoryReservation": 450,
+      "portMappings": [
+        {
+          "containerPort": 3100,
+          "hostPort": 0,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "ulimits": [
+        {
+          "softLimit": 65535,
+          "hardLimit": 65535,
+          "name": "nofile"
+        }
+      ],
+      "environment": [
+        {
+          "name": "APP_ENV",
+          "value": "development"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "ENV_VAR",
+          "valueFrom": "PROEJCT_ENV_VAR"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/service-name",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
