@@ -72,10 +72,11 @@ export class AuthController {
     @RequestIp() ip: string,
     @Response() res: ExpressResponse,
     @Request() req: ExpressRequest,
+    @Body() ResponseAuthCode: string,
   ) {
     const user = req.user;
-    const authCode = req.query.code as string;
-    await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
+    const RequestAuthCode = req.query.code as string;
+    await this.authService.socialSignIn(user, ip, userAgent, RequestAuthCode, res);
   }
 
   @Get("naver")
@@ -89,10 +90,11 @@ export class AuthController {
     @RequestIp() ip: string,
     @Response() res: ExpressResponse,
     @Request() req: ExpressRequest,
+    @Body() ResponseAuthCode: string,
   ) {
     const user = req.user;
-    const authCode = req.query.code as string;
-    await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
+    const RequestAuthCode = req.query.code as string;
+    await this.authService.socialSignIn(user, ip, userAgent, RequestAuthCode, res);
   }
 
   @Get("kakao")
@@ -106,10 +108,16 @@ export class AuthController {
     @RequestIp() ip: string,
     @Response() res: ExpressResponse,
     @Request() req: ExpressRequest,
+    @Body() ResponseAuthCode: string,
   ) {
     const user = req.user;
-    const authCode = req.query.code as string;
-    await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
+    const RequestAuthCode = req.query.code as string;
+    await this.authService.socialSignIn(user, ip, userAgent, RequestAuthCode, res);
+  }
+
+  @Get("auth-code")
+  async getAuthCode(@Body() authCode: string) {
+    return this.authService.getAuthCode(authCode);
   }
 
   @Post("jwt-reissue")

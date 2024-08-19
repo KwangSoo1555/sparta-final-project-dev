@@ -203,9 +203,9 @@ export class AuthService {
     user: any,
     ip: string,
     userAgent: string,
-    authCode: string,
+    RequestAuthCode: string,
     res: any,
-  ): Promise<Response | void> {
+  ): Promise<string[] | void> {
     try {
       const email = user.email;
       let checkUser = await this.checkUserForAuth({ email });
@@ -221,16 +221,17 @@ export class AuthService {
 
       await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
-      await this.redisClient.hmset(authCode, { accessToken, refreshToken });
-      await this.redisClient.expire(authCode, 10);
+      await this.redisClient.hmset(RequestAuthCode, { accessToken, refreshToken });
+      await this.redisClient.expire(RequestAuthCode, 10);
 
-      res.redirect(`http://localhost:3000/auth/social-login?code=${authCode}`);
-
-      return res.json({ accessToken, refreshToken });
+      return res.redirect(`http://localhost:3000/auth/social-login?code=${RequestAuthCode}`);
     } catch (error) {
-      console.log(error);
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.SOCIAL.EMAIL.NOT_FOUND);
     }
+  }
+
+  async getAuthCode(authCode: string) {
+    return await this.redisClient.hmget(authCode);
   }
 
   async tokenReissue(userId: number, refreshToken: string, ip: string, userAgent: string) {
