@@ -62,7 +62,6 @@ export class JobMatchingService {
         ownerId: verifyJobbyId.ownerId,
       }),
     );
-    console.log("jobMatchingCreated");
 
     return data;
   }
@@ -166,7 +165,7 @@ export class JobMatchingService {
       "jobMatcing",
       JSON.stringify({
         type: NotificationTypes.JOB_APPLIED,
-        jobId: matching.jobId,
+        jobsId: matching.jobId,
         customerId: matching.customerId,
         ownerId: matching.job.ownerId,
       }),
@@ -197,7 +196,7 @@ export class JobMatchingService {
       "jobMatcing",
       JSON.stringify({
         type: NotificationTypes.JOB_DENIED,
-        jobId: matching.jobId,
+        jobsId: matching.jobId,
         customerId: matching.customerId,
         ownerId: matching.job.ownerId,
       }),

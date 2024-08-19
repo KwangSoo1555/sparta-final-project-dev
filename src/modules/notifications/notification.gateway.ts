@@ -5,17 +5,13 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
 } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { AuthService } from "src/modules/auth/auth.service";
 import { ChatGateway } from "src/modules/chat-gateway/chat.gateway";
-import { CreateNoticeDto } from "src/modules/notices/dto/create-notice.dto";
-import { CreateNotificationDto } from "src/modules/notifications/notifications.dto/create-notificaion.dto";
 import { NotificationsService } from "src/modules/notifications/notifications.service";
 
 @WebSocketGateway({
