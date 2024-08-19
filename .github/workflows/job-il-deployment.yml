@@ -27,10 +27,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
       - name: Build, tag, and push image to Amazon ECR # Docker 이미지 빌드, 태깅 후 AWS ECR에 PUSH
         id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: sparta-final-project-team7-server-origin # AWS ECR 이름
-          IMAGE_TAG: ${{ github.sha }}
         run: |
           # 도커 이미지 빌드
           docker build --secret id=env,src=.env -t sparta-final-project-team7-server-origin .
