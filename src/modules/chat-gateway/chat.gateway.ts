@@ -26,7 +26,11 @@ import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
   cors: {
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'], // 두 주소 모두 추가
+    origin: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "https://sparta-final-project.netlify.app",
+    ], // 두 주소 모두 추가
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -168,6 +172,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const newChat = await this.chatService.createChat(userId, createChatDto);
     console.log("++++++++++++++++++++" + newChat);
     client.to(newChat.chatRoomsId.toString()).emit("receiveChat", newChat);
+    client.emit("chatSent", newChat);
   }
 
   @SubscribeMessage("updateChat")
