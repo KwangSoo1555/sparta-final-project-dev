@@ -47,7 +47,7 @@ export class NotificationsService {
 
     this.pubSub.subscribe("jobMatching", async (message) => {
       console.log("channel name : jobMatching, ", "message : ", message);
-      const { type, jobsId, ownerId, customerId } = JSON.parse(message);
+      const { type, jobsId, ownerId, customerId } = message;
       if (type === NotificationTypes.JOB_APPLIED) {
         await this.createApplyNotificationMessage(jobsId, customerId, ownerId);
       } else if (type === NotificationTypes.JOB_MATCHED) {
@@ -63,20 +63,17 @@ export class NotificationsService {
     try {
       const senderId = customerId;
       const receiverId = ownerId;
+      //알림메시지 생성
 
-      const notificationMessageData = {
-        title: "등록한 잡일에 지원자가 있습니다.",
+      const notificationMessage = await this.notificationMessagesRepository.save({
+        title: "job matching applied",
         type: NotificationTypes.JOB_APPLIED,
         jobsId,
         senderId,
         receiverId,
-      };
+      });
 
-      //알림메시지 생성
-      const notificationMessage =
-        await this.notificationMessagesRepository.save(notificationMessageData);
-
-      console.log(notificationMessageData);
+      console.log(notificationMessage);
 
       //알림메시지 로그를 생성
       const notificationLog = this.notificationLogsRepository.create({
@@ -89,8 +86,7 @@ export class NotificationsService {
       //알림 발송
       this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
         userId: receiverId,
-        notificationMessageData,
-        createdAt: new Date(),
+        notificationMessage,
       });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
@@ -121,10 +117,10 @@ export class NotificationsService {
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendJobMatchingNotification(
-        receiverId, //일감 owner에게 알림 발송
-        { type: NotificationTypes.JOB_MATCHED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
-      );
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
     }
@@ -154,10 +150,10 @@ export class NotificationsService {
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendJobMatchingNotification(
-        receiverId, //일감 owner에게 알림 발송
-        { type: NotificationTypes.JOB_MATCHED, jobsId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
-      );
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
     }
@@ -171,7 +167,6 @@ export class NotificationsService {
   ) {
     try {
       //알림메시지 생성
-
       const sender = await this.usersRepository.findOneBy({ id: senderId });
       const notificationMessage = await this.notificationMessagesRepository.save({
         title: `${sender.name}유저로부터 새로운 채팅이 도착했습니다.`,
@@ -180,6 +175,8 @@ export class NotificationsService {
         senderId,
         receiverId,
       });
+
+      console.log(notificationMessage);
 
       //알림메시지 로그를 생성
       const notificationLog = this.notificationLogsRepository.create({
@@ -190,10 +187,10 @@ export class NotificationsService {
       await this.notificationLogsRepository.save(notificationLog);
 
       //알림 발송
-      await this.notificationGateway.sendchattingNotification(
-        receiverId, //receiver에게 알림 발송
-        { type: NotificationTypes.NEW_CHAT, chatRoomId, title: notificationMessage.title }, //유저의 id를 제외한 나머지 데이터를 처리
-      );
+      this.redisPubSubService.publish(`userNotifications_${receiverId}`, {
+        userId: receiverId,
+        notificationMessage,
+      });
     } catch (error) {
       throw new Error("알림메시지 생성 실패");
     }

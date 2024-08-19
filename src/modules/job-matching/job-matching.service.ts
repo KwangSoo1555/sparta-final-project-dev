@@ -162,9 +162,9 @@ export class JobMatchingService {
 
     //매칭 수락 시 알림 발송 메서드
     await this.redisClient.publish(
-      "jobMatcing",
+      "jobMatching",
       JSON.stringify({
-        type: NotificationTypes.JOB_APPLIED,
+        type: NotificationTypes.JOB_MATCHED,
         jobsId: matching.jobId,
         customerId: matching.customerId,
         ownerId: matching.job.ownerId,
@@ -193,7 +193,7 @@ export class JobMatchingService {
 
     //매칭 거절 시 알림 발송 메서드
     await this.redisClient.publish(
-      "jobMatcing",
+      "jobMatching",
       JSON.stringify({
         type: NotificationTypes.JOB_DENIED,
         jobsId: matching.jobId,
