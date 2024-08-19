@@ -21,6 +21,67 @@ export class ChatService {
     private readonly redisConfig: RedisConfig, // RedisConfig 주입
   ) {}
 
+  private isSyncing = false;
+
+  async onModuleInit() {
+    await this.syncIfNotRunning();
+  }
+
+  @Cron("*/1 * * * *")
+  async syncIfNotRunning() {
+    const redisClient = this.redisConfig.getClient();
+    const lockKey = "syncRedisToDBLock";
+    const lockValue = Date.now().toString();
+
+    const lockAcquired = await redisClient.set(lockKey, lockValue, "PX", 60000, "NX");
+
+    if (!lockAcquired) {
+      console.log("Another instance is already syncing.");
+      return;
+    }
+
+    try {
+      if (!this.isSyncing) {
+        this.isSyncing = true;
+        await this.syncRedisToDB();
+      }
+    } finally {
+      this.isSyncing = false;
+      await redisClient.del(lockKey);
+    }
+  }
+
+  async syncRedisToDB() {
+    const queryRunner = this.chatsRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const redisClient = this.redisConfig.getClient();
+      const keys = await redisClient.keys("chatRoom:*");
+
+      for (const key of keys) {
+        const chatRoomId = key.split(":")[1];
+        const chatLogs = await redisClient.lrange(key, 0, -1);
+
+        for (const log of chatLogs) {
+          const chatData = JSON.parse(log);
+          await queryRunner.manager.save(ChatsEntity, chatData);
+        }
+
+        await redisClient.del(key);
+      }
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+      this.isSyncing = false;
+    }
+  }
+
   // 두 사용자 간의 채팅룸을 생성
   async createChatRoom(user1Id: number, user2Id: number) {
     // 채팅룸 생성
@@ -76,31 +137,11 @@ export class ChatService {
       receiverId: receiverId,
       chatRoomsId: chatRoomId,
       content: content,
-      createdAt: new Date(),
+      redisCreatedAt: new Date(),
     };
     await this.saveChatToRedis(chatRoomId, newChat);
 
     return newChat;
-  }
-
-  // 스케쥴러를 이용해서 3분마다 레디스와 db를 연동시키기
-  @Cron("*/3 * * * *") // 3분마다 실행
-  async syncRedisToDB() {
-    const redisClient = this.redisConfig.getClient();
-    const keys = await redisClient.keys("chatRoom:*");
-
-    for (const key of keys) {
-      const chatRoomId = key.split(":")[1];
-      const chatLogs = await redisClient.lrange(key, 0, -1);
-
-      for (const log of chatLogs) {
-        const chatData = JSON.parse(log);
-        await this.chatsRepository.save(chatData);
-      }
-
-      // 동기화된 후 Redis에서 해당 키 삭제
-      await redisClient.del(key);
-    }
   }
 
   // redis와 db를 모두 고려해서 채팅룸 목록 조회
@@ -137,12 +178,12 @@ export class ChatService {
         if (redisLastMessage) {
           const redisMessageData = JSON.parse(redisLastMessage);
           lastMessage = redisMessageData.content;
-          lastMessageTime = new Date(redisMessageData.createdAt);
+          lastMessageTime = new Date(redisMessageData.redisCreatedAt);
         } else {
           const dbLastMessage = await this.chatsRepository.findOne({
             where: { chatRoomsId: room.id },
-            order: { createdAt: "DESC" },
-            select: ["content", "createdAt"],
+            order: { redisCreatedAt: "DESC" }, // redisCreatedAt으로 정렬
+            select: ["content", "redisCreatedAt"], // redisCreatedAt 필드 선택
           });
 
           if (!dbLastMessage) {
@@ -150,7 +191,7 @@ export class ChatService {
             lastMessageTime = null;
           } else {
             lastMessage = dbLastMessage.content;
-            lastMessageTime = dbLastMessage.createdAt;
+            lastMessageTime = dbLastMessage.redisCreatedAt;
           }
         }
 
@@ -195,18 +236,18 @@ export class ChatService {
         "chats.senderId",
         "chats.receiverId",
         "chats.content",
-        "chats.createdAt",
+        "chats.redisCreatedAt", // redisCreatedAt 필드 추가
       ])
       .where("chats.chatRoomsId = :chatRoomId", { chatRoomId })
-      .orderBy("chats.createdAt", "ASC")
+      .orderBy("chats.redisCreatedAt", "ASC") // redisCreatedAt으로 정렬
       .getMany();
 
     // Redis와 DB에서 가져온 로그를 합치기
     const allChatLogs = [...redisChatLogsParsed, ...dbChatLogs];
 
-    // createdAt 순으로 정렬
+    // redisCreatedAt 순으로 정렬
     const sortedChatLogs = allChatLogs.sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      (a, b) => new Date(a.redisCreatedAt).getTime() - new Date(b.redisCreatedAt).getTime(),
     );
 
     // 추가 정보와 함께 반환
@@ -229,7 +270,7 @@ export class ChatService {
           receiverId: chat.receiverId,
           receiverName: receiver?.name || "Unknown",
           content: chat.content,
-          createdAt: chat.createdAt,
+          createdAt: chat.redisCreatedAt,
         };
       }),
     );

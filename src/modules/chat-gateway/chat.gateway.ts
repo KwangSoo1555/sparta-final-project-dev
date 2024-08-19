@@ -81,10 +81,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const userId = this.getUserIdFromSocket(client);
       if (userId) {
-        await this.redisConfig.setUserStatus(userId, "online");
-        await this.redisConfig.setUserSocketId(userId, client.id);
-        this.connectedClients.push({ userId, client });
-        console.log(`User ${userId} connected with socket ID ${client.id}`);
+        // 이미 연결된 동일한 소켓 ID가 있는지 확인
+        const existingConnection = this.connectedClients.find((c) => c.client.id === client.id);
+        if (!existingConnection) {
+          await this.redisConfig.setUserStatus(userId, "online");
+          await this.redisConfig.setUserSocketId(userId, client.id);
+          this.connectedClients.push({ userId, client });
+          console.log(`User ${userId} connected with socket ID ${client.id}`);
+        } else {
+          console.warn(`User ${userId} is already connected with socket ID ${client.id}.`);
+        }
       } else {
         console.error("Unauthorized connection attempt. Disconnecting...");
         client.disconnect(); // 연결 종료
@@ -99,8 +105,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const userId = this.getUserIdFromSocket(client);
       if (userId) {
-        await this.redisConfig.removeUserStatus(userId);
-        this.connectedClients = this.connectedClients.filter((c) => c.client !== client);
+        // 해당 소켓만 제거
+        this.connectedClients = this.connectedClients.filter((c) => c.client.id !== client.id);
+
+        // 해당 사용자의 다른 소켓이 모두 연결 해제된 경우에만 상태 변경
+        const isUserStillConnected = this.connectedClients.some((c) => c.userId === userId);
+        if (!isUserStillConnected) {
+          await this.redisConfig.removeUserStatus(userId);
+          console.log(`User ${userId} is now offline`);
+        }
+
         console.log(`User ${userId} disconnected`);
       } else {
         console.error("Unexpected disconnect without valid user ID.");
