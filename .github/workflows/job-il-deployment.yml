@@ -1,6 +1,8 @@
 on:
-  pull_request:
+  push:
     branches: dev
+  # pull_request:
+  #   branches: dev
 
 name: Web Server CI/CD # Action 이름
 
