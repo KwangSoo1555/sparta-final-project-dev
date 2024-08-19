@@ -80,6 +80,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: sparta-final-project-backend-core-deployment # 컨테이너 이름
+          service: sparta-final-project-service # 서비스 이름
           cluster: sparta-final-project-ecs-cluster # 클러스터 이름
           wait-for-service-stability: true
