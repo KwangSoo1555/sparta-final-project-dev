@@ -111,7 +111,6 @@ export class UsersEntity {
   @JoinColumn({ name: "notification_messages" })
   notificationMessage: NotificationMessagesEntity;
 
-  @ManyToOne(() => UsersLocalCodesEntity, (usersLocalCodes) => usersLocalCodes.usersEntity)
-  @JoinColumn({ name: "user_id" })
-  usersLocalCodes: UsersLocalCodesEntity;
+  @OneToMany(() => UsersLocalCodesEntity, (usersLocalCodes) => usersLocalCodes.user)
+  usersLocalCodes: UsersLocalCodesEntity[];
 }

@@ -1,9 +1,8 @@
 import {
-  Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -15,11 +14,13 @@ export class UsersLocalCodesEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "user_id" })
-  userId: number;
+  @ManyToOne(() => UsersEntity, (user) => user.usersLocalCodes, { onDelete: "CASCADE" })
+  user: UsersEntity;
 
-  @Column({ name: "localcodes_id" })
-  localcodesId: number;
+  @ManyToOne(() => LocalCodesEntity, (localCode) => localCode.usersLocalCodes, {
+    onDelete: "CASCADE",
+  })
+  localCode: LocalCodesEntity;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
@@ -29,10 +30,4 @@ export class UsersLocalCodesEntity {
 
   @DeleteDateColumn({ name: "delete_at", default: null })
   deletedAt: Date;
-
-  @OneToMany(() => LocalCodesEntity, (localCodes) => localCodes.usersLocalCodesEntity)
-  localCodesEntity: LocalCodesEntity[];
-
-  @OneToMany(() => UsersEntity, (users) => users.usersLocalCodes)
-  usersEntity: UsersEntity[];
 }

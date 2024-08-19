@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UsersLocalCodesEntity } from "./users-localcodes.entity";
 
 @Entity("localcodes")
@@ -18,7 +18,6 @@ export class LocalCodesEntity {
   @Column({ name: "Dong", default: null })
   dong: string;
 
-  @ManyToOne(() => UsersLocalCodesEntity, (usersLocalCodes) => usersLocalCodes.localCodesEntity)
-  @JoinColumn({ name: "localcodes_id" })
-  usersLocalCodesEntity: UsersLocalCodesEntity;
+  @OneToMany(() => UsersLocalCodesEntity, (usersLocalCodes) => usersLocalCodes.localCode)
+  usersLocalCodes: UsersLocalCodesEntity[];
 }

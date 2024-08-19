@@ -237,61 +237,6 @@ export class ChatService {
     return chatLogsDetails;
   }
 
-  // 동기화 되지 않고 redis에 저장된 채팅인지 db에 동기화가 진행 된 채팅인지 확인 한 뒤 각각의 상황에 맞게 채팅 수정.
-  async updateChat(
-    userId: number,
-    chatRoomId: number,
-    chatId: number,
-    updateChatDto: UpdateChatDto,
-  ) {
-    const redisClient = this.redisConfig.getClient();
-    const { content } = updateChatDto;
-
-    // Redis에서 데이터가 있는지 확인
-    const redisKey = `chatRoom:${chatRoomId}`;
-    const chatLogs = await redisClient.lrange(redisKey, 0, -1);
-    let chatFoundInRedis = false;
-
-    for (let i = 0; i < chatLogs.length; i++) {
-      const chatData = JSON.parse(chatLogs[i]);
-
-      if (chatData.id === chatId) {
-        // Redis에서 해당 채팅을 업데이트
-        chatData.content = content;
-        chatLogs[i] = JSON.stringify(chatData);
-        chatFoundInRedis = true;
-        break;
-      }
-    }
-
-    if (chatFoundInRedis) {
-      // Redis에 업데이트된 채팅 저장
-      await redisClient.del(redisKey); // 기존 데이터 삭제
-      await redisClient.rpush(redisKey, ...chatLogs); // 업데이트된 데이터 추가
-    } else {
-      // DB에 있는지 확인
-      const chat = await this.findChatById(chatId);
-
-      if (!chat || chat.chatRoomsId !== +chatRoomId) {
-        throw new UnauthorizedException("채팅룸 매치 안됨");
-      }
-
-      if (chat.senderId !== userId) {
-        throw new UnauthorizedException("사용자 id 매치 안됨");
-      }
-
-      // DB에서 채팅 업데이트
-      await this.chatsRepository.update({ id: chatId }, { content });
-    }
-
-    // 수정된 채팅 반환
-    const updatedChat = chatFoundInRedis
-      ? JSON.parse(chatLogs.find((chat) => JSON.parse(chat).id === chatId))
-      : await this.findChatById(chatId);
-
-    return updatedChat;
-  }
-
   // redis에 저장된 채팅인지 db에 동기화가 완료된 채팅인지 확인 후 채팅삭제
   async deleteChat(userId: number, chatRoomId: number, chatId: number) {
     const redisClient = this.redisConfig.getClient();
