@@ -1,53 +1,90 @@
 {
+  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:590183983800:task-definition/sparta-final-project-ecs-task:9",
+  "containerDefinitions": [
+      {
+          "name": "sparta-final-project-backend-core-deployment",
+          "image": "590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin",
+          "cpu": 0,
+          "portMappings": [
+              {
+                  "name": "sparta-final-project-backend-core-deployment-3333-tcp",
+                  "containerPort": 3333,
+                  "hostPort": 3333,
+                  "protocol": "tcp",
+                  "appProtocol": "http"
+              }
+          ],
+          "essential": true,
+          "environment": [],
+          "environmentFiles": [],
+          "mountPoints": [],
+          "volumesFrom": [],
+          "ulimits": [],
+          "logConfiguration": {
+              "logDriver": "awslogs",
+              "options": {
+                  "awslogs-group": "/ecs/sparta-final-project-ecs-task",
+                  "mode": "non-blocking",
+                  "awslogs-create-group": "true",
+                  "max-buffer-size": "25m",
+                  "awslogs-region": "ap-northeast-2",
+                  "awslogs-stream-prefix": "ecs"
+              },
+              "secretOptions": []
+          },
+          "systemControls": []
+      }
+  ],
   "family": "sparta-final-project-ecs-task",
-  "taskRoleArn": "arn:aws:iam::590183983800:role/ecsTaskExecutionRole",
   "executionRoleArn": "arn:aws:iam::590183983800:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
-  "requiresCompatibilities": ["FARGATE"],
+  "revision": 9,
+  "volumes": [],
+  "status": "ACTIVE",
+  "requiresAttributes": [
+      {
+          "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+      },
+      {
+          "name": "ecs.capability.execution-role-awslogs"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.ecr-auth"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.28"
+      },
+      {
+          "name": "ecs.capability.execution-role-ecr-pull"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+      },
+      {
+          "name": "ecs.capability.task-eni"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+      }
+  ],
+  "placementConstraints": [],
+  "compatibilities": [
+      "EC2",
+      "FARGATE"
+  ],
+  "requiresCompatibilities": [
+      "FARGATE"
+  ],
   "cpu": "1024",
   "memory": "3072",
-  "containerDefinitions": [
-    {
-      "name": "sparta-final-project-backend-core-deployment",
-      "image": "590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin",
-      "cpu": 1024,
-      "memory": null,
-      "memoryReservation": 450,
-      "portMappings": [
-        {
-          "containerPort": 3333,
-          "hostPort": 3333,
-          "protocol": "tcp"
-        }
-      ],
-      "essential": true,
-      "ulimits": [
-        {
-          "softLimit": 65535,
-          "hardLimit": 65535,
-          "name": "nofile"
-        }
-      ],
-      "environment": [
-        {
-          "name": "APP_ENV",
-          "value": "development"
-        }
-      ],
-      "secrets": [
-        {
-          "name": "ENV_VAR",
-          "valueFrom": "PROEJCT_ENV_VAR"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/sparta-final-project-ecs-task",
-          "awslogs-region": "ap-northeast-2",
-          "awslogs-stream-prefix": "ecs"
-        }
-      }
-    }
-  ]
+  "runtimePlatform": {
+      "cpuArchitecture": "X86_64",
+      "operatingSystemFamily": "LINUX"
+  },
+  "registeredAt": "2024-08-20T09:35:15.096Z",
+  "registeredBy": "arn:aws:iam::590183983800:root",
+  "tags": []
 }

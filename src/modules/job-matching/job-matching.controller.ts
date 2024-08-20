@@ -63,7 +63,7 @@ export class JobMatchingController {
   @Get("applications")
   async findAllApplication(@RequestJwtByHttp() { user: { id: userId } }) {
     const Matching = await this.jobMatchingService.findAllApplication(+userId);
-    
+
     return {
       statusCode: HttpStatus.CREATED,
       message: MESSAGES.JOBMATCH.READ.READ_SUCCEED,
@@ -134,7 +134,10 @@ export class JobMatchingController {
    * @returns
    */
   @Delete(":matchingId")
-  async remove(@Param("matchingId") matchingId: string, @RequestJwtByHttp() { user: { id: userId } }) {
+  async remove(
+    @Param("matchingId") matchingId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const Matching = await this.jobMatchingService.remove(+userId, +matchingId);
 
     return {
