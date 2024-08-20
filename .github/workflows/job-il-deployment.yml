@@ -1,8 +1,6 @@
 on:
-  push:
+  pull_request:
     branches: dev
-  # pull_request:
-  #   branches: dev
 
 name: Web Server CI/CD # Action 이름
 
@@ -13,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout # 현재 Repo의 소스를 clone
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Configure AWS credentials # AWS 인증
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -24,30 +22,62 @@ jobs:
 
       - name: Login to Amazon ECR # AWS ECR 로그인
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
       - name: Build, tag, and push image to Amazon ECR # Docker 이미지 빌드, 태깅 후 AWS ECR에 PUSH
         id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: project-name/service # AWS ECR 이름
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          # Github Secrets 에서 .env 파일 가져오기
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
+          echo "MYSQL_URI=${{ secrets.MYSQL_URI }}" >> .env
+          echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
+          echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> .env
+          echo "MAIL_AUTH_USER=${{ secrets.MAIL_AUTH_USER }}" >> .env
+          echo "MAIL_AUTH_PASS=${{ secrets.MAIL_AUTH_PASS }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}" >> .env
+          echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+          echo "NAVER_CALLBACK_URL=${{ secrets.NAVER_CALLBACK_URL }}" >> .env
+          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
+          echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env
+          echo "KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }}" >> .env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+
+          # 도커 이미지 빌드
+          docker build --secret id=env,src=.env -t sparta-final-project-team7-server-origin .
+
+          # 빌드 후 env 파일 삭제
+          rm .env
+
+          # 도커 이미지 태깅
+          docker tag sparta-final-project-team7-server-origin:latest 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
+
+          # 도커 이미지 푸시
+          docker push 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
+
+          # 도커 이미지 출력
+          echo "image=590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition # ECS 작업 정의 생성
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json # 작업 정의 템플릿 파일 이름
-          container-name: service # 컨테이너 이름
+          container-name: sparta-final-project-backend-core-deployment # 컨테이너 이름
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition # 작업 정의 파일을 ECS 서비스에 반영
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: container-name # 컨테이너 이름
-          cluster: cluster-name # 클러스터 이름
+          service: sparta-final-project-service # 서비스 이름
+          cluster: sparta-final-project-ecs-cluster # 클러스터 이름
           wait-for-service-stability: true
