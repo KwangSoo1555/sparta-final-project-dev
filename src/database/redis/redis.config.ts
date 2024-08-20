@@ -51,7 +51,7 @@ export class RedisConfig {
   }
 
   async setNotice(cacheKey: string, data: any){
-    return this.redisClient.set(cacheKey, JSON.stringify(data), 'EX', 3600);
+    return this.redisClient.set(cacheKey, JSON.stringify(data), 'EX', 1800);
   }
 
   async getNotice(cacheKey:string){
