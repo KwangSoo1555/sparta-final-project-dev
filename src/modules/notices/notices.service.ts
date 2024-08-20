@@ -12,7 +12,6 @@ export class NoticesService {
   constructor(
     @InjectRepository(NoticesEntity)
     private readonly noticeRepository: Repository<NoticesEntity>,
-    private readonly redisConfig: RedisConfig,
   ) {}
 
   // 공지사항 생성
@@ -27,61 +26,26 @@ export class NoticesService {
 
   // 공지사항 목록 조회
   async getNotices(page: number, limit: number) {
-    // 특정 조건에 해당하는 경우만 캐싱
-    if (page === 1 && limit === 2) {
-      const cacheKey = `notices_page_${page}_limit_${limit}`;
-      const cacheData = await this.redisConfig.getNotice(cacheKey);
-      if (cacheData) {
-        return JSON.parse(cacheData);
-      }
-      
-      const offset = (page - 1) * limit;
-  
-      const [notices, totalNotices] = await this.noticeRepository.findAndCount({
-        skip: offset,
-        take: limit,
-        order: { createdAt: "DESC" },
-      });
-  
-      const totalPages = Math.ceil(totalNotices / limit);
-  
-      const result = {
-        data: notices,
-        meta: {
-          totalItems: totalNotices,
-          currentPage: page,
-          itemsPerPage: limit,
-          totalPages,
-        },
-      };
-  
-      // 1시간 동안 캐싱
-      await this.redisConfig.setNotice(cacheKey, result);
-  
-      return result;
-    } else {
-      const offset = (page - 1) * limit;
-  
-      const [notices, totalNotices] = await this.noticeRepository.findAndCount({
-        skip: offset,
-        take: limit,
-        order: { createdAt: "DESC" },
-      });
-  
-      const totalPages = Math.ceil(totalNotices / limit);
-  
-      return {
-        data: notices,
-        meta: {
-          totalItems: totalNotices,
-          currentPage: page,
-          itemsPerPage: limit,
-          totalPages,
-        },
-      };
-    }
+    const offset = (page - 1) * limit;
+
+    const [notices, totalNotices] = await this.noticeRepository.findAndCount({
+      skip: offset,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    const totalPages = Math.ceil(totalNotices / limit);
+
+    return {
+      data: notices,
+      meta: {
+        totalItems: totalNotices,
+        currentPage: page,
+        itemsPerPage: limit,
+        totalPages,
+      },
+    };
   }
-  
   // 공지사항 상세 조회
   async getNoticeDetail(noticeId: number): Promise<NoticesEntity> {
     this.validateId(noticeId);
