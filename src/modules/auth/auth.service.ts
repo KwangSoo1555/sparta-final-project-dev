@@ -227,7 +227,7 @@ export class AuthService {
       });
       await this.redisClient.expire(authCode, 10);
 
-      return res.redirect(`http://localhost:3000/auth/social-login?code=${authCode}`);
+      return res.redirect(`https://sparta-final-project.netlify.app/auth/social-login?code=${authCode}`);
     } catch (error) {
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.SOCIAL.EMAIL.NOT_FOUND);
     }

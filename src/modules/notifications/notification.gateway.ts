@@ -16,7 +16,7 @@ import { NotificationsService } from "src/modules/notifications/notifications.se
 
 @WebSocketGateway({
   cors: {
-    origin: "http://localhost:3000",
+    origin: '*',
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
