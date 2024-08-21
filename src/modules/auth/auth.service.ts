@@ -214,10 +214,10 @@ export class AuthService {
   ): Promise<string[] | void> {
     try {
       const email = user.email;
-      let checkUser = await this.checkUserForAuth({ email });
+      const checkUser = await this.checkUserForAuth({ email });
 
       if (!checkUser) {
-        checkUser = await this.userRepository.save(user);
+        return await this.userRepository.save(user);
       }
 
       const userId = checkUser.id;
