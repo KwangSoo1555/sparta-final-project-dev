@@ -18,6 +18,7 @@ const ExtractJwtFromSocket = {
     return token;
   },
 };
+
 // Access token validation
 @Injectable()
 export class AccessTokenStrategy extends PassportStrategy(Strategy, "accessToken") {
@@ -37,6 +38,7 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, "accessToken
     return user;
   }
 }
+
 // Refresh token validation
 @Injectable()
 export class RefreshTokenStrategy extends PassportStrategy(Strategy, "refreshToken") {
@@ -57,6 +59,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, "refreshTok
     return user;
   }
 }
+
 @Injectable()
 export class AccessTokenWsStrategy extends PassportStrategy(Strategy, "accessTokenWs") {
   constructor(

@@ -37,12 +37,12 @@ jobs:
 
           # 도커 이미지 태깅
           docker tag sparta-final-project-team7-server-origin:latest 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
-
+          
           # 도커 이미지 푸시
           docker push 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
 
           # 도커 이미지 출력
-          echo "image=590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest" >> $GITHUB_OUTPUT
+          docker push 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
 
       - name: Fill in the new image ID in the Amazon ECS task definition # ECS 작업 정의 생성
         id: task-def
@@ -50,7 +50,7 @@ jobs:
         with:
           task-definition: task-definition.json # 작업 정의 템플릿 파일 이름
           container-name: sparta-final-project-backend-core-deployment # 컨테이너 이름
-          image: ${{ steps.build-image.outputs.image }}
+          image: 590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin:latest
 
       - name: Deploy Amazon ECS task definition # 작업 정의 파일을 ECS 서비스에 반영
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
