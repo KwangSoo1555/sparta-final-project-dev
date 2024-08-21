@@ -9,7 +9,7 @@ export class ChatSeeder implements Seeder {
     const chatRepo = dataSource.getRepository(ChatsEntity);
     const chatRoomRepo = dataSource.getRepository(ChatRoomsEntity);
 
-    const chatRooms = await chatRoomRepo.find({ relations: ['user1', 'user2'] });
+    const chatRooms = await chatRoomRepo.find({ relations: ["user1", "user2"] });
     const chats: ChatsEntity[] = [];
 
     for (const chatRoom of chatRooms) {
@@ -25,7 +25,7 @@ export class ChatSeeder implements Seeder {
           receiverId: receiver.id,
           chatRoomsId: chatRoom.id,
           content: faker.lorem.sentence(),
-          createdAt: faker.date.past(),
+          redisCreatedAt: new Date().toISOString(), // Date 객체를 문자열로 변환
         });
 
         chats.push(chat);

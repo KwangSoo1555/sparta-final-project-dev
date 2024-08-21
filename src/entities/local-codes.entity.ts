@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UsersLocalCodesEntity } from "./users-localcodes.entity";
 
 @Entity("localcodes")
@@ -6,7 +6,7 @@ export class LocalCodesEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: "local_code" })
+  @Column({ name: "local_code", type: "bigint" })
   localCode: number;
 
   @Column({ name: "City" })
