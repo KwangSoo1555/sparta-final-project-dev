@@ -1,7 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 // import { NotificationsController } from "./notifications.controller";
 import { NotificationsService } from "./notifications.service";
-import { NotificationGateway } from "src/modules/notifications/notification.gateway";
 
 import { JwtModule } from "@nestjs/jwt";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -32,8 +31,8 @@ import { RedisPubsubService } from "src/database/redis/redis-pubsub.service";
     ChatGatewayModule,
     RedisModule,
   ],
-  providers: [NotificationsService, NotificationGateway, RedisPubsubService],
-  exports: [NotificationsService, NotificationGateway],
+  providers: [NotificationsService, RedisPubsubService],
+  exports: [NotificationsService],
   controllers: [NotificationsController],
 })
 export class NotificationsModule {}

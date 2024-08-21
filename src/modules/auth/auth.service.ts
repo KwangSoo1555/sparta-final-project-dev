@@ -196,14 +196,14 @@ export class AuthService {
 
     await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, role: user.role };
   }
 
   async socialSignIn(
     user: any,
     ip: string,
     userAgent: string,
-    RequestAuthCode: string,
+    authCode: string,
     res: any,
   ): Promise<string[] | void> {
     try {
@@ -221,20 +221,23 @@ export class AuthService {
 
       await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
-      await this.redisClient.hset(RequestAuthCode, {
+      await this.redisClient.hmset(authCode, {
         accessToken: accessToken,
-        refreshToken: refreshToken
+        refreshToken: refreshToken,
+        role: user.role,
       });
-      await this.redisClient.expire(RequestAuthCode, 10);
+      await this.redisClient.expire(authCode, 10);
 
-      return res.redirect(`http://localhost:3000/auth/social-login?code=${RequestAuthCode}`);
+      return res.redirect(
+        `https://sparta-final-project.netlify.app/auth/social-login?code=${authCode}`,
+      );
     } catch (error) {
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.SOCIAL.EMAIL.NOT_FOUND);
     }
   }
 
   async getAuthCode(authCode: string) {
-    const fields = ['accessToken', 'refreshToken'];
+    const fields = ["accessToken", "refreshToken", "role"];
     return this.redisClient.hmget(authCode, ...fields);
   }
 

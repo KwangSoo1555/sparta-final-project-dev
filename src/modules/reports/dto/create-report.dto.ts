@@ -1,8 +1,9 @@
-import { PickType, IntersectionType } from "@nestjs/swagger";
-import { UsersEntity } from "src/entities/users.entity";
+import { PickType, ApiProperty } from "@nestjs/swagger";
 import { ReportsEntity } from "src/entities/reports.entity";
+import { IsNumber } from "class-validator";
 
-export class CreateReportDto extends IntersectionType(
-  PickType(UsersEntity, ['email']),
-  PickType(ReportsEntity, ['reason', 'description'])
-) {}
+export class CreateReportDto extends PickType(ReportsEntity, ['reason', 'description']) {
+  @ApiProperty({ description: '신고자 ID' })
+  @IsNumber()
+  ownerId: number;
+}

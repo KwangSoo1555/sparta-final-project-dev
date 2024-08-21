@@ -17,7 +17,7 @@ export class ReportsService {
   ) {}
 
   async createReport(userId: number, createReportDto: CreateReportDto): Promise<ReportsEntity> {
-    const reportedUser = await this.getUserByEmail(createReportDto.email);
+    const reportedUser = await this.getUserById(createReportDto.ownerId);
     const reporter = await this.getUserById(userId);
 
     await this.checkDuplicateReport(userId, reportedUser.id);
