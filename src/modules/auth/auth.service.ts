@@ -153,11 +153,19 @@ export class AuthService {
     const { email, name, password, verificationCode } = signUpDto;
     const existingUser = await this.checkUserForAuth({ email });
 
+    // 정상 상태에서 활동하는 유저면 중복 회원 가입 불가
     if (existingUser && existingUser.deletedAt === null)
       throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
 
-    if (existingUser.deletedAt !== null) {
-      await this.userRepository.update(existingUser.id, { deletedAt: null });
+    // 탈퇴한 유저면 복구
+    const softDeletedUser = await this.userRepository.findOne({
+      where: { email },
+      withDeleted: true,
+    });
+
+    if (softDeletedUser) {
+      softDeletedUser.deletedAt = null;
+      await this.userRepository.save(softDeletedUser);
     }
 
     // 이메일 인증 코드 확인
@@ -217,7 +225,18 @@ export class AuthService {
       const checkUser = await this.checkUserForAuth({ email });
 
       if (!checkUser) {
-        return await this.userRepository.save(user);
+        await this.userRepository.save(user);
+      }
+
+      // 탈퇴한 유저면 복구
+      const softDeletedUser = await this.userRepository.findOne({
+        where: { email },
+        withDeleted: true,
+      });
+
+      if (softDeletedUser) {
+        softDeletedUser.deletedAt = null;
+        await this.userRepository.save(softDeletedUser);
       }
 
       const userId = checkUser.id;
