@@ -35,10 +35,10 @@ export class ChatService {
 
     const lockAcquired = await redisClient.set(lockKey, lockValue, "PX", 60000, "NX");
 
-    // if (!lockAcquired) {
-    //   console.log("Another instance is already syncing.");
-    //   return;
-    // }
+    if (!lockAcquired) {
+      // console.log("Another instance is already syncing.");
+      return;
+    }
 
     try {
       if (!this.isSyncing) {
