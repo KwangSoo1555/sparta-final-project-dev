@@ -153,7 +153,12 @@ export class AuthService {
     const { email, name, password, verificationCode } = signUpDto;
     const existingUser = await this.checkUserForAuth({ email });
 
-    if (existingUser) throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+    if (existingUser && existingUser.deletedAt === null)
+      throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
+
+    if (existingUser.deletedAt !== null) {
+      await this.userRepository.update(existingUser.id, { deletedAt: null });
+    }
 
     // 이메일 인증 코드 확인
     const sendedEmailCode = await this.getVerificationCode(email);
@@ -181,13 +186,14 @@ export class AuthService {
   }
 
   async signIn(signInDto: LocalSignInDto, ip: string, userAgent: string) {
-    const user = await this.checkUserForAuth({ email: signInDto.email });
+    const { email, password } = signInDto;
+    const user = await this.checkUserForAuth({ email });
 
     // 유저 존재 여부 확인
     if (!user) throw new NotFoundException(MESSAGES.AUTH.LOG_IN.LOCAL.EMAIL.NOT_FOUND);
 
     // 비밀번호 일치 여부 확인
-    const isPasswordMatch = await bcrypt.compare(signInDto.password, user.password);
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch)
       throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.LOCAL.PASSWORD.INCONSISTENT);
 
