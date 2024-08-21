@@ -10,7 +10,6 @@ import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
 import { NotificationsService } from "src/modules/notifications/notifications.service";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
-import { CreateNotificationDto } from "src/modules/notifications/notifications.dto/create-notificaion.dto";
 import Redis from "ioredis";
 
 @Injectable()
@@ -54,7 +53,7 @@ export class JobMatchingService {
 
     //지원자 발생 시 알림 발송 메서드
     await this.redisClient.publish(
-      "jobMatcing",
+      "jobMatching",
       JSON.stringify({
         type: NotificationTypes.JOB_APPLIED,
         jobsId,

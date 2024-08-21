@@ -23,6 +23,7 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { Redis } from "ioredis";
+import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
@@ -181,6 +182,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = this.getUserIdFromSocket(client);
     const { receiverId, content } = createChatDto;
     const newChat = await this.chatService.createChat(userId, createChatDto);
+
+    await this.redisClient.publish(
+      "chatMessageCreated",
+      JSON.stringify({
+        type: NotificationTypes.NEW_CHAT,
+        chatRoomId: newChat.chatRoomsId,
+        receiverId,
+        senderId: newChat.senderId,
+      }),
+    );
     client.to(newChat.chatRoomsId.toString()).emit("receiveChat", newChat);
     client.emit("chatSent", newChat);
   }
@@ -222,5 +233,28 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 채팅 로그 가져오기
     const chatLogs = await this.chatService.findChatLog(userId, chatRoomId);
     client.emit("chatLog", chatLogs); // 클라이언트에게 채팅 로그 전송
+  }
+
+  //notificationData = 내가 알림을 보낼 내용
+  async sendJobMatchingNotification(
+    userId: number,
+    notificationData: { type: NotificationTypes; jobsId: number; title: string },
+  ) {
+    const socketId = await this.redisConfig.getUserSocketId(userId);
+    console.log("socket ID : ", socketId);
+    if (socketId) {
+      this.server.to(socketId).emit("notification", notificationData);
+    }
+  }
+
+  async sendChattingNotification(
+    userId: number,
+    notificationData: { type: NotificationTypes; chatRoomId: number; title: string },
+  ) {
+    const socketId = await this.redisConfig.getUserSocketId(userId);
+    console.log("socket ID : ", socketId);
+    if (socketId) {
+      this.server.to(socketId).emit("notification", notificationData);
+    }
   }
 }
