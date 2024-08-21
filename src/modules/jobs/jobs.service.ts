@@ -9,16 +9,18 @@ import { UpdateJobDto } from "./dto/update-job.dto";
 
 import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
+import { LocalCodesEntity } from "src/entities/local-codes.entity";
 
 @Injectable()
 export class JobsService {
   constructor(
     @InjectRepository(JobsEntity) private jobsRepository: Repository<JobsEntity>,
     @InjectRepository(UsersEntity) private UserRepository: Repository<UsersEntity>,
+    @InjectRepository(LocalCodesEntity) private localcodesRepository: Repository<LocalCodesEntity>,
   ) {}
 
   async create(createJobDto: CreateJobDto, userId: number) {
-    const { title, content, photoUrl, price, address, category } = createJobDto;
+    const { title, content, photoUrl, price, city, district, dong, category } = createJobDto;
 
     const verifyUserbyId = await this.UserRepository.findOne({
       where: {
@@ -30,6 +32,8 @@ export class JobsService {
       throw new NotFoundException(MESSAGES.USERS.COMMON.NOT_FOUND);
     }
 
+    const localCode = await this.getLocalcodes(city, district, dong);
+
     if (photoUrl != "") {
       const data = await this.jobsRepository.save({
         ownerId: userId,
@@ -37,7 +41,7 @@ export class JobsService {
         content,
         photoUrl,
         price,
-        address,
+        address: localCode,
         category,
         expiredYn: false,
         matchedYn: false,
@@ -50,7 +54,7 @@ export class JobsService {
         title,
         content,
         price,
-        address,
+        address: localCode,
         category,
         expiredYn: false,
         matchedYn: false,
@@ -79,7 +83,23 @@ export class JobsService {
       },
     });
 
-    return data;
+    // address 필드로 주소 데이터를 가져옵니다.
+    const jobAddress = await this.getAdressByLocalcodes(data.address);
+
+    // data 객체에서 address 필드를 제외한 나머지를 가져옵니다.
+    const { address, ...dataWithoutAddress } = data;
+
+    // address 객체에서 localCode 필드를 제외한 나머지를 가져옵니다.
+    const { localCode, ...addressWithoutLocalCode } = jobAddress;
+
+    // 두 객체를 합칩니다.
+    const result = {
+      ...dataWithoutAddress,
+      ...addressWithoutLocalCode,
+    };
+
+    // 결과를 반환합니다.
+    return result;
   }
 
   async update(ownerId: number, jobsId: number, updateJobDto: UpdateJobDto) {
@@ -138,5 +158,26 @@ export class JobsService {
     }
 
     return await this.jobsRepository.softRemove({ id: jobsId });
+  }
+
+  async getLocalcodes(city: string, district: string, dong: string): Promise<number> {
+    const localCodes = await this.localcodesRepository.findOne({
+      where: { city: city, district: district, dong: dong },
+    });
+
+    if (!localCodes) {
+      throw new Error("Local code not found");
+    }
+
+    return localCodes.localCode;
+  }
+
+  async getAdressByLocalcodes(localCode: number) {
+    const address = await this.localcodesRepository.findOne({ where: { localCode: localCode } });
+
+    if (!address) {
+      throw new Error("address not found");
+    }
+    return address;
   }
 }

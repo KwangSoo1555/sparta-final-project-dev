@@ -25,7 +25,7 @@ export class UserSeeder implements Seeder {
 
       if (i === 1) {
         user.role = UserRoles.ADMIN;
-        user.email = "user3@example.com";
+        user.email = "user1@example.com";
       } else {
         user.role = UserRoles.USER;
       }

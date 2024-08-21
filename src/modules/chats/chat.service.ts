@@ -29,6 +29,9 @@ export class ChatService {
 
   @Cron("*/1 * * * *")
   async syncIfNotRunning() {
+    console.log(
+      "요거 위에거 확인하는 거==========================================================================================================================",
+    );
     const redisClient = this.redisConfig.getClient();
     const lockKey = "syncRedisToDBLock";
     const lockValue = Date.now().toString();
@@ -43,6 +46,9 @@ export class ChatService {
     try {
       if (!this.isSyncing) {
         this.isSyncing = true;
+        console.log(
+          "그냥 테스트용입니다----------------------------------------------------------------------",
+        );
         await this.syncRedisToDB();
       }
     } finally {

@@ -33,16 +33,16 @@ export class JobsEntity {
   @Column()
   price: number;
 
-  @Column()
-  address: string;
+  @Column({ type: "bigint" })
+  address: number;
 
   @Column()
   category: string;
 
-  @Column({ type: 'boolean' , name: "expired_yn" })
+  @Column({ type: "boolean", name: "expired_yn" })
   expiredYn: boolean;
-  
-  @Column({ type: 'boolean' , name: "matched_yn" })
+
+  @Column({ type: "boolean", name: "matched_yn" })
   matchedYn: boolean;
 
   @CreateDateColumn({ name: "created_at" })
