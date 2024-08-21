@@ -157,17 +157,6 @@ export class AuthService {
     if (existingUser && existingUser.deletedAt === null)
       throw new ConflictException(MESSAGES.AUTH.SIGN_UP.EMAIL.DUPLICATED);
 
-    // 탈퇴한 유저면 복구
-    const softDeletedUser = await this.userRepository.findOne({
-      where: { email },
-      withDeleted: true,
-    });
-
-    if (softDeletedUser) {
-      softDeletedUser.deletedAt = null;
-      await this.userRepository.save(softDeletedUser);
-    }
-
     // 이메일 인증 코드 확인
     const sendedEmailCode = await this.getVerificationCode(email);
     if (!sendedEmailCode || sendedEmailCode !== verificationCode)
@@ -176,21 +165,34 @@ export class AuthService {
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, AUTH_CONSTANT.HASH_SALT_ROUNDS);
 
-    // 유저 생성
-    const user = this.userRepository.create({
-      email,
-      name,
-      password: hashedPassword,
+    // 탈퇴한 유저면 복구
+    const softDeletedUser = await this.userRepository.findOne({
+      where: { email },
+      withDeleted: true,
     });
 
-    const signUpUser = await this.userRepository.save(user);
+    if (softDeletedUser) {
+      softDeletedUser.deletedAt = null;
+      softDeletedUser.name = name;
+      softDeletedUser.password = hashedPassword;
+      await this.userRepository.save(softDeletedUser);
+    } else {
+      // 새 유저 생성
+      const user = this.userRepository.create({
+        email,
+        name,
+        password: hashedPassword,
+      });
+      await this.userRepository.save(user);
+    }
 
-    // 비밀번호 필드를 undefined로 설정
-    signUpUser.password = undefined;
+    const registeredUser = await this.userRepository.findOne({ where: { email } });
+
+    registeredUser.password = undefined;
 
     await this.redisClient.del(email);
 
-    return signUpUser;
+    return registeredUser;
   }
 
   async signIn(signInDto: LocalSignInDto, ip: string, userAgent: string) {
@@ -222,11 +224,7 @@ export class AuthService {
   ): Promise<string[] | void> {
     try {
       const email = user.email;
-      const checkUser = await this.checkUserForAuth({ email });
-
-      if (!checkUser) {
-        await this.userRepository.save(user);
-      }
+      let userId: number;
 
       // 탈퇴한 유저면 복구
       const softDeletedUser = await this.userRepository.findOne({
@@ -235,11 +233,21 @@ export class AuthService {
       });
 
       if (softDeletedUser) {
+        // 탈퇴한 유저면 복구
         softDeletedUser.deletedAt = null;
-        await this.userRepository.save(softDeletedUser);
+        const recoveredUser = await this.userRepository.save(softDeletedUser);
+        userId = recoveredUser.id;
+      } else {
+        // 원래 정상 상태로 존재하는 유저
+        const checkUser = await this.checkUserForAuth({ email });
+        if (checkUser) {
+          userId = checkUser.id;
+        } else {
+          // 새로운 유저
+          const newUser = await this.userRepository.save(user);
+          userId = newUser.id;
+        }
       }
-
-      const userId = checkUser.id;
 
       const accessToken = this.createToken({ userId });
       const refreshToken = this.createToken({ userId }, true);
