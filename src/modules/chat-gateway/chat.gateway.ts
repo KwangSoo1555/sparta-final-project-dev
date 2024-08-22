@@ -24,7 +24,6 @@ import { ConfigService } from "@nestjs/config";
 import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { Redis } from "ioredis";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
-
 // @UseGuards(JwtSocketGuards)
 @WebSocketGateway({
   cors: {
@@ -44,18 +43,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly configService: ConfigService,
     @InjectRepository(UsersEntity)
     private readonly usersRepository: Repository<UsersEntity>,
-
     @Inject("REDIS_CLIENT")
     private readonly redisClient: Redis,
   ) {}
-
   // 유저정보는 같지만 소켓이 여러개가 연결되어 있을 경우 핸들링 할수있게 유저정보와 소켓 연결정보에 대한 분기처리가 필요하다.
   // 즉, 한명의 유저는 여러개의 채팅방에 소속되어 있을 수 있으므로, 그에 대한 각 사용자의 여러 소켓 연결을 관리하기위해 필요하다
   private connectedClients = [];
-
   @WebSocketServer()
   server: Server;
-
   getUserIdFromSocket(client: Socket): number | null {
     const authHeader = client.handshake.auth.token;
     console.log("Authorization Header:", authHeader);
@@ -63,7 +58,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       authHeader && authHeader.toLowerCase().startsWith("bearer ")
         ? authHeader.substring(7) // "Bearer ".length = 7
         : null;
-
     if (token) {
       try {
         const decoded = this.jwtService.verify(token, {
@@ -77,7 +71,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     return null;
   }
-
   async handleConnection(@ConnectedSocket() client: Socket) {
     try {
       const userId = this.getUserIdFromSocket(client);
@@ -101,21 +94,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.disconnect(); // 오류 발생 시 연결 종료
     }
   }
-
   async handleDisconnect(@ConnectedSocket() client: Socket) {
     try {
       const userId = this.getUserIdFromSocket(client);
       if (userId) {
         // 해당 소켓만 제거
         this.connectedClients = this.connectedClients.filter((c) => c.client.id !== client.id);
-
         // 해당 사용자의 다른 소켓이 모두 연결 해제된 경우에만 상태 변경
         const isUserStillConnected = this.connectedClients.some((c) => c.userId === userId);
         if (!isUserStillConnected) {
           await this.redisConfig.removeUserStatus(userId);
           console.log(`User ${userId} is now offline`);
         }
-
         console.log(`User ${userId} disconnected`);
       } else {
         console.error("Unexpected disconnect without valid user ID.");
@@ -124,7 +114,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.error("Error during disconnection:", error);
     }
   }
-
   // 내가 채팅하려는 상대방의 online, offline상태 확인
   @SubscribeMessage("getUserStatus")
   async getUserStatus(
@@ -139,7 +128,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     client.emit("userStatus", { receiverId, name: user.name, status });
   }
-
   // 내 상태를 online으로 변경
   @SubscribeMessage("setUserStatus")
   async setUserStatus(
@@ -151,7 +139,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = await this.getUserById(userId);
     client.emit("userStatus", { userId, name: user.name, status: "online" });
   }
-
   // 내 상태를 offline으로 변경
   @SubscribeMessage("removeUserStatus")
   async removeUserStatus(
@@ -163,7 +150,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = await this.getUserById(userId);
     client.emit("userStatus", { userId, name: user.name, status: "offline" });
   }
-
   // id를 기반으로 유저찾기
   private async getUserById(userId: number) {
     const user = await this.usersRepository.findOne({ where: { id: userId } });
@@ -172,7 +158,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     return user;
   }
-
   @SubscribeMessage("sendChat")
   async handleChat(
     // @RequestJwtBySocket() { user: { id: userId } },
@@ -182,7 +167,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = this.getUserIdFromSocket(client);
     const { receiverId, content } = createChatDto;
     const newChat = await this.chatService.createChat(userId, createChatDto);
-
     await this.redisClient.publish(
       "chatMessageCreated",
       JSON.stringify({
@@ -195,7 +179,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.to(newChat.chatRoomsId.toString()).emit("receiveChat", newChat);
     client.emit("chatSent", newChat);
   }
-
   @SubscribeMessage("deleteChat")
   async handleDeleteChat(
     // @RequestJwtBySocket() { user: { id: userId } },
@@ -207,17 +190,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     await this.chatService.deleteChat(userId, chatRoomId, chatId);
     client.to(chatRoomId.toString()).emit("chatDeleted", { chatId });
   }
-
   @SubscribeMessage("joinRoom")
   async handleRoomJoin(
     @MessageBody() data: { receiverId: number },
     @ConnectedSocket() client: Socket,
   ) {
     const userId = this.getUserIdFromSocket(client);
-
     // 채팅룸 생성 또는 조회
     const existingChatRoom = await this.chatService.findChatRoomByIds(userId, data.receiverId);
-
     let chatRoomId;
     if (!existingChatRoom) {
       // 새 채팅룸 생성
@@ -226,7 +206,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       chatRoomId = existingChatRoom.id;
     }
-
     // 클라이언트 채팅룸 조인
     client.join(chatRoomId.toString());
     console.log(`User ${userId} joined room ${chatRoomId}`);
@@ -234,7 +213,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const chatLogs = await this.chatService.findChatLog(userId, chatRoomId);
     client.emit("chatLog", chatLogs); // 클라이언트에게 채팅 로그 전송
   }
-
   //notificationData = 내가 알림을 보낼 내용
   async sendJobMatchingNotification(
     userId: number,
@@ -246,7 +224,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(socketId).emit("notification", notificationData);
     }
   }
-
   async sendChattingNotification(
     userId: number,
     notificationData: { type: NotificationTypes; chatRoomId: number; title: string },
