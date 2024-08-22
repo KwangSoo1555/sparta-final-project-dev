@@ -31,29 +31,26 @@ export const MESSAGES = {
       },
       SUCCEED: "회원가입에 성공했습니다.",
     },
-    LOG_IN: {
-      LOCAL: {
-        EMAIL: {
-          NOT_FOUND: "이메일이 존재하지 않습니다.",
-        },
-        PASSWORD: {
-          INCONSISTENT: "비밀번호가 일치하지 않습니다.",
-        },
-        SUCCEED: "로그인에 성공했습니다.",
+    SIGN_IN: {
+      EMAIL: {
+        NOT_FOUND: "이메일이 존재하지 않습니다.",
       },
-      SOCIAL: {
-        EMAIL: {
-          NOT_FOUND: "이메일이 존재하지 않습니다.",
-        },
-        SUCCEED: "로그인에 성공했습니다.",
-        FAIL: "로그인에 실패했습니다.",
+      PASSWORD: {
+        INCONSISTENT: "비밀번호가 일치하지 않습니다.",
       },
+      SUCCEED: "로그인에 성공했습니다.",
     },
     SIGN_OUT: {
       SUCCEED: "로그 아웃에 성공했습니다.",
     },
     REISSUE_TOKEN: {
       SUCCEED: "토큰 재발급에 성공했습니다.",
+    },
+    TOKEN: {
+      INVALID: "토큰이 유효하지 않습니다.",
+      EXPIRED: "토큰이 만료되었습니다.",
+      NOT_FOUND: "토큰이 존재하지 않습니다.",
+      OCCURRED_ERROR: "토큰 생성 중 오류가 발생했습니다.",
     },
   },
   USERS: {

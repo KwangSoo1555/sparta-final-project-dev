@@ -30,7 +30,7 @@ import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
 
 @Injectable()
 export class AuthService {
-  private readonly smtpTransport: nodemailer.Transporter;
+  protected readonly smtpTransport: nodemailer.Transporter;
   private readonly jwtAccessKey: string;
   private readonly jwtRefreshKey: string;
   private readonly jwtAccessOptions: jwt.SignOptions;
@@ -104,7 +104,7 @@ export class AuthService {
   // redis 에서 메일 인증 코드 조회
   async getVerificationCode(email: string): Promise<number | null> {
     const code = await this.redisClient.get(email);
-    return +code;
+    return code ? parseInt(code) : null;
   }
 
   // 임시 비밀번호 발송
@@ -171,11 +171,12 @@ export class AuthService {
       withDeleted: true,
     });
 
+    let registeredUser: UsersEntity;
     if (softDeletedUser) {
       softDeletedUser.deletedAt = null;
       softDeletedUser.name = name;
       softDeletedUser.password = hashedPassword;
-      await this.userRepository.save(softDeletedUser);
+      registeredUser = await this.userRepository.save(softDeletedUser);
     } else {
       // 새 유저 생성
       const user = this.userRepository.create({
@@ -183,16 +184,14 @@ export class AuthService {
         name,
         password: hashedPassword,
       });
-      await this.userRepository.save(user);
+      registeredUser = await this.userRepository.save(user);
     }
-
-    const registeredUser = await this.userRepository.findOne({ where: { email } });
 
     registeredUser.password = undefined;
 
+    const { password: _, ...userWithoutSensitiveInfo } = registeredUser;
     await this.redisClient.del(email);
-
-    return registeredUser;
+    return userWithoutSensitiveInfo;
   }
 
   async signIn(signInDto: LocalSignInDto, ip: string, userAgent: string) {
@@ -200,18 +199,19 @@ export class AuthService {
     const user = await this.checkUserForAuth({ email });
 
     // 유저 존재 여부 확인
-    if (!user) throw new NotFoundException(MESSAGES.AUTH.LOG_IN.LOCAL.EMAIL.NOT_FOUND);
+    if (!user) throw new NotFoundException(MESSAGES.AUTH.SIGN_IN.EMAIL.NOT_FOUND);
 
     // 비밀번호 일치 여부 확인
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch)
-      throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.LOCAL.PASSWORD.INCONSISTENT);
+      throw new UnauthorizedException(MESSAGES.AUTH.SIGN_IN.PASSWORD.INCONSISTENT);
 
     const accessToken = this.createToken({ userId: user.id });
     const refreshToken = this.createToken({ userId: user.id }, true);
 
     await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
 
+    console.log("user.role : ", user.role);
     return { accessToken, refreshToken, role: user.role };
   }
 
@@ -265,7 +265,7 @@ export class AuthService {
         `https://sparta-final-project.netlify.app/auth/social-login?code=${authCode}`,
       );
     } catch (error) {
-      throw new UnauthorizedException(MESSAGES.AUTH.LOG_IN.SOCIAL.EMAIL.NOT_FOUND);
+      throw new UnauthorizedException(MESSAGES.AUTH.SIGN_IN.EMAIL.NOT_FOUND);
     }
   }
 
@@ -351,7 +351,7 @@ export class AuthService {
 
       return jwt.sign(payload, key, options);
     } catch (error) {
-      throw new Error("토큰 생성 중 오류가 발생했습니다.");
+      throw new Error(MESSAGES.AUTH.TOKEN.OCCURRED_ERROR);
     }
   }
 

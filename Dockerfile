@@ -24,6 +24,10 @@ COPY . .
 # 환경 변수 주입 후 빌드 (buildkit 엔진으로 .env 파일을 주입)
 RUN --mount=type=secret,id=env,target=/var/app/.env \source /var/app/.env && npm run build
 
+# 키네시스 에이전트 주입
+# RUN apt-get update && apt-get install -y gnupg
+
+
 # 포트 개방
 EXPOSE 3333
 
