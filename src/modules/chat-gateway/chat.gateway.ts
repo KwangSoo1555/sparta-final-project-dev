@@ -212,6 +212,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // 채팅 로그 가져오기
     const chatLogs = await this.chatService.findChatLog(userId, chatRoomId);
     client.emit("chatLog", chatLogs); // 클라이언트에게 채팅 로그 전송
+    client.emit("chatRoomId", chatRoomId);
   }
   //notificationData = 내가 알림을 보낼 내용
   async sendJobMatchingNotification(

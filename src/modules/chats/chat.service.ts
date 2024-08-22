@@ -23,7 +23,7 @@ export class ChatService {
   async onModuleInit() {
     await this.syncIfNotRunning();
   }
-  @Cron("*/1 * * * *")
+  @Cron("*/3 * * * *")
   async syncIfNotRunning() {
     const redisClient = this.redisConfig.getClient();
     const lockKey = "syncRedisToDBLock";
