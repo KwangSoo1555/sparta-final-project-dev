@@ -1,5 +1,5 @@
 {
-  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:590183983800:task-definition/sparta-final-project-ecs-task:9",
+  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:590183983800:task/sparta-final-project-ecs-cluster/5920412a436544079258d48412ab466c",
   "containerDefinitions": [
     {
       "name": "sparta-final-project-backend-core-deployment",
