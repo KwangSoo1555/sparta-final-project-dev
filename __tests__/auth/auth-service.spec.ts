@@ -1,7 +1,7 @@
 import * as bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import * as nodemailer from "nodemailer";
-import nodemailerMock from "nodemailer-mock";
+import * as nodemailerMock from "nodemailer-mock";
 import { Redis } from "ioredis";
 
 import { Test, TestingModule } from "@nestjs/testing";
@@ -27,18 +27,17 @@ import { MESSAGES } from "../../src/common/constants/message.constant";
 
 jest.mock("bcrypt");
 jest.mock("jsonwebtoken");
-jest.mock("nodemailer", () => nodemailerMock);
+jest.mock("nodemailer");
 
 describe("AuthService", () => {
   let service: AuthService;
+  let configService: ConfigService;
   let userRepository: Repository<UsersEntity>;
   let refreshTokenRepository: Repository<RefreshTokensEntity>;
   let redisClient: Redis;
-  let configService: ConfigService;
+  let smtpTransport;
 
   beforeEach(async () => {
-    nodemailerMock.mock.reset();
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -93,12 +92,15 @@ describe("AuthService", () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
+    configService = module.get<ConfigService>(ConfigService);
     userRepository = module.get<Repository<UsersEntity>>(getRepositoryToken(UsersEntity));
     refreshTokenRepository = module.get<Repository<RefreshTokensEntity>>(
       getRepositoryToken(RefreshTokensEntity),
     );
     redisClient = module.get<Redis>("REDIS_CLIENT");
-    configService = module.get<ConfigService>(ConfigService);
+    smtpTransport = module.get<nodemailer.Transporter>("SMTP_TRANSPORT");
+    nodemailerMock.mock.reset();
+    (nodemailer.createTransport as jest.Mock).mockReturnValue(nodemailerMock.createTransport({}));
   });
 
   afterEach(() => {
@@ -107,20 +109,22 @@ describe("AuthService", () => {
   });
 
   describe("sendAuthEmail", () => {
-    it("이메일 전송에 실패 시 에러 발생", async () => {
-      const emailVerificationDto = { email: "test@example.com" };
-      jest.spyOn(redisClient, "set").mockResolvedValue("OK");
+    it('이메일 전송 실패 시 에러 발생', async () => {
+      const emailVerificationDto = { email: 'test@example.com' };
+      jest.spyOn(redisClient, 'set').mockResolvedValue('OK');
       nodemailerMock.mock.setShouldFailOnce();
 
       await expect(service.sendAuthEmail(emailVerificationDto)).rejects.toThrow(
         MESSAGES.AUTH.SIGN_UP.EMAIL.FAIL,
       );
+
+      expect(nodemailerMock.mock.getSentMail().length).toBe(0);
     });
 
-    it("인증 이메일을 발송 성공", async () => {
+    it("인증 이메일 발송 성공", async () => {
       const emailVerificationDto = { email: "test@example.com" };
       jest.spyOn(redisClient, "set").mockResolvedValue("OK");
-      nodemailerMock.mock.setShouldFailOnce(false);
+      jest.spyOn(service as any, "codeNumber").mockReturnValue(123456);
 
       const result = await service.sendAuthEmail(emailVerificationDto);
 
@@ -132,11 +136,13 @@ describe("AuthService", () => {
       const sentMail = nodemailerMock.mock.getSentMail();
       expect(sentMail.length).toBe(1);
       expect(sentMail[0].to).toBe(emailVerificationDto.email);
+      expect(sentMail[0].subject).toBe(AUTH_CONSTANT.AUTH_EMAIL.SUBJECT);
+      expect(sentMail[0].html).toContain("123456");
     });
   });
 
   describe("getVerificationCode", () => {
-    it("should return verification code from Redis", async () => {
+    it("Redis에서 인증 코드 반환", async () => {
       jest.spyOn(redisClient, "get").mockResolvedValue("123456");
 
       const result = await service.getVerificationCode("test@example.com");
@@ -144,7 +150,7 @@ describe("AuthService", () => {
       expect(result).toBe(123456);
     });
 
-    it("should return null if verification code is not found", async () => {
+    it("인증 코드가 없으면 null 반환", async () => {
       jest.spyOn(redisClient, "get").mockResolvedValue(null);
 
       const result = await service.getVerificationCode("test@example.com");
@@ -154,7 +160,7 @@ describe("AuthService", () => {
   });
 
   describe("sendTempPassword", () => {
-    it("should send temporary password successfully", async () => {
+    it("임시 비밀번호 전송 성공", async () => {
       const emailVerificationDto = { email: "test@example.com" };
       jest.spyOn(redisClient, "set").mockResolvedValue("OK");
       jest.spyOn(service["smtpTransport"], "sendMail").mockResolvedValue({} as any);
@@ -166,7 +172,7 @@ describe("AuthService", () => {
       expect(result.data).toHaveProperty("tempPassword");
     });
 
-    it("should throw an error if temporary password sending fails", async () => {
+    it("임시 비밀번호 전송 실패 시 에러 발생", async () => {
       const emailVerificationDto = { email: "test@example.com" };
       jest.spyOn(redisClient, "set").mockResolvedValue("OK");
       jest
@@ -180,7 +186,7 @@ describe("AuthService", () => {
   });
 
   describe("getTempPassword", () => {
-    it("should return temporary password from Redis", async () => {
+    it("Redis에서 임시 비밀번호 반환", async () => {
       jest.spyOn(redisClient, "get").mockResolvedValue("tempPass123");
 
       const result = await service.getTempPassword("test@example.com");
@@ -188,7 +194,7 @@ describe("AuthService", () => {
       expect(result).toBe("tempPass123");
     });
 
-    it("should return null if temporary password is not found", async () => {
+    it("임시 비밀번호가 없으면 null 반환", async () => {
       jest.spyOn(redisClient, "get").mockResolvedValue(null);
 
       const result = await service.getTempPassword("test@example.com");
@@ -198,7 +204,7 @@ describe("AuthService", () => {
   });
 
   describe("checkUserForAuth", () => {
-    it("should return user if found", async () => {
+    it("존재하는 유저 반환", async () => {
       const mockUser = { id: 1, email: "test@example.com" };
       jest.spyOn(userRepository, "findOne").mockResolvedValue(mockUser as UsersEntity);
 
@@ -207,7 +213,7 @@ describe("AuthService", () => {
       expect(result).toEqual(mockUser);
     });
 
-    it("should return null if user is not found", async () => {
+    it("존재하지 않는 유저 반환", async () => {
       jest.spyOn(userRepository, "findOne").mockResolvedValue(null);
 
       const result = await service.checkUserForAuth({ email: "test@example.com" });
@@ -224,7 +230,7 @@ describe("AuthService", () => {
       verificationCode: 123456,
     };
 
-    it("should throw ConflictException if user already exists", async () => {
+    it("이미 존재하는 유저 시 오류 발생", async () => {
       jest
         .spyOn(service, "checkUserForAuth")
         .mockResolvedValue({ id: 1, deletedAt: null } as UsersEntity);
@@ -232,14 +238,14 @@ describe("AuthService", () => {
       await expect(service.signUp(signUpDto)).rejects.toThrow(ConflictException);
     });
 
-    it("should throw BadRequestException if verification code is incorrect", async () => {
+    it("인증 코드가 일치하지 않으면 오류 발생", async () => {
       jest.spyOn(service, "checkUserForAuth").mockResolvedValue(null);
       jest.spyOn(service, "getVerificationCode").mockResolvedValue(654321);
 
       await expect(service.signUp(signUpDto)).rejects.toThrow(BadRequestException);
     });
 
-    it("should recover a soft-deleted user", async () => {
+    it("soft deleted 유저 복구", async () => {
       jest.spyOn(service, "checkUserForAuth").mockResolvedValue(null);
       jest.spyOn(service, "getVerificationCode").mockResolvedValue(123456);
       jest.spyOn(bcrypt, "hash").mockResolvedValue("hashedPassword" as never);
@@ -265,7 +271,7 @@ describe("AuthService", () => {
       expect("password" in result).toBeFalsy();
     });
 
-    it("should create a new user if everything is valid", async () => {
+    it("모든 것이 유효하면 새 유저 생성", async () => {
       jest.spyOn(service, "checkUserForAuth").mockResolvedValue(null);
       jest.spyOn(service, "getVerificationCode").mockResolvedValue(123456);
       jest.spyOn(bcrypt, "hash").mockResolvedValue("hashedPassword" as never);
@@ -292,7 +298,7 @@ describe("AuthService", () => {
   describe("signIn", () => {
     const signInDto = { email: "test@example.com", password: "password123" };
 
-    it("should throw NotFoundException if user does not exist", async () => {
+    it("존재하지 않는 유저 시 오류 발생", async () => {
       jest.spyOn(service, "checkUserForAuth").mockResolvedValue(null);
 
       await expect(service.signIn(signInDto, "127.0.0.1", "test-agent")).rejects.toThrow(
@@ -300,7 +306,7 @@ describe("AuthService", () => {
       );
     });
 
-    it("should throw UnauthorizedException if password is incorrect", async () => {
+    it("비밀번호가 일치하지 않으면 오류 발생", async () => {
       jest
         .spyOn(service, "checkUserForAuth")
         .mockResolvedValue({ id: 1, password: "hashedPassword" } as UsersEntity);
@@ -311,7 +317,7 @@ describe("AuthService", () => {
       );
     });
 
-    it("should return tokens and role if credentials are correct", async () => {
+    it("자격 증명이 유효하면 토큰 및 역할 반환", async () => {
       jest
         .spyOn(service, "checkUserForAuth")
         .mockResolvedValue({ id: 1, password: "hashedPassword" } as UsersEntity);
@@ -336,7 +342,7 @@ describe("AuthService", () => {
     const mockUser = { id: 1, email: "test@example.com", role: "user" };
     const mockResponse = { redirect: jest.fn() };
 
-    it("should recover a soft-deleted user", async () => {
+    it("soft deleted 유저 복구", async () => {
       jest
         .spyOn(userRepository, "findOne")
         .mockResolvedValue({ ...mockUser, deletedAt: new Date() } as UsersEntity);
@@ -362,7 +368,7 @@ describe("AuthService", () => {
       expect(mockResponse.redirect).toHaveBeenCalled();
     });
 
-    it("should create a new user if not exists", async () => {
+    it("존재하지 않는 유저 시 새 유저 생성", async () => {
       jest.spyOn(userRepository, "findOne").mockResolvedValue(null);
       jest.spyOn(service, "checkUserForAuth").mockResolvedValue(null);
       jest.spyOn(userRepository, "save").mockResolvedValue(mockUser as UsersEntity);
@@ -383,7 +389,7 @@ describe("AuthService", () => {
       expect(mockResponse.redirect).toHaveBeenCalled();
     });
 
-    it("should throw UnauthorizedException if an error occurs", async () => {
+    it("에러 발생 시 오류 발생", async () => {
       jest.spyOn(userRepository, "findOne").mockRejectedValue(new Error("Database error"));
 
       await expect(
@@ -393,7 +399,7 @@ describe("AuthService", () => {
   });
 
   describe("getAuthCode", () => {
-    it("should return auth data from Redis", async () => {
+    it("Redis에서 인증 데이터 반환", async () => {
       jest.spyOn(redisClient, "hmget").mockResolvedValue(["accessToken", "refreshToken", "user"]);
 
       const result = await service.getAuthCode("authCode");
@@ -403,7 +409,7 @@ describe("AuthService", () => {
   });
 
   describe("tokenReissue", () => {
-    it("should throw UnauthorizedException if refresh token does not exist", async () => {
+    it("refresh token이 없으면 오류 발생", async () => {
       jest.spyOn(refreshTokenRepository, "findOne").mockResolvedValue(null);
 
       await expect(
@@ -411,7 +417,7 @@ describe("AuthService", () => {
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it("should throw UnauthorizedException if refresh tokens do not match", async () => {
+    it("refresh token이 일치하지 않으면 오류 발생", async () => {
       jest
         .spyOn(refreshTokenRepository, "findOne")
         .mockResolvedValue({ refreshToken: "hashedToken" } as RefreshTokensEntity);
@@ -422,7 +428,7 @@ describe("AuthService", () => {
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it("should return new tokens if refresh token is valid", async () => {
+    it("refresh token이 유효하면 새 토큰 반환", async () => {
       jest
         .spyOn(refreshTokenRepository, "findOne")
         .mockResolvedValue({ refreshToken: "hashedToken" } as RefreshTokensEntity);
@@ -445,20 +451,20 @@ describe("AuthService", () => {
   describe("findPw", () => {
     const findPwDto = { email: "test@example.com", name: "Test User", tempPassword: "temp123" };
 
-    it("should throw NotFoundException if user does not exist", async () => {
+    it("존재하지 않는 유저 시 오류 발생", async () => {
       jest.spyOn(userRepository, "findOne").mockResolvedValue(null);
 
       await expect(service.findPw(findPwDto)).rejects.toThrow(NotFoundException);
     });
 
-    it("should throw NotFoundException if temp password is incorrect", async () => {
+    it("임시 비밀번호가 일치하지 않으면 오류 발생", async () => {
       jest.spyOn(userRepository, "findOne").mockResolvedValue({ id: 1 } as UsersEntity);
       jest.spyOn(service, "getTempPassword").mockResolvedValue("wrongTemp");
 
       await expect(service.findPw(findPwDto)).rejects.toThrow(NotFoundException);
     });
 
-    it("should update password and return success message", async () => {
+    it("임시 비밀번호 변경 및 성공 메시지 반환", async () => {
       jest.spyOn(userRepository, "findOne").mockResolvedValue({ id: 1 } as UsersEntity);
       jest.spyOn(service, "getTempPassword").mockResolvedValue("temp123");
       jest.spyOn(bcrypt, "hash").mockResolvedValue("hashedPassword" as never);
@@ -474,7 +480,7 @@ describe("AuthService", () => {
   });
 
   describe("signOut", () => {
-    it("should update refresh token to null", async () => {
+    it("refresh token을 null로 변경", async () => {
       jest.spyOn(refreshTokenRepository, "update").mockResolvedValue({} as any);
 
       const result = await service.signOut(1);
@@ -488,7 +494,7 @@ describe("AuthService", () => {
   });
 
   describe("verifyToken", () => {
-    it("should verify access token", () => {
+    it("access token 검증", () => {
       const mockPayload = { userId: 1, type: "ACCESS" };
       jest.spyOn(jwt, "verify").mockReturnValue(mockPayload as any);
 
@@ -498,7 +504,7 @@ describe("AuthService", () => {
       expect(jwt.verify).toHaveBeenCalledWith("access_token", "mocked-value");
     });
 
-    it("should verify refresh token", () => {
+    it("refresh token 검증", () => {
       const mockPayload = { userId: 1, type: "REFRESH" };
       jest.spyOn(jwt, "verify").mockReturnValue(mockPayload as any);
 
@@ -508,7 +514,7 @@ describe("AuthService", () => {
       expect(jwt.verify).toHaveBeenCalledWith("refresh_token", "mocked-value");
     });
 
-    it("should throw an error if token verification fails", () => {
+    it("토큰 검증 실패 시 오류 발생", () => {
       jest.spyOn(jwt, "verify").mockImplementation(() => {
         throw new Error("Invalid token");
       });
@@ -518,7 +524,7 @@ describe("AuthService", () => {
   });
 
   describe("createToken", () => {
-    it("should create an access token", () => {
+    it("access token 생성", () => {
       jest.spyOn(jwt, "sign").mockReturnValue("access_token" as any);
 
       const result = service.createToken({ userId: 1 });
@@ -531,7 +537,7 @@ describe("AuthService", () => {
       );
     });
 
-    it("should create a refresh token", () => {
+    it("refresh token 생성", () => {
       jest.spyOn(jwt, "sign").mockReturnValue("refresh_token" as any);
 
       const result = service.createToken({ userId: 1 }, true);
@@ -544,7 +550,7 @@ describe("AuthService", () => {
       );
     });
 
-    it("should throw an error if token creation fails", () => {
+    it("토큰 생성 실패 시 오류 발생", () => {
       jest.spyOn(jwt, "sign").mockImplementation(() => {
         throw new Error("Token creation failed");
       });
@@ -554,7 +560,7 @@ describe("AuthService", () => {
   });
 
   describe("refreshTokenStore", () => {
-    it("should store hashed refresh token", async () => {
+    it("hashed refresh token 저장", async () => {
       jest.spyOn(bcrypt, "hashSync").mockReturnValue("hashedToken" as never);
       jest.spyOn(refreshTokenRepository, "upsert").mockResolvedValue({} as any);
 
@@ -572,7 +578,7 @@ describe("AuthService", () => {
       );
     });
 
-    it("should throw an error if token storage fails", async () => {
+    it("토큰 저장 실패 시 오류 발생", async () => {
       jest.spyOn(bcrypt, "hashSync").mockReturnValue("hashedToken" as never);
       jest.spyOn(refreshTokenRepository, "upsert").mockRejectedValue(new Error("Storage failed"));
 

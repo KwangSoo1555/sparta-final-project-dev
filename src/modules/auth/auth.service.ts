@@ -30,13 +30,13 @@ import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
 
 @Injectable()
 export class AuthService {
-  protected readonly smtpTransport: nodemailer.Transporter;
   private readonly jwtAccessKey: string;
   private readonly jwtRefreshKey: string;
   private readonly jwtAccessOptions: jwt.SignOptions;
   private readonly jwtRefreshOptions: jwt.SignOptions;
 
   constructor(
+    @Inject("SMTP_TRANSPORT") private smtpTransport: nodemailer.Transporter,
     @Inject("REDIS_CLIENT") private redisClient: Redis,
     private configService: ConfigService,
     @InjectRepository(UsersEntity)
@@ -55,14 +55,6 @@ export class AuthService {
     this.jwtRefreshKey = this.configService.get<string>("REFRESH_TOKEN_SECRET");
     this.jwtAccessOptions = { expiresIn: AUTH_CONSTANT.ACCESS_TOKEN_EXPIRES_IN };
     this.jwtRefreshOptions = { expiresIn: AUTH_CONSTANT.REFRESH_TOKEN_EXPIRES_IN };
-  }
-
-  private codeNumber(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  private codeString() {
-    return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 8);
   }
 
   // 메일 인증 코드 발송
@@ -101,6 +93,10 @@ export class AuthService {
     };
   }
 
+  private codeNumber(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
   // redis 에서 메일 인증 코드 조회
   async getVerificationCode(email: string): Promise<number | null> {
     const code = await this.redisClient.get(email);
@@ -135,6 +131,10 @@ export class AuthService {
         tempPassword: tempPassword,
       },
     };
+  }
+
+  private codeString() {
+    return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 8);
   }
 
   // redis 에서 임시 비밀번호 조회
