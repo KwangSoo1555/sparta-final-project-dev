@@ -1,24 +1,16 @@
-# Base image
-FROM node:alpine
+   # 빌드 단계
+   FROM node:18-alpine AS builder
+   WORKDIR /app
+   COPY package*.json ./
+   RUN npm ci
+   COPY . .
+   RUN npm run build
 
-# Create app directory
-RUN mkdir -p /var/app
-WORKDIR /var/app
-
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy app source
-COPY . .
-
-# Build the app
-RUN npm run build
-
-# Expose port 3333
-EXPOSE 3333
-
-# Start the server using the production build
-CMD ["node", "dist/src/main.js"]
+   # 실행 단계
+   FROM node:18-alpine
+   WORKDIR /app
+   COPY --from=builder /app/dist ./dist
+   COPY package*.json ./
+   RUN npm ci --only=production
+   EXPOSE 3333
+   CMD ["node", "dist/src/main.js"]
