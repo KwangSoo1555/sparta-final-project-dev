@@ -1,16 +1,19 @@
-   # 빌드 단계
-   FROM node:18-alpine AS builder
-   WORKDIR /app
-   COPY package*.json ./
-   RUN npm ci
-   COPY . .
-   RUN npm run build
+# Build stage
+FROM node:18-alpine AS builder
+WORKDIR /var/app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
 
-   # 실행 단계
-   FROM node:18-alpine
-   WORKDIR /app
-   COPY --from=builder /app/dist ./dist
-   COPY package*.json ./
-   RUN npm ci --only=production
-   EXPOSE 3333
-   CMD ["node", "dist/src/main.js"]
+# Production stage
+FROM node:18-alpine
+RUN apk add --no-cache tini
+WORKDIR /var/app
+COPY --from=builder /var/app/dist ./dist
+COPY --from=builder /var/app/package*.json ./
+RUN npm ci --only=production
+USER node
+EXPOSE 3333
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "dist/src/main.js"]

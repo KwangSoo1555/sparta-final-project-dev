@@ -4,6 +4,12 @@
     {
       "name": "sparta-final-project-backend-core-deployment",
       "image": "590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin",
+      "secrets": [
+        {
+          "name": "ENV_FILE",
+          "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:590183983800:secret:sparta-final-porject-env-secret-CSg161"
+        }
+      ],
       "cpu": 0,
       "portMappings": [
         {
