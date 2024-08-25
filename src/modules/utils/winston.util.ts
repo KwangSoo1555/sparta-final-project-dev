@@ -3,8 +3,8 @@ import * as winstonDaily from "winston-daily-rotate-file";
 import * as winston from "winston";
 import * as appRoot from "app-root-path";
 
-const isProduction = process.env["NODE_ENV"] === "production";
-const logDir = `${appRoot.path}/src/logs` || "/var/app/logs";
+const isProduction = process.env.NODE_ENV === "production";
+const logDir = `${appRoot.path}/src/logs`;
 
 const dailyOptions = (level: string) => {
   return {
