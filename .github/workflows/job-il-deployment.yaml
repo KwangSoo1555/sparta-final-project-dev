@@ -39,6 +39,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           ENV_FILE: ${{ secrets.ENV }}
         run: |
+          echo "$ENV_FILE"
           echo "$ENV_FILE" > .env
           docker build --build-arg ENV_FILE=.env -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
