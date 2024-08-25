@@ -1,20 +1,11 @@
-# Build stage
-FROM node:20-alpine AS builder
-WORKDIR /var/app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# Production stage
 FROM node:20-alpine
-RUN apk add --no-cache tini
+USER root
+RUN mkdir -p /var/app
 WORKDIR /var/app
-RUN mkdir -p /var/app && chown -R node:node /var/app
-COPY --from=builder /var/app/dist ./dist
-COPY --from=builder /var/app/package*.json ./
-RUN npm ci --only=production
-USER node
+COPY .env /var/app/.env
+COPY package*.json ./
+COPY . .
+RUN npm install
+RUN npm run build
 EXPOSE 3333
-ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/src/main.js"]

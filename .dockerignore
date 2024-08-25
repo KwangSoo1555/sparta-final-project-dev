@@ -3,6 +3,5 @@ node_modules
 npm-debug.log
 .git
 __test__
-.env
 *.log
 .DS_Store
