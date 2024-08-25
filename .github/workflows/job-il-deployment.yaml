@@ -37,63 +37,35 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
-
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
-          MYSQL_URI: ${{ secrets.MYSQL_URI }}
-          ACCESS_TOKEN_SECRET: ${{ secrets.ACCESS_TOKEN_SECRET }}
-          REFRESH_TOKEN_SECRET: ${{ secrets.REFRESH_TOKEN_SECRET }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          REDIS_HOST: ${{ secrets.REDIS_HOST }}
-          REDIS_PORT: ${{ secrets.REDIS_PORT }}
-          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-          REDIS_USERNAME: ${{ secrets.REDIS_USERNAME }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
-          KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
-          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-          KAKAO_CALLBACK_URL: ${{ secrets.KAKAO_CALLBACK_URL }}
-          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
-          NAVER_CALLBACK_URL: ${{ secrets.NAVER_CALLBACK_URL }}
-          NODE_ENV: ${{ secrets.NODE_ENV }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          docker build \
-            --build-arg ENV_FILE=.env \
-            --build-arg SERVER_PORT=${{ secrets.SERVER_PORT }} \
-            --build-arg MYSQL_URI=${{ secrets.MYSQL_URI }} \
-            --build-arg ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }} \
-            --build-arg REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }} \
-            --build-arg SMTP_HOST=${{ secrets.SMTP_HOST }} \
-            --build-arg SMTP_PORT=${{ secrets.SMTP_PORT }} \
-            --build-arg SMTP_SECURE=${{ secrets.SMTP_SECURE }} \
-            --build-arg SMTP_USER=${{ secrets.SMTP_USER }} \
-            --build-arg SMTP_PASS=${{ secrets.SMTP_PASS }} \
-            --build-arg REDIS_HOST=${{ secrets.REDIS_HOST }} \
-            --build-arg REDIS_PORT=${{ secrets.REDIS_PORT }} \
-            --build-arg REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} \
-            --build-arg REDIS_USERNAME=${{ secrets.REDIS_USERNAME }} \
-            --build-arg GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-            --build-arg GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-            --build-arg GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }} \
-            --build-arg KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }} \
-            --build-arg KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }} \
-            --build-arg KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }} \
-            --build-arg NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }} \
-            --build-arg NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }} \
-            --build-arg NAVER_CALLBACK_URL=${{ secrets.NAVER_CALLBACK_URL }} \
-            --build-arg NODE_ENV=${{ secrets.NODE_ENV }} \
-            --build-arg AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-            --build-arg AWS_REGION=${{ secrets.AWS_REGION }} \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f ./Dockerfile .
+          echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" > .env
+          echo "MYSQL_URI=${{ secrets.MYSQL_URI }}" >> .env
+          echo "ACCESS_TOKEN_SECRET=${{ secrets.ACCESS_TOKEN_SECRET }}" >> .env
+          echo "REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" >> .env
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+          echo "SMTP_SECURE=${{ secrets.SMTP_SECURE }}" >> .env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+          echo "SMTP_PASS=${{ secrets.SMTP_PASS }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
+          echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env
+          echo "REDIS_USERNAME=${{ secrets.REDIS_USERNAME }}" >> .env
+          echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env
+          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env
+          echo "GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}" >> .env
+          echo "KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}" >> .env
+          echo "KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}" >> .env
+          echo "KAKAO_CALLBACK_URL=${{ secrets.KAKAO_CALLBACK_URL }}" >> .env
+          echo "NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}" >> .env
+          echo "NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}" >> .env
+          echo "NAVER_CALLBACK_URL=${{ secrets.NAVER_CALLBACK_URL }}" >> .env
+          echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+
+          docker build 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
