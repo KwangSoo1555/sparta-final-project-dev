@@ -45,13 +45,6 @@ export class AuthService {
     @InjectRepository(RefreshTokensEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokensEntity>,
   ) {
-    this.smtpTransport = nodemailer.createTransport({
-      service: "naver",
-      auth: {
-        user: this.configService.get<string>("MAIL_AUTH_USER"),
-        pass: this.configService.get<string>("MAIL_AUTH_PASS"),
-      },
-    });
     this.jwtAccessKey = this.configService.get<string>("ACCESS_TOKEN_SECRET");
     this.jwtRefreshKey = this.configService.get<string>("REFRESH_TOKEN_SECRET");
     this.jwtAccessOptions = { expiresIn: AUTH_CONSTANT.ACCESS_TOKEN_EXPIRES_IN };
