@@ -1,25 +1,39 @@
 config:
   target: 'http://localhost:3333'
   phases:
-    - duration: 60  # 테스트 지속 시간 (초)
-      arrivalRate: 10  # 초당 요청 수
+    - duration: 60
+      arrivalRate: 1
   defaults:
     headers:
       User-Agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
+      Content-Type: 'application/json'
+  processor: './functions.mjs'  # 사용자 정의 함수 파일 경로
 
 scenarios:
-  - name: 'User Flow'
+  - name: 'User Flow1'
     flow:
       - post:
           url: '/api/v1/auth/sign-in'
           headers:
-            Content-Type: 'application/json'
             X-Forwarded-For: '192.168.0.1'
           json:
-            email: 'user1@example.com'
+            email: 'vlsual0917@gmail.com'
             password: 'qwer1234'
           capture:
             - json: '$.accessToken'
               as: 'accessToken'
-            - json: '$.refreshToken'
-              as: 'refreshToken'
+    afterResponse: afterResponse
+
+  - name: 'User Flow2'
+    flow:
+      - post:
+          url: '/api/v1/auth/sign-in'
+          headers:
+            X-Forwarded-For: '192.168.0.1'
+          json:
+            email: 'user1@naver.com'
+            password: 'qwer1234'
+          capture:
+            - json: '$.accessToken'
+              as: 'accessToken'
+    afterResponse: afterResponse
