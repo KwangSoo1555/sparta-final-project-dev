@@ -1,27 +1,11 @@
 import { Module, Global } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { RedisModule as IoRedisModule } from "@nestjs-modules/ioredis";
-import { RedisConfig } from "./redis.config";
-import { RedisPubsubService } from "./redis-pubsub.service";
+import { RedisConfig } from "../redis/redis.config";
+import { RedisPubsubService } from "../redis/redis-pubsub.service";
 
 @Global()
 @Module({
-  imports: [
-    IoRedisModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: "single",
-        options: {
-          host: configService.get("REDIS_HOST"),
-          port: parseInt(configService.get("REDIS_PORT")),
-          username: configService.get("REDIS_USERNAME"),
-          password: configService.get("REDIS_PASSWORD"),
-        },
-        retryStrategy: (times) => Math.min(times * 50, 2000),
-      }),
-      inject: [ConfigService],
-    }),
-  ],
+  imports: [ConfigModule],
   providers: [
     {
       provide: "REDIS_CLIENT",
@@ -46,12 +30,6 @@ import { RedisPubsubService } from "./redis-pubsub.service";
     },
     RedisConfig,
   ],
-  exports: [
-    "REDIS_CLIENT",
-    "REDIS_SUBSCRIBER_CLIENT",
-    "REDIS_PUB_SUB_TOKEN",
-    RedisConfig,
-    IoRedisModule,
-  ],
+  exports: ["REDIS_CLIENT", "REDIS_SUBSCRIBER_CLIENT", "REDIS_PUB_SUB_TOKEN", RedisConfig],
 })
 export class RedisModule {}
