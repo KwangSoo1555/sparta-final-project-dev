@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "family": "sparta-final-project-ecs-task",
   "containerDefinitions": [
@@ -45,3 +46,52 @@
   },
   "tags": []
 }
+=======
+{
+  "family": "sparta-final-project-ecs-task",
+  "containerDefinitions": [
+    {
+      "name": "sparta-final-project-backend-core-deployment",
+      "image": "590183983800.dkr.ecr.ap-northeast-2.amazonaws.com/sparta-final-project-team7-server-origin",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "name": "sparta-final-project-backend-core-deployment-3333-tcp",
+          "containerPort": 3333,
+          "hostPort": 3333,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/sparta-final-project-ecs-task",
+          "mode": "non-blocking",
+          "awslogs-create-group": "true",
+          "max-buffer-size": "25m",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "executionRoleArn": "arn:aws:iam::590183983800:role/ecsTaskExecutionCustomRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "2048",
+  "memory": "4096",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "tags": []
+}
+>>>>>>> a79eb53a78d8df92a45067b66b6d3f4ae2ab1a5d
