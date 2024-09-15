@@ -1,0 +1,76 @@
+config:
+  target: 'http://localhost:3333'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+  defaults:
+    headers:
+      Content-Type: 'application/json'
+  processor: './functions.mjs'
+
+scenarios:
+  - name: 'Create Job Matching'
+    flow:
+      - post:
+          url: '/job-matching/:jobsId'
+          json:
+            jobsId: '{{ jobId }}'
+          beforeRequest: 
+            - beforeRequestWithUser('user1_naver_com')
+            - loadJobId
+          capture:
+            - json: '$.createMatching.id'
+              as: 'matchingId'
+
+  # - name: 'Find All Applications'
+  #   flow:
+  #     - get:
+  #         url: '/job-matching/apply'
+  #         beforeRequest: 
+  #           - beforeRequestWithUser('user1_naver_com')
+  #           - loadJobId
+  #         capture:
+  #           - json: '$.Matching[0].id'
+  #             as: 'matchingId'
+
+  # - name: 'Find All Job Applications'
+  #   flow:
+  #     - get:
+  #         url: '/job-matching/applications'
+  #         beforeRequest: 
+  #           - beforeRequestWithUser('user1_naver_com')
+  #           - loadJobId
+  #         capture:
+  #           - json: '$.Matching[0].id'
+  #             as: 'matchingId'
+
+  # - name: 'Get Job Matching Details'
+  #   flow:
+  #     - get:
+  #         url: '/job-matching/:matchingId'
+  #         beforeRequest: 
+  #           - beforeRequestWithUser('user1_naver_com')
+  #           - loadJobId
+  #         capture:
+  #           - json: '$.Matching.id'
+  #             as: 'matchingId'
+
+  # - name: 'Accept Job Matching'
+  #   flow:
+  #     - patch:
+  #         url: '/job-matching/accept/:matchingId'
+  #         json:
+  #           matchingId: '{{ matchingId }}'
+  #         beforeRequest: 
+  #           - beforeRequestWithUser('user1_naver_com')
+  #           - loadJobId
+
+  # - name: 'Reject Job Matching'
+  #   flow:
+  #     - patch:
+  #         url: '/job-matching/reject/:matchingId'
+  #         json:
+  #           matchingId: '{{ matchingId }}'
+  #         beforeRequest: 
+  #           - beforeRequestWithUser('user1_naver_com')
+  #           - loadJobId

@@ -1,0 +1,7 @@
+Dockerfile
+node_modules
+npm-debug.log
+.git
+__test__
+*.log
+.DS_Store
