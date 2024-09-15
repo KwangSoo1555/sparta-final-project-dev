@@ -13,8 +13,6 @@ import { ChatService } from "./chat.service";
 import { CreateChatDto } from "./dto/create-chat.dto";
 import { JwtAccessGuards } from "src/modules/auth/strategies/jwt-strategy";
 import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
-import { UsersEntity } from "src/entities/users.entity";
-import { UpdateChatDto } from "./dto/update-chat.dto";
 
 @UseGuards(JwtAccessGuards)
 @Controller("chat-rooms")

@@ -8,9 +8,8 @@ import { ConfigService } from "@nestjs/config";
 import { AuthService } from "../auth.service";
 
 import { UsersEntity } from "src/entities/users.entity";
-import { SocialSignInDto } from "../dto/sign-in.dto";
+import { UserCreateInput } from "../types";
 import { SocialProviders } from "src/common/customs/enums/enum-social-providers";
-import { MESSAGES } from "src/common/constants/message.constant";
 
 @Injectable()
 export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "google") {
@@ -34,7 +33,7 @@ export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "go
   ) {
     const { id, name, emails, provider } = profile;
     try {
-      const googleSignInDto: SocialSignInDto = {
+      const googleSignInDto: Partial<UserCreateInput> = {
         email: emails[0].value,
         provider: provider as SocialProviders,
         socialId: id,
@@ -68,7 +67,7 @@ export class NaverPassportStrategy extends PassportStrategy(NaverStrategy, "nave
   ) {
     const { id, name, email, provider } = profile;
     try {
-      const naverSignInDto: SocialSignInDto = {
+      const naverSignInDto: Partial<UserCreateInput> = {
         email: email,
         provider: provider.toUpperCase() as SocialProviders,
         socialId: id,
@@ -109,7 +108,7 @@ export class KakaoPassportStrategy extends PassportStrategy(KakaoStrategy, "kaka
       provider,
     } = profile;
     try {
-      const kakaoSignInDto: SocialSignInDto = {
+      const kakaoSignInDto: Partial<UserCreateInput> = {
         email: email,
         provider: provider.toUpperCase() as SocialProviders,
         socialId: id,

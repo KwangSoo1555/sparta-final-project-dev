@@ -1,16 +1,16 @@
 import _ from "lodash";
-import { Repository } from "typeorm";
-import { InjectRepository } from "@nestjs/typeorm";
+import Redis from "ioredis";
 
 import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { MESSAGES } from "src/common/constants/message.constant";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 
 import { JobsMatchingEntity } from "src/entities/jobs-matching.entity";
 import { JobsEntity } from "src/entities/jobs.entity";
 import { UsersEntity } from "src/entities/users.entity";
-import { NotificationsService } from "src/modules/notifications/notifications.service";
+
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
-import Redis from "ioredis";
+import { MESSAGES } from "src/common/constants/message.constant";
 
 @Injectable()
 export class JobMatchingService {

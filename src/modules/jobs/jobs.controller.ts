@@ -18,6 +18,7 @@ import { MESSAGES } from "src/common/constants/message.constant";
 import { JobsService } from "./jobs.service";
 import { CreateJobDto } from "./dto/create-job.dto";
 import { UpdateJobDto } from "./dto/update-job.dto";
+
 @ApiTags("jobs")
 @ApiBearerAuth()
 @UseGuards(JwtAccessGuards)

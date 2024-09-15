@@ -25,8 +25,7 @@ import { RequestIp } from "src/common/customs/decorators/ip-request";
 import { AuthService } from "./auth.service";
 
 import { EmailVerificationDto } from "./dto/email-verification.dto";
-import { UserSignUpDto } from "./dto/sign-up.dto";
-import { LocalSignInDto, SocialSignInDto } from "./dto/sign-in.dto";
+import { UserCreateInput, UserSignInInput } from "./types";
 import { FindPwDto } from "./dto/find-pw.dto";
 
 @Controller("auth")
@@ -48,7 +47,7 @@ export class AuthController {
   // user auth 관련 api
   @Post("sign-up")
   @UsePipes(ValidationPipe)
-  signUp(@Body() signUpDto: UserSignUpDto) {
+  signUp(@Body() signUpDto: UserCreateInput) {
     return this.authService.signUp(signUpDto);
   }
 
@@ -57,7 +56,7 @@ export class AuthController {
   signIn(
     @Ip() ip: string,
     @Headers("User-Agent") userAgent: string,
-    @Body() signInDto: LocalSignInDto,
+    @Body() signInDto: UserSignInInput,
   ) {
     return this.authService.signIn(signInDto, ip, userAgent);
   }
@@ -114,7 +113,7 @@ export class AuthController {
   }
 
   @Get("auth-code/:authCode")
-  async getAuthCode(@Param('authCode') authCode: string) {
+  async getAuthCode(@Param("authCode") authCode: string) {
     return this.authService.getAuthCode(authCode);
   }
 

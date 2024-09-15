@@ -20,11 +20,9 @@ import { ConfigService } from "@nestjs/config";
 import { UsersEntity } from "src/entities/users.entity";
 import { RefreshTokensEntity } from "src/entities/refresh-tokens.entity";
 import { EmailVerificationDto } from "./dto/email-verification.dto";
-import { UserSignUpDto } from "./dto/sign-up.dto";
-import { LocalSignInDto, SocialSignInDto } from "./dto/sign-in.dto";
+import { UserCreateInput, UserSignInInput, JwtPayload, JwtInput } from "./types";
+import { JwtCategory } from "./enums";
 import { FindPwDto } from "./dto/find-pw.dto";
-import { JwtPayload } from "src/common/customs/types/jwt-payload.type";
-import { JwtInput } from "src/common/customs/types/jwt-input.type";
 
 import { MESSAGES } from "src/common/constants/message.constant";
 import { AUTH_CONSTANT } from "src/common/constants/auth.constant";
@@ -50,6 +48,28 @@ export class AuthService {
     this.jwtRefreshKey = this.configService.get<string>("REFRESH_TOKEN_SECRET");
     this.jwtAccessOptions = { expiresIn: AUTH_CONSTANT.ACCESS_TOKEN_EXPIRES_IN };
     this.jwtRefreshOptions = { expiresIn: AUTH_CONSTANT.REFRESH_TOKEN_EXPIRES_IN };
+  }
+
+  verifyToken<Payload>(token: string): Payload {
+    const verifyAccessToken = jwt.verify(token, this.jwtAccessKey) as Payload;
+    const verifyRefreshToken = jwt.verify(token, this.jwtRefreshKey) as Payload;
+
+    if (JwtCategory.Access === "ACCESS") {
+      return verifyAccessToken;
+    } else {
+      return verifyRefreshToken;
+    }
+  }
+
+  createToken(jwtInput: JwtInput, isRefresh?: boolean): string {
+    const payload: JwtPayload = {
+      ...jwtInput,
+      type: isRefresh ? JwtCategory.Refresh : JwtCategory.Access,
+    };
+    const key = isRefresh ? this.jwtRefreshKey : this.jwtAccessKey;
+    const options = isRefresh ? this.jwtRefreshOptions : this.jwtAccessOptions;
+
+    return jwt.sign(payload, key, options);
   }
 
   // 메일 인증 코드 발송
@@ -151,7 +171,7 @@ export class AuthService {
     return this.userRepository.findOne({ where: { ...params } });
   }
 
-  async signUp(signUpDto: UserSignUpDto) {
+  async signUp(signUpDto: UserCreateInput) {
     const { email, name, password, verificationCode } = signUpDto;
     const existingUser = await this.checkUserForAuth({ email });
 
@@ -198,7 +218,7 @@ export class AuthService {
     return result;
   }
 
-  async signIn(signInDto: LocalSignInDto, ip: string, userAgent: string) {
+  async signIn(signInDto: UserSignInInput, ip: string, userAgent: string) {
     const { email, password } = signInDto;
     const user = await this.checkUserForAuth({ email });
 
@@ -210,12 +230,12 @@ export class AuthService {
     if (!isPasswordMatch)
       throw new UnauthorizedException(MESSAGES.AUTH.SIGN_IN.PASSWORD.INCONSISTENT);
 
-    const accessToken = this.createToken({ userId: user.id });
-    const refreshToken = this.createToken({ userId: user.id }, true);
+    const accessToken = this.createToken({ user: { id: user.id } });
+    const refreshToken = this.createToken({ user: { id: user.id } }, true);
 
     await this.refreshTokenStore(user.id, refreshToken, ip, userAgent);
 
-    return { accessToken, refreshToken, role: "user" };
+    return { accessToken };
   }
 
   async socialSignIn(
@@ -252,8 +272,8 @@ export class AuthService {
         }
       }
 
-      const accessToken = this.createToken({ userId });
-      const refreshToken = this.createToken({ userId }, true);
+      const accessToken = this.createToken({ user: { id: userId } });
+      const refreshToken = this.createToken({ user: { id: userId } }, true);
 
       await this.refreshTokenStore(userId, refreshToken, ip, userAgent);
 
@@ -287,8 +307,8 @@ export class AuthService {
     if (!matchRefreshToken) throw new UnauthorizedException(MESSAGES.AUTH.COMMON.JWT.INVALID);
 
     // access token 과 refresh token 을 새롭게 발급
-    const reIssueAccessToken = this.createToken({ userId });
-    const reIssueRefreshToken = this.createToken({ userId }, true);
+    const reIssueAccessToken = this.createToken({ user: { id: userId } });
+    const reIssueRefreshToken = this.createToken({ user: { id: userId } }, true);
 
     await this.refreshTokenStore(userId, reIssueRefreshToken, ip, userAgent);
 
@@ -334,33 +354,9 @@ export class AuthService {
     };
   }
 
-  verifyToken(token: string): JwtPayload {
-    try {
-      const secret = this.configService.get<string>("ACCESS_TOKEN_SECRET");
-      return jwt.verify(token, secret) as JwtPayload;
-    } catch (error) {
-      throw new UnauthorizedException(MESSAGES.AUTH.TOKEN.INVALID);
-    }
-  }
-
-  createToken(jwtInput: JwtInput, isRefresh?: boolean): string {
-    try {
-      const payload: JwtPayload = {
-        ...jwtInput,
-        type: isRefresh ? "REFRESH" : "ACCESS",
-      };
-      const key = isRefresh ? this.jwtRefreshKey : this.jwtAccessKey;
-      const options = isRefresh ? this.jwtRefreshOptions : this.jwtAccessOptions;
-
-      return jwt.sign(payload, key, options);
-    } catch (error) {
-      throw new Error(MESSAGES.AUTH.TOKEN.OCCURRED_ERROR);
-    }
-  }
-
   async refreshTokenStore(userId: number, refreshToken: string, ip: string, userAgent: string) {
     // refresh token 해싱
-    const hashedRefreshToken = bcrypt.hashSync(refreshToken, AUTH_CONSTANT.HASH_SALT_ROUNDS);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, AUTH_CONSTANT.HASH_SALT_ROUNDS);
 
     // hashed refresh token 을 jwt entity 에 저장
     await this.refreshTokenRepository.upsert(

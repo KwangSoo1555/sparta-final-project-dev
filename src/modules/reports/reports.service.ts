@@ -1,10 +1,12 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
+import { UsersEntity } from "src/entities/users.entity";
+import { ReportsEntity } from "src/entities/reports.entity";
+
 import { CreateReportDto } from "./dto/create-report.dto";
 import { UpdateReportDto } from "./dto/update-report.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { ReportsEntity } from "src/entities/reports.entity";
-import { Repository } from "typeorm";
-import { UsersEntity } from "src/entities/users.entity";
 import { MESSAGES } from "src/common/constants/message.constant";
 
 @Injectable()

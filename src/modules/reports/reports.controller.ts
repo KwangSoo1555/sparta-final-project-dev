@@ -10,13 +10,14 @@ import {
   HttpStatus,
   Query,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ReportsService } from "./reports.service";
+
+import { UsersEntity } from "src/entities/users.entity";
 import { CreateReportDto } from "./dto/create-report.dto";
 import { UpdateReportDto } from "./dto/update-report.dto";
 import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
 import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
-import { UsersEntity } from "src/entities/users.entity";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { RolesGuard } from "src/common/customs/guards/roles.guard";
 import { UserRoles } from "src/common/customs/enums/enum-user-roles";
 import { Roles } from "src/common/customs/decorators/roles.decorator";

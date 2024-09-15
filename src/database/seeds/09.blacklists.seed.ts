@@ -9,22 +9,24 @@ export class BlackListSeeder implements Seeder {
     const userRepo = dataSource.getRepository(UsersEntity);
     const blackListRepo = dataSource.getRepository(BlacklistsEntity);
 
-    const users = await userRepo.find({ select: ['id'] });
+    const users = await userRepo.find({ select: ["id"] });
     const blacklists: BlacklistsEntity[] = [];
 
     for (const user of users) {
       const blacklistCount = faker.number.int({ min: 0, max: 2 });
       const blackedUsers = faker.helpers.arrayElements(
-        users.filter(u => u.id !== user.id),
-        blacklistCount
+        users.filter((u) => u.id !== user.id),
+        blacklistCount,
       );
 
-      blacklists.push(...blackedUsers.map(blackedUser => 
-        blackListRepo.create({
-          userId: user.id,
-          blackedId: blackedUser.id
-        })
-      ));
+      blacklists.push(
+        ...blackedUsers.map((blackedUser) =>
+          blackListRepo.create({
+            userId: user.id,
+            blackedId: blackedUser.id,
+          }),
+        ),
+      );
     }
 
     await blackListRepo.save(blacklists);

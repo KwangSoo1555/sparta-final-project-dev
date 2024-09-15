@@ -29,7 +29,10 @@ export class BlacklistController {
    * @returns
    */
   @Post(":blackedId")
-  async create(@Param("blackedId") blackedId: string, @RequestJwtByHttp() { user: { id: userId } }) {
+  async create(
+    @Param("blackedId") blackedId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const blacklist = await this.blacklistService.create(+blackedId, +userId);
 
     return {
@@ -62,7 +65,10 @@ export class BlacklistController {
    * @returns
    */
   @Delete(":blacklistId")
-  async remove(@Param("blacklistId") blacklistId: string, @RequestJwtByHttp() { user: { id: userId } }) {
+  async remove(
+    @Param("blacklistId") blacklistId: string,
+    @RequestJwtByHttp() { user: { id: userId } },
+  ) {
     const blacklist = await this.blacklistService.remove(+blacklistId, +userId);
 
     return {

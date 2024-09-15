@@ -36,12 +36,12 @@ export class BlacklistService {
   async findAll(userId: number) {
     const data = await this.blacklistRepository.find({
       relations: ["blackedUser"],
-      select:{
-        id : true,
-        userId : true,
-        blackedId : true,
-        blackedUser:{
-          name : true,
+      select: {
+        id: true,
+        userId: true,
+        blackedId: true,
+        blackedUser: {
+          name: true,
         },
       },
       where: {

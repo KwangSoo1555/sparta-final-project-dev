@@ -10,12 +10,14 @@ import {
   UseGuards,
   HttpStatus,
 } from "@nestjs/common";
+import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
+
 import { NoticesService } from "./notices.service";
+
 import { CreateNoticeDto } from "./dto/create-notice.dto";
 import { UpdateNoticeDto } from "./dto/update-notice.dto";
-import { ApiBearerAuth, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { UsersEntity } from "src/entities/users.entity";
+import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { JwtAccessGuards } from "../auth/strategies/jwt-strategy";
 import { Roles } from "src/common/customs/decorators/roles.decorator";
 import { UserRoles } from "src/common/customs/enums/enum-user-roles";

@@ -3,12 +3,10 @@ import { ClientKafka } from "@nestjs/microservices";
 
 @Injectable()
 export class KafkaClient implements OnModuleInit, OnModuleDestroy {
-  constructor(
-    @Inject("KAFKA_CLIENT") private readonly kafkaClient: ClientKafka
-  ) {}
+  constructor(@Inject("KAFKA_CLIENT") private readonly kafkaClient: ClientKafka) {}
 
   async onModuleInit(): Promise<void> {
-    const topics = ['sum', 'max'];
+    const topics = ["sum", "max"];
     topics.forEach((topic) => this.kafkaClient.subscribeToResponseOf(topic));
     await this.kafkaClient.connect();
   }

@@ -5,7 +5,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { NoticesEntity } from "src/entities/notices.entity";
 import { Repository } from "typeorm";
 import { MESSAGES } from "src/common/constants/message.constant";
-import { RedisConfig } from "src/database/redis/redis.config";
 
 @Injectable()
 export class NoticesService {
@@ -31,7 +30,7 @@ export class NoticesService {
     const [notices, totalNotices] = await this.noticeRepository.findAndCount({
       skip: offset,
       take: limit,
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
 
     const totalPages = Math.ceil(totalNotices / limit);

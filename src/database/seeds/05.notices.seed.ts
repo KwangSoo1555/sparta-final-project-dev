@@ -3,7 +3,7 @@ import { DataSource } from "typeorm";
 import { Seeder, SeederFactoryManager } from "typeorm-extension";
 import { NoticesEntity } from "../../entities/notices.entity";
 import { UsersEntity } from "../../entities/users.entity";
-import { UserRoles } from "../../common/customs/enums/enum-user-roles"
+import { UserRoles } from "../../common/customs/enums/enum-user-roles";
 
 export class NoticesSeeder implements Seeder {
   public async run(dataSource: DataSource, factoryManager: SeederFactoryManager): Promise<void> {
@@ -14,7 +14,7 @@ export class NoticesSeeder implements Seeder {
 
     const adminUsers = await userRepository.find({
       where: { role: UserRoles.ADMIN },
-      select: ['id']
+      select: ["id"],
     });
 
     const notices: NoticesEntity[] = [];
@@ -24,11 +24,10 @@ export class NoticesSeeder implements Seeder {
       const adminUser = koreanFaker.helpers.arrayElement(adminUsers);
       const notice = new NoticesEntity();
       notice.userId = adminUser.id;
-      notice.title =  koreanFaker.lorem.sentence(1),
-      notice.description = koreanFaker.lorem.paragraphs(1),
-      notice.imageUrl = faker.image.url(),
-      
-      notices.push(notice);
+      (notice.title = koreanFaker.lorem.sentence(1)),
+        (notice.description = koreanFaker.lorem.paragraphs(1)),
+        (notice.imageUrl = faker.image.url()),
+        notices.push(notice);
     }
 
     await noticeRepository.save(notices);

@@ -1,15 +1,14 @@
+import { Socket } from "socket.io";
+
 import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { ExtractJwt, Strategy } from "passport-jwt";
 import { PassportStrategy, AuthGuard } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
 import { JwtPayload } from "jsonwebtoken";
 
 import { ConfigService } from "@nestjs/config";
 import { AuthService } from "../auth.service";
 
 import { UsersEntity } from "src/entities/users.entity";
-
-import { MESSAGES } from "src/common/constants/message.constant";
-import { Socket } from "socket.io";
 
 const ExtractJwtFromSocket = {
   fromSocket: (socket: Socket) => {

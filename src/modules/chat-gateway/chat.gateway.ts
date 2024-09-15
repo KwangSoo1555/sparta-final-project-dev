@@ -10,10 +10,7 @@ import {
 import { Server, Socket } from "socket.io";
 import { ChatService } from "../chats/chat.service";
 import { Inject, UseGuards } from "@nestjs/common";
-import { JwtSocketGuards } from "../auth/strategies/jwt-strategy";
-import { RequestJwtBySocket } from "src/common/customs/decorators/jwt-socket-request";
 import { CreateChatDto } from "../chats/dto/create-chat.dto";
-import { UpdateChatDto } from "../chats/dto/update-chat.dto";
 import { RedisConfig } from "src/database/redis/redis.config";
 import { UsersEntity } from "src/entities/users.entity";
 import { Repository } from "typeorm";
@@ -21,7 +18,6 @@ import { AuthService } from "../auth/auth.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import { RequestJwtByHttp } from "src/common/customs/decorators/jwt-http-request";
 import { Redis } from "ioredis";
 import { NotificationTypes } from "src/common/customs/enums/enum-notifications";
 // @UseGuards(JwtSocketGuards)

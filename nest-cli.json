@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
@@ -18,24 +17,3 @@
     ]
   }
 }
-=======
-{
-  "$schema": "https://json.schemastore.org/nest-cli",
-  "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
-  "compilerOptions": {
-    "deleteOutDir": true,
-    "plugins": [
-      {
-        "name": "@nestjs/swagger",
-        "options": {
-          "classValidatorShim": true,
-          "introspectComments": true,
-          "dtoKeyOfComment": "description",
-          "controllerKeyOfComment": "summary"
-        }
-      }
-    ]
-  }
-}
->>>>>>> a79eb53a78d8df92a45067b66b6d3f4ae2ab1a5d

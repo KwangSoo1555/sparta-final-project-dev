@@ -6,8 +6,8 @@ import { UsersEntity } from "src/entities/users.entity";
 import { ChatsEntity } from "src/entities/chats.entity";
 import { ChatRoomsEntity } from "src/entities/chat-rooms.entity";
 import { CreateChatDto } from "./dto/create-chat.dto";
-import { UpdateChatDto } from "./dto/update-chat.dto";
 import { RedisConfig } from "src/database/redis/redis.config";
+
 @Injectable()
 export class ChatService {
   constructor(
