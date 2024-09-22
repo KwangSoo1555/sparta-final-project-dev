@@ -11,7 +11,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from "typeorm";
-import { Field, ObjectType } from "@nestjs/graphql";
+import { Field, ObjectType, ID } from "@nestjs/graphql";
 
 import { RefreshTokensEntity } from "./refresh-tokens.entity";
 import { JobsEntity } from "./jobs.entity";
@@ -32,6 +32,7 @@ import { UsersLocalCodesEntity } from "./users-localcodes.entity";
 @ObjectType()
 export class UsersEntity {
   @PrimaryGeneratedColumn()
+  @Field(() => ID, { description: "유저 아이디" })
   id: number;
 
   @Column({ unique: true })
