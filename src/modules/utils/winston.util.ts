@@ -3,7 +3,7 @@ import * as winstonDaily from "winston-daily-rotate-file";
 import * as winston from "winston";
 import * as appRoot from "app-root-path";
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.ENVIRONMENT_TYPE === "production";
 const logDir = `${appRoot.path}/src/logs`;
 
 const dailyOptions = (level: string) => {
@@ -21,7 +21,7 @@ const dailyOptions = (level: string) => {
 export const WinstonLogger = WinstonModule.createLogger({
   transports: [
     new winston.transports.Console({
-      level: isProduction ? "info" : "silly",
+      level: isProduction ? "info" : "warn",
       format: isProduction
         ? winston.format.simple()
         : winston.format.combine(
