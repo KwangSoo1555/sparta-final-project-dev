@@ -40,6 +40,7 @@ export class AuthResolver {
     @Args("user", { description: "사용자 생성" })
     user: UserCreateInput,
   ): Promise<string> {
+    console.log("user-authResolver:", user);
     return this.authService.signUp(user);
   }
 }

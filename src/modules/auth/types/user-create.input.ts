@@ -6,7 +6,7 @@ import { UserRoles } from "src/common/customs/enums/enum-user-roles";
 @InputType()
 export class UserCreateInput {
   @Field(() => String)
-  @MinLength(4)
+  // @MinLength(4)
   readonly email: string;
 
   @Field(() => String, { nullable: true })
@@ -18,8 +18,8 @@ export class UserCreateInput {
   @Field(() => UserRoles, { nullable: true })
   readonly role?: UserRoles;
 
-  @Field(() => String)
-  readonly provider: string;
+  @Field(() => String, { nullable: true })
+  readonly provider?: string;
 
   @Field(() => String, { nullable: true })
   readonly socialId?: string;

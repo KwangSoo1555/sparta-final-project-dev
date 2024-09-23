@@ -171,6 +171,8 @@ export class AuthService {
   async signUp(signUpDto: UserCreateInput) {
     const { email, name, password, verificationCode } = signUpDto;
     const existingUser = await this.checkUserForAuth({ email });
+    console.log("existingUser:", existingUser);
+    console.log("signUpDto:", signUpDto);
 
     // 정상 상태에서 활동하는 유저면 중복 회원 가입 불가
     if (existingUser && existingUser.deletedAt === null)
@@ -178,6 +180,8 @@ export class AuthService {
 
     // 이메일 인증 코드 확인
     const sendedEmailCode = await this.getVerificationCode(email);
+    console.log("sendedEmailCode:", sendedEmailCode);
+    console.log("verificationCode:", verificationCode);
     if (!sendedEmailCode || sendedEmailCode !== verificationCode)
       throw new BadRequestException(MESSAGES.AUTH.SIGN_UP.EMAIL.VERIFICATION_CODE.INCONSISTENT);
 
