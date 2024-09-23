@@ -17,10 +17,18 @@ export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "go
     private readonly configService: ConfigService,
     private readonly authService: AuthService,
   ) {
+    const environmentType = configService.get<string>("ENVIRONMENT_TYPE");
+    const callbackURL =
+      environmentType === "development"
+        ? configService.get<string>("GOOGLE_CALLBACK_URL_DEV")
+        : configService.get<string>("GOOGLE_CALLBACK_URL");
+
+    console.log("callbackURL-strategy:", callbackURL);
+
     super({
       clientID: configService.get("GOOGLE_CLIENT_ID"),
       clientSecret: configService.get("GOOGLE_CLIENT_SECRET"),
-      callbackURL: configService.get("GOOGLE_CALLBACK_URL"),
+      callbackURL: callbackURL,
       scope: ["email", "profile"],
     });
   }
@@ -39,8 +47,10 @@ export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "go
         socialId: id,
         name: name.familyName + name.givenName,
       };
+      console.log('Google sign-in DTO:', googleSignInDto);
       done(null, googleSignInDto);
     } catch (error) {
+      console.error('Error in Google validate method:', error);
       done(error, null);
     }
   }

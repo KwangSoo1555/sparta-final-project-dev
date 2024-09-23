@@ -12,7 +12,7 @@ import { AuthModule } from "./auth.module";
         return nodemailer.createTransport({
           host: configService.get("SMTP_HOST"),
           port: configService.get("SMTP_PORT"),
-          secure: configService.get("SMTP_SECURE") === "true",
+          secure: configService.get("SMTP_SECURE"),
           auth: {
             user: configService.get("SMTP_USER"),
             pass: configService.get("SMTP_PASS"),

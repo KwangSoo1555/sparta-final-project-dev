@@ -15,14 +15,14 @@ export class UserCreateInput {
   @Field(() => String)
   readonly name: string;
 
-  @Field(() => UserRoles)
-  readonly role: UserRoles;
+  @Field(() => UserRoles, { nullable: true })
+  readonly role?: UserRoles;
 
   @Field(() => String)
   readonly provider: string;
 
-  @Field(() => String)
-  readonly socialId: string;
+  @Field(() => String, { nullable: true })
+  readonly socialId?: string;
 
   @Field(() => Number)
   readonly verificationCode: number;

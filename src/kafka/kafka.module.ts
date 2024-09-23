@@ -1,19 +1,23 @@
 import { Module } from "@nestjs/common";
 import { ClientsModule, Transport } from "@nestjs/microservices";
-import { KAFKA_OPTION } from "./kafka-config";
-import { KafkaClient } from "./kafka-client";
 
 @Module({
   imports: [
     ClientsModule.register([
       {
-        name: "KAFKA_CLIENT",
+        name: "KAFKA",
         transport: Transport.KAFKA,
-        options: KAFKA_OPTION.options,
+        options: {
+          client: {
+            clientId: "nestjs",
+            brokers: ["localhost:9092"],
+          },
+          consumer: {
+            groupId: "nestjs-consumer",
+          },
+        },
       },
     ]),
   ],
-  providers: [KafkaClient],
-  exports: [KafkaClient],
 })
 export class KafkaModule {}

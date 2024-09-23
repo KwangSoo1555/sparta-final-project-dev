@@ -5,9 +5,8 @@ import { ConfigService } from "@nestjs/config";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
 import { IoAdapter } from "@nestjs/platform-socket.io";
-import { MicroserviceOptions } from "@nestjs/microservices";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 
-import { KAFKA_OPTION } from "./kafka/kafka-config";
 import { WinstonLogger } from "./modules/utils/winston.util";
 import { ExceptionsFilter } from "./filters/exception.filter";
 
@@ -56,7 +55,19 @@ async function bootstrap() {
   app.enableCors();
   app.useWebSocketAdapter(new IoAdapter(app));
 
-  app.connectMicroservice<MicroserviceOptions>(KAFKA_OPTION);
+  // Kafka 마이크로서비스 연결
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'nestjs',
+        brokers: ['localhost:9092'], // Kafka 브로커 포트 확인
+      },
+      consumer: {
+        groupId: 'nestjs-consumer',
+      },
+    },
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>("SERVER_PORT") || 3000;
@@ -67,9 +78,8 @@ async function bootstrap() {
   }
 
   try {
-    await app.startAllMicroservices();
     await app.listen(port);
-    console.log(`Server is running on: ${port}, Great to see you! 😊`);
+    console.log(`🚀 Server is running on: ${port}, Great to see you! 😊`);
   } catch (error) {
     console.error(error);
   }
