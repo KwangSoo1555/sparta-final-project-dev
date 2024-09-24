@@ -23,8 +23,6 @@ export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "go
         ? configService.get<string>("GOOGLE_CALLBACK_URL_DEV")
         : configService.get<string>("GOOGLE_CALLBACK_URL");
 
-    console.log("callbackURL-strategy:", callbackURL);
-
     super({
       clientID: configService.get("GOOGLE_CLIENT_ID"),
       clientSecret: configService.get("GOOGLE_CLIENT_SECRET"),
@@ -47,10 +45,8 @@ export class GooglePassportStrategy extends PassportStrategy(GoogleStrategy, "go
         socialId: id,
         name: name.familyName + name.givenName,
       };
-      console.log('Google sign-in DTO:', googleSignInDto);
       done(null, googleSignInDto);
     } catch (error) {
-      console.error('Error in Google validate method:', error);
       done(error, null);
     }
   }

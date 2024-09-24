@@ -76,12 +76,7 @@ export class AuthController {
   ) {
     const user = req.user;
     const authCode = req.query.code as string;
-    try {
-      await this.authService.socialSignIn(user, ip, userAgent, authCode, res);
-    } catch (error) {
-      console.error('Error during Google OAuth callback:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
+    return this.authService.socialSignIn(user, ip, userAgent, authCode, res);
   }
 
   @Get("naver")

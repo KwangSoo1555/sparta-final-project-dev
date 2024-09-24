@@ -7,23 +7,23 @@ import { UserRoles } from "src/common/customs/enums/enum-user-roles";
 export class UserCreateInput {
   @Field(() => String)
   // @MinLength(4)
-  readonly email: string;
+  email: string;
 
   @Field(() => String, { nullable: true })
-  readonly password?: string;
+  password?: string;
 
   @Field(() => String)
-  readonly name: string;
+  name: string;
 
   @Field(() => UserRoles, { nullable: true })
-  readonly role?: UserRoles;
+  role?: UserRoles;
 
   @Field(() => String, { nullable: true })
-  readonly provider?: string;
+  provider?: string;
 
   @Field(() => String, { nullable: true })
-  readonly socialId?: string;
+  socialId?: string;
 
   @Field(() => Number)
-  readonly verificationCode: number;
+  verificationCode: number;
 }

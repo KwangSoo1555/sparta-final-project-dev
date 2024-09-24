@@ -15,7 +15,7 @@ declare const module: any;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
-    logger: WinstonLogger, // replacing logger
+    // logger: WinstonLogger, // replacing logger
   });
 
   app.useGlobalFilters(new ExceptionsFilter());

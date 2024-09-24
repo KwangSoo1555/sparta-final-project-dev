@@ -246,8 +246,6 @@ export class AuthService {
     authCode: string,
     res: any,
   ): Promise<string[] | void> {
-    console.log('Social sign-in user:', user);
-    console.log('Social sign-in authCode:', authCode);
     try {
       const email = user.email;
       let userId: number;
@@ -257,7 +255,6 @@ export class AuthService {
         where: { email },
         withDeleted: true,
       });
-      console.log('Soft deleted user:', softDeletedUser);
 
       if (softDeletedUser) {
         // 탈퇴한 유저면 복구
@@ -267,7 +264,6 @@ export class AuthService {
       } else {
         // 원래 정상 상태로 존재하는 유저
         const checkUser = await this.checkUserForAuth({ email });
-        console.log('Check user:', checkUser);
         if (checkUser) {
           userId = checkUser.id;
         } else {
@@ -294,16 +290,10 @@ export class AuthService {
           ? this.configService.get("GOOGLE_CALLBACK_URL_DEV")
           : this.configService.get("GOOGLE_CALLBACK_URL");
 
-      console.log("redirectUrl-service:", redirectUrl);
-      console.log("authCode:", authCode);
-      console.log("accessToken:", accessToken);
-      console.log("refreshToken:", refreshToken);
-
       return res.redirect(
         `${redirectUrl}?code=${authCode}`,
       );
     } catch (error) {
-      console.error('Error during social sign-in:', error);
       throw new UnauthorizedException('Social sign-in failed');
     }
   }
